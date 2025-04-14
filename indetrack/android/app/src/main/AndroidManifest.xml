@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="indetrack"
+        android:label="basic_flutter"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

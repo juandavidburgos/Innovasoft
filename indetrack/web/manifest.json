@@ -1,6 +1,6 @@
 {
-    "name": "indetrack",
-    "short_name": "indetrack",
+    "name": "basic_flutter",
+    "short_name": "basic_flutter",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
