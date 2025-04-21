@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:async';
 import '../models/event_model.dart';
+import 'package:intl/intl.dart';
 
 /// Servicio local que gestiona operaciones CRUD con una base de datos SQLite.
 /// Utiliza el paquete `sqflite` para almacenar eventos en el dispositivo.
@@ -55,23 +56,64 @@ class LocalService {
   /// 
   /// Retorna el ID del evento insertado.
   Future<int> insertEvento(EventModel evento) async {
-    final db = await database;
-    return await db.insert(tableEventos, evento.toMap());
+  final db = await database;
+
+    return await db.insert(
+      tableEventos,
+      {
+        'nombre': evento.nombre,
+        'fecha': evento.fecha.toIso8601String(), // Guardar en formato ISO
+        'ubicacion': evento.ubicacion,
+        'id_usuario': null, // si no lo usas por ahora
+        'estado': 'activo', // por defecto
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
+
   /// Obtiene todos los eventos desde la base de datos.
-  /// 
-  /// Si [soloActivos] es `true`, filtra los eventos con estado 'activo'.
-  /// Retorna una lista de objetos `EventModel`.
-  Future<List<EventModel>> getEventos({bool soloActivos = true}) async {
-    final db = await database;
-    final result = await db.query(
-      tableEventos,
-      where: soloActivos ? 'estado = ?' : null,
-      whereArgs: soloActivos ? ['activo'] : null,
+/// 
+/// Si [soloActivos] es `true`, filtra los eventos con estado 'activo'.
+/// Retorna una lista de objetos `EventModel`.
+Future<List<EventModel>> getEventos({bool soloActivos = false}) async {
+  final db = await database;
+
+  // Realizar consulta con filtro si se requiere solo eventos activos
+  final List<Map<String, dynamic>> maps = await db.query(
+    tableEventos,
+    where: soloActivos ? 'estado = ?' : null, // Filtrar por estado si soloActivos es true
+    whereArgs: soloActivos ? ['activo'] : null, // Definir el argumento 'activo' para el filtro
+  );
+
+  // Convertir los registros obtenidos en una lista de objetos EventModel
+  return List.generate(maps.length, (i) {
+    DateTime? fecha;
+    try {
+      // Intentar parsear la fecha en formato ISO 8601
+      fecha = DateTime.parse(maps[i]['fecha']);
+    } catch (e) {
+      try {
+        // Si falla el parseo ISO 8601, intenta con un formato diferente
+        final DateFormat format = DateFormat('dd-MM-yyyy');
+        fecha = format.parse(maps[i]['fecha']);
+      } catch (e) {
+        // Si ambos intentos fallan, asigna una fecha por defecto o maneja el error de alguna manera
+        fecha = DateTime.now();  // O puedes lanzar una excepción si lo prefieres
+      }
+    }
+
+    return EventModel(
+      idEvento: maps[i]['id_evento'],
+      nombre: maps[i]['nombre'],
+      fecha: fecha,
+      ubicacion: maps[i]['ubicacion'],
+      idUsuario: maps[i]['id_usuario'],
+      estado: maps[i]['estado'],
     );
-    return result.map((e) => EventModel.fromMap(e)).toList();
-  }
+  });
+}
+
 
   /// Actualiza un evento existente en la base de datos.
   /// 
