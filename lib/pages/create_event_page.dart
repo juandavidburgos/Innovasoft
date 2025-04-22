@@ -5,6 +5,7 @@ import '../repositories/event_repository.dart';
 import 'event_error_page.dart';
 import 'event_success_page.dart';
 import '../pages/view_events_page.dart';
+import 'widgets/action_button.dart'; // Asegúrate de importar ActionButton
 
 class CreateEventPage extends StatefulWidget {
   const CreateEventPage({super.key});
@@ -44,40 +45,32 @@ class _CreateEventPageState extends State<CreateEventPage> {
     super.dispose();
   }
 
-  // Función para guardar el evento
   void _guardarEvento() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
       final nuevoEvento = EventModel(
         nombre: _name,
-        ubicacion: _selectedLocation!,  // Usamos la ubicación seleccionada
+        ubicacion: _location,
         fecha: _selectedDate!,
       );
 
       try {
-        // Intentar guardar el evento en la base de datos
         await _repo.agregarEvento(nuevoEvento);
-
-        // Redirigir a la página de éxito si el guardado es exitoso
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const EventSuccessPage()),
         );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Evento guardado con éxito')),
+        );
 
-        // Mostrar mensaje de éxito
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Evento guardado con éxito'),
-        ));
-
-        // Limpiar el formulario
         _formKey.currentState!.reset();
         _dateController.clear();
         setState(() {
           _selectedDate = null;
         });
       } catch (e) {
-        // Si ocurre un error, redirigir a la página de error
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const EventErrorPage()),
@@ -86,7 +79,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
     }
   }
 
-  // Función para seleccionar la fecha
   Future<void> _pickDate() async {
     final pickedDate = await showDatePicker(
       context: context,
@@ -103,13 +95,24 @@ class _CreateEventPageState extends State<CreateEventPage> {
     }
   }
 
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      hintText: 'Ingrese $label',
+      labelText: label,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+      filled: true,
+      fillColor: Colors.grey[100],
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: Form(
             key: _formKey,
             child: Column(
@@ -119,81 +122,73 @@ class _CreateEventPageState extends State<CreateEventPage> {
                   child: Column(
                     children: [
                       Image.asset('assets/images/indeportes_logo.png', height: 80),
-                      const Text(
-                        '"Indeportes somos todos"',
-                        style: TextStyle(fontStyle: FontStyle.italic),
-                      ),
+                      const Text('"Indeportes somos todos"',
+                          style: TextStyle(fontStyle: FontStyle.italic)),
                       const SizedBox(height: 20),
-                      const Text(
-                        'Create Event',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                      ),
+                      const Text('Crear Evento',
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
-                  decoration: const InputDecoration(labelText: 'Nombre del evento'),
-                  validator: (value) => value!.isEmpty ? 'Ingrese el nombre del evento...' : null,
+                  decoration: _inputDecoration('Nombre'),
+                  validator: (value) => value!.isEmpty ? 'Este campo es obligatorio' : null,
                   onSaved: (val) => _name = val!,
                 ),
+                const SizedBox(height: 16),
                 TextFormField(
-                  decoration: const InputDecoration(labelText: 'Descripción del evento'),
+                  decoration: _inputDecoration('Descripción'),
                   onSaved: (val) {},
                 ),
-                // Aquí reemplazamos el campo de ubicación por un DropdownButton
-                DropdownButtonFormField<String>(
-                  value: _selectedLocation,
-                  hint: const Text('Selecciona la ubicación del evento'),
-                  validator: (value) => value == null ? 'Seleccione una ubicación' : null,
-                  onChanged: (newValue) {
-                    setState(() {
-                      _selectedLocation = newValue;
-                    });
-                  },
-                  items: _locations.map<DropdownMenuItem<String>>((String location) {
-                    return DropdownMenuItem<String>(
-                      value: location,
-                      child: Text(location),
-                    );
-                  }).toList(),
+                const SizedBox(height: 16),
+                TextFormField(
+                  decoration: _inputDecoration('Ubicación'),
+                  validator: (value) => value!.isEmpty ? 'Este campo es obligatorio' : null,
+                  onSaved: (val) => _location = val!,
                 ),
+                const SizedBox(height: 16),
                 GestureDetector(
                   onTap: _pickDate,
                   child: AbsorbPointer(
                     child: TextFormField(
-                      decoration: const InputDecoration(labelText: 'Fecha de desarrollo'),
-                      validator: (_) => _selectedDate == null ? 'Ingrese la fecha de desarrollo del evento...' : null,
                       controller: _dateController,
+                      decoration: _inputDecoration('Fecha'),
+                      validator: (_) =>
+                          _selectedDate == null ? 'Este campo es obligatorio' : null,
                     ),
                   ),
                 ),
                 const SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                Column(
                   children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green[700],
-                      ),
-                      onPressed: _guardarEvento,
-                      child: const Text('Guardar'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ActionButton(
+                          text: 'GUARDAR',
+                          color: Colors.green,
+                          onPressed: _guardarEvento,
+                        ),
+                        ActionButton(
+                          text: 'VER EVENTOS',
+                          color: Colors.grey,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ViewEventsPage()),
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[700],
+                    const SizedBox(height: 20),
+                    Center(
+                      child: ActionButton(
+                        text: 'VOLVER',
+                        color: Colors.blue,
+                        onPressed: () => Navigator.pop(context),
                       ),
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('BACK'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const ViewEventsPage()),
-                        );
-                      },
-                      child: const Text('Ver eventos creados'),
                     ),
                   ],
                 ),
@@ -205,3 +200,5 @@ class _CreateEventPageState extends State<CreateEventPage> {
     );
   }
 }
+
+
