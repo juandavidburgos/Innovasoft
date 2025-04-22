@@ -59,7 +59,7 @@ class AdminHomePage extends StatelessWidget {
                 MainButton(
                   texto: 'Deshabilitar evento',
                   color: Colors.red,
-                  onPressed: () {},
+                  onPressed: () {Navigator.pushNamed(context, '/disable_event');},
                 ),
                 const SizedBox(height: 15),
                 MainButton(

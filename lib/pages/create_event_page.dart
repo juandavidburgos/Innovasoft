@@ -7,6 +7,9 @@ import 'event_success_page.dart';
 import '../pages/view_events_page.dart';
 import 'widgets/action_button.dart'; // Asegúrate de importar ActionButton
 
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
+
 class CreateEventPage extends StatefulWidget {
   const CreateEventPage({super.key});
 
@@ -21,14 +24,20 @@ class _CreateEventPageState extends State<CreateEventPage> {
   final DateFormat _dateFormat = DateFormat('dd-MM-yyyy');
 
   String _name = '';
-  String _location = '';  // Ubicación seleccionada
+  String? _location;  // Ubicación seleccionada
   DateTime? _selectedDate;
+  List<String> _municipios = [];
   late TextEditingController _dateController;
 
   @override
   void initState() {
     super.initState();
     _dateController = TextEditingController();
+     cargarMunicipios().then((municipios) {
+    setState(() {
+      _municipios = municipios;
+    });
+  });
   }
 
   @override
@@ -43,7 +52,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
 
       final nuevoEvento = EventModel(
         nombre: _name,
-        ubicacion: _location,
+        ubicacion: _location!,
         fecha: _selectedDate!,
       );
 
@@ -86,6 +95,12 @@ class _CreateEventPageState extends State<CreateEventPage> {
       });
     }
   }
+
+Future<List<String>> cargarMunicipios() async {
+  final data = await rootBundle.loadString('assets/utils/municipios_cauca.json');
+  final List<dynamic> jsonResult = json.decode(data);
+  return List<String>.from(jsonResult);
+}
 
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
@@ -134,9 +149,23 @@ class _CreateEventPageState extends State<CreateEventPage> {
                   onSaved: (val) {},
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
+                DropdownButtonFormField<String>(
                   decoration: _inputDecoration('Ubicación'),
-                  validator: (value) => value!.isEmpty ? 'Este campo es obligatorio' : null,
+                  value: _location,
+                  hint: Text('Selecciona un municipio'),
+                  items: _municipios.map((String municipio) {
+                    return DropdownMenuItem<String>(
+                      value: municipio,
+                      child: Text(municipio),
+                    );
+                  }).toList(),
+                  onChanged: (nuevo) {
+                    setState(() {
+                      _location = nuevo;
+                    });
+                  },
+                  validator: (value) =>
+                      value == null || value.isEmpty ? 'Este campo es obligatorio' : null,
                   onSaved: (val) => _location = val!,
                 ),
                 const SizedBox(height: 16),
@@ -192,5 +221,3 @@ class _CreateEventPageState extends State<CreateEventPage> {
     );
   }
 }
-
-
