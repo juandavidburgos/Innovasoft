@@ -21,17 +21,9 @@ class _CreateEventPageState extends State<CreateEventPage> {
   final DateFormat _dateFormat = DateFormat('dd-MM-yyyy');
 
   String _name = '';
-  String? _selectedLocation;  // Ubicación seleccionada
+  String _location = '';  // Ubicación seleccionada
   DateTime? _selectedDate;
   late TextEditingController _dateController;
-
-  // Lista de ubicaciones
-  List<String> _locations = [
-    'Ubicación 1',
-    'Ubicación 2',
-    'Ubicación 3',
-    'Ubicación 4',
-  ];
 
   @override
   void initState() {
