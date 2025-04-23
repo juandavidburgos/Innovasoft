@@ -16,7 +16,7 @@ class EventRepository {
     return _localService.updateEvento(evento);
   }
 
-  Future<int> eliminarEvento(int id) {
-    return _localService.deleteEvento(id);
+  Future<int> deshabilitarEvento(int id) {
+    return _localService.deshabilitarEvento(id);
   }
 }
