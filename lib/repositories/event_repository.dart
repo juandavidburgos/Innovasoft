@@ -19,4 +19,13 @@ class EventRepository {
   Future<int> deshabilitarEvento(int id) {
     return _localService.deshabilitarEvento(id);
   }
+
+  Future<void> eliminarTodosEventos() {
+  return _localService.eliminarTodosEventos();
+  }
+
+  Future<int> asignarMonitorAEvento(int eventoId, int monitorId) {
+    return _localService.asignarMonitorAEvento(eventoId, monitorId);
+  }
+  
 }
