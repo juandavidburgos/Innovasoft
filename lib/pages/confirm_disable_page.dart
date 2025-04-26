@@ -46,14 +46,16 @@ class ConfirmDisablePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Confirmar Deshabilitación")),
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Icon(Icons.info, color: const Color.fromARGB(255, 46, 81, 140), size: 150),
+            const SizedBox(height: 10),
             const Text(
-              "¿Estás seguro de que deseas deshabilitar los eventos seleccionados?",
+              "¿Está seguro de que desea deshabilitar los eventos seleccionados?",
               style: TextStyle(fontSize: 18),
               textAlign: TextAlign.center,
             ),
@@ -62,14 +64,16 @@ class ConfirmDisablePage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 // Botón Cancelar
-                OutlinedButton(
+                ElevatedButton(
+                  style: OutlinedButton.styleFrom(backgroundColor: Colors.blue,overlayColor: Colors.blueGrey),
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancelar"),
+                  child: const Text("Cancelar", style: TextStyle(color: Colors.white)),
                 ),
                 // Botón Confirmar
                 ElevatedButton(
+                  style: OutlinedButton.styleFrom(backgroundColor: Colors.green,overlayColor: Colors.blueGrey),
                   onPressed: () => _deshabilitarEventos(context),
-                  child: const Text("Confirmar"),
+                  child: const Text("Confirmar",style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),

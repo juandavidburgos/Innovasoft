@@ -16,16 +16,21 @@ class EventSuccessPage extends StatelessWidget {
     });
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 100),
+            Icon(Icons.check_circle, color: Colors.green, size: 150),
             const SizedBox(height: 20),
             const Text(
-              'EVENT CREATED!',
+              'EVENTO CREADO \n EXITOSAMENTE!',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
+            SizedBox(height: 20),
+
+            // Mensaje de redirección
+            const Text("Regresando...", style: TextStyle(color: Colors.grey)),
           ],
         ),
       ),

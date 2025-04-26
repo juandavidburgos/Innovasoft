@@ -121,6 +121,7 @@ class _LoginPageState extends State<LoginPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Inicio de sesión exitoso'),
+        duration: Duration(seconds: 1),
       ));
 
       Navigator.pushReplacement(
@@ -143,6 +144,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),

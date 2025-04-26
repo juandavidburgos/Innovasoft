@@ -62,9 +62,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
           context,
           MaterialPageRoute(builder: (context) => const EventSuccessPage()),
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Evento guardado con éxito')),
-        );
 
         _formKey.currentState!.reset();
         _dateController.clear();
@@ -128,7 +125,7 @@ Future<List<String>> cargarMunicipios() async {
                 Center(
                   child: Column(
                     children: [
-                      Image.asset('assets/images/indeportes_logo.png', height: 80),
+                      Image.asset('assets/images/indeportes_logo.png', height: 100),
                       const Text('"Indeportes somos todos"',
                           style: TextStyle(fontStyle: FontStyle.italic)),
                       const SizedBox(height: 20),

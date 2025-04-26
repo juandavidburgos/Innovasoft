@@ -1,57 +1,3 @@
-/*import 'package:flutter/material.dart';
-import '../models/event_model.dart';
-//import '../services/local_service.dart';
-import '../repositories/event_repository.dart';
-
-/// Vista que muestra la lista de eventos almacenados localmente.
-class ViewEventsPage extends StatefulWidget {
-  const ViewEventsPage({super.key});
-
-  @override
-  State<ViewEventsPage> createState() => _ViewEventsPageState();
-}
-
-class _ViewEventsPageState extends State<ViewEventsPage> {
-  //final LocalService _service = LocalService();
-  final EventRepository _repo = EventRepository();
-  List<EventModel> _eventos = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _cargarEventos();
-  }
-
-  /// Carga todos los eventos, incluyendo los activos e inactivos.
-  Future<void> _cargarEventos() async {
-    final eventos = await _repo.obtenerEventos();
-    setState(() {
-      _eventos = eventos;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Eventos Creados')),
-
-      body: _eventos.isEmpty
-          ? const Center(child: Text('No hay eventos registrados.'))
-          : ListView.builder(
-              itemCount: _eventos.length,
-              itemBuilder: (context, index) {
-                final evento = _eventos[index];
-                return ListTile(
-                  title: Text(evento.nombre),
-                  subtitle: Text('Fecha: ${evento.fecha} - Estado: ${evento.estado}'),
-                  trailing: Text('ID: ${evento.idEvento}'),
-                );
-              },
-            ),
-    );
-  }
-}*/
-
 import 'package:flutter/material.dart';
 import '../models/event_model.dart';
 import '../repositories/event_repository.dart';
@@ -115,22 +61,34 @@ class _ViewEventsPageState extends State<ViewEventsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Eventos Creados')),
-
+      appBar: AppBar(title: const Text('Eventos Creados'),backgroundColor: Colors.white,),
+      backgroundColor: Colors.white,
       body: _eventos.isEmpty
-          ? const Center(child: Text('No hay eventos registrados.'))
-          : ListView.builder(
-              itemCount: _eventos.length,
-              itemBuilder: (context, index) {
-                final evento = _eventos[index];
-                return ListTile(
-                  title: Text(evento.nombre),
+        ? const Center(child: Text('No hay eventos registrados.'))
+        : ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            itemCount: _eventos.length,
+            itemBuilder: (context, index) {
+              final evento = _eventos[index];
+              return Container(
+                margin: const EdgeInsets.symmetric(vertical: 6), // separación mínima entre eventos
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey), // marco alrededor del evento
+                  borderRadius: BorderRadius.circular(10), // bordes redondeados
+                  color: Colors.white, // opcional: fondo blanco
+                ),
+                child: ListTile(
+                  title: Text(
+                    evento.nombre,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   subtitle: Text('Fecha: ${evento.fecha} - Estado: ${evento.estado}'),
                   trailing: Text('ID: ${evento.idEvento}'),
-                );
-              },
-            ),
-
+                ),
+              );
+            },
+          ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.red,
         onPressed: _eliminarTodosEventos,

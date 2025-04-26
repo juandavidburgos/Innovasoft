@@ -2,50 +2,40 @@ import 'package:flutter/material.dart';
 
 /// Página que se muestra cuando ocurre un error al deshabilitar eventos.
 /// Regresa automáticamente a la pantalla anterior tras 2 segundos.
-class ErrorDisablePage extends StatefulWidget {
+class ErrorDisablePage extends StatelessWidget {
   const ErrorDisablePage({super.key});
 
   @override
-  State<ErrorDisablePage> createState() => _ErrorDisablePageState();
-}
-
-class _ErrorDisablePageState extends State<ErrorDisablePage> {
-  @override
-  void initState() {
-    super.initState();
-
-    // Espera 2 segundos antes de regresar a la pantalla anterior
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pop(context);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Ícono de error
-            Icon(Icons.error, size: 80, color: Colors.red),
-
+            Icon(Icons.error, size: 150, color: Colors.red),
             SizedBox(height: 20),
-
             // Mensaje de error
-            Text(
-              "Error al deshabilitar los eventos.",
+            const Text(
+              "ERROR AL DESHABILITAR \n EL/LOS EVENTOS",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
-
-            SizedBox(height: 40),
-
+            const SizedBox(height: 10),
             // Mensaje de redirección
-            Text("Regresando...", style: TextStyle(color: Colors.grey)),
+            const Text("Comuníquese con el administrador de \n la aplicación para resolver el problema.",
+            style: TextStyle(color: Colors.grey)),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('VOLVER', style: TextStyle(color: Colors.white))
+            ),
           ],
         ),
       ),
     );
   }
+
 }
