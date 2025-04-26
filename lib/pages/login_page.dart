@@ -125,7 +125,17 @@ class _LoginPageState extends State<LoginPage> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const AdminHomePage()),
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) {
+            return const AdminHomePage();
+          },
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return ScaleTransition(
+              scale: animation,  // 'animation' controla el tamaño de la pantalla
+              child: child,  // Aquí está la pantalla que se va a mostrar
+            );
+          },
+        ),
       );
     }
   }

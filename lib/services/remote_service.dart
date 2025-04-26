@@ -1,10 +1,12 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/event_model.dart';
+import '../models/user_model.dart';
 
 /// Servicio encargado de la comunicación con el back-end (API REST).
 class RemoteService {
   final String apiUrl = 'http://localhost:8080/api/eventos';
+  final String apiUrlUsuarios = 'http://localhost:8080/api/usuarios';
 
   /// Envía un nuevo evento al servidor mediante HTTP POST.
   ///
@@ -83,4 +85,78 @@ class RemoteService {
       return false;
     }
   }
+  ///Metodos para usuario
+  
+  // Insertar un nuevo usuario
+  Future<bool> sendUsuario(UserModel usuario) async {
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrlUsuarios),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(usuario.toJson()),
+      );
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Obtener todos los usuarios desde el servidor
+  Future<List<UserModel>> fetchUsuarios() async {
+    try {
+      final response = await http.get(Uri.parse(apiUrlUsuarios));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.map((e) => UserModel.fromJson(e)).toList();
+      } else {
+        throw Exception('Error al obtener los usuarios: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
+
+  // Actualizar un usuario existente
+  Future<bool> updateUsuario(UserModel usuario) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$apiUrlUsuarios/${usuario.idUsuario}'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(usuario.toJson()),
+      );
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Eliminar un usuario
+  Future<bool> deleteUsuario(int idUsuario) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$apiUrlUsuarios/$idUsuario'),
+      );
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Verificar si un correo ya existe
+  Future<bool> existeCorreo(String email) async {
+    try {
+      final response = await http.get(Uri.parse('$apiUrlUsuarios?email=$email'));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.isNotEmpty;
+      } else {
+        throw Exception('Error al verificar el correo: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
+
 }
