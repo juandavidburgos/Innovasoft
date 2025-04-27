@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'widgets/main_button.dart';
-import '../../models/event_model.dart';
+import '../widgets/main_button.dart';
+import '../../../models/event_model.dart';
 
 class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../repositories/event_repository.dart';
-import '../models/event_model.dart';
+import '../../repositories/event_repository.dart';
+import '../../models/event_model.dart';
 import 'success_disable_page.dart';
 import 'error_disable_page.dart';
 

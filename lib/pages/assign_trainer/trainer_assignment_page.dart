@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../models/user_model.dart';
-import '../repositories/user_repository.dart';
-import '../repositories/event_repository.dart';
-import '../models/event_model.dart';
-import 'widgets/action_button.dart';
+import '../../models/user_model.dart';
+import '../../repositories/user_repository.dart';
+import '../../repositories/event_repository.dart';
+import '../../models/event_model.dart';
+import '../widgets/action_button.dart';
 
 class TrainerAssignmentPage extends StatefulWidget {
   const TrainerAssignmentPage({super.key});

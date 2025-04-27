@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import '../pages/create_event_page.dart'; // Asegúrate de importar la página correcta
+import 'create_event_page.dart'; // Asegúrate de importar la página correcta
 
 class EventSuccessPage extends StatelessWidget {
   const EventSuccessPage({super.key});

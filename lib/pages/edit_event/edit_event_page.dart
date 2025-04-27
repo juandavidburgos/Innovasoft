@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import '../models/event_model.dart';
-import '../repositories/event_repository.dart';
-import 'widgets/action_button.dart';
+import '../../models/event_model.dart';
+import '../../repositories/event_repository.dart';
+import '../widgets/action_button.dart';
 import 'dart:convert';
 
 class EditEventPage extends StatefulWidget {

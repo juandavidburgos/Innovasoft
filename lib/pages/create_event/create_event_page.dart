@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../models/event_model.dart';
-import '../repositories/event_repository.dart';
+import '../../models/event_model.dart';
+import '../../repositories/event_repository.dart';
 import 'event_error_page.dart';
 import 'event_success_page.dart';
-import '../pages/view_events_page.dart';
-import 'widgets/action_button.dart'; // Asegúrate de importar ActionButton
+import 'view_events_page.dart';
+import '../widgets/action_button.dart'; // Asegúrate de importar ActionButton
 
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;

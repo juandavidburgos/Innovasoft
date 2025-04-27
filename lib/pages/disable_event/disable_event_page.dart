@@ -1,7 +1,7 @@
 import 'package:basic_flutter/pages/widgets/action_button.dart';
 import 'package:flutter/material.dart';
-import '../models/event_model.dart';
-import '../repositories/event_repository.dart';
+import '../../models/event_model.dart';
+import '../../repositories/event_repository.dart';
 import 'confirm_disable_page.dart';
 import 'error_disable_page.dart';
 

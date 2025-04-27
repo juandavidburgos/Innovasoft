@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/event_model.dart';
-import '../repositories/event_repository.dart';
+import '../../models/event_model.dart';
+import '../../repositories/event_repository.dart';
 
 /// Vista que muestra la lista de eventos almacenados localmente.
 class ViewEventsPage extends StatefulWidget {
