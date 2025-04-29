@@ -83,7 +83,9 @@ class _ViewEventsPageState extends State<ViewEventsPage> {
                     evento.nombre,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text('Fecha: ${evento.fecha} - Estado: ${evento.estado}'),
+                  subtitle: Text(
+                              '${evento.ubicacion} - ${evento.fecha.toLocal().toString().split(' ')[0]} - Estado: ${evento.estado}',
+                  ),
                   trailing: Text('ID: ${evento.idEvento}'),
                 ),
               );

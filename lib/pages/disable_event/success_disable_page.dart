@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../disable_event/disable_event_page.dart';
 
 /// Página que muestra un mensaje de éxito tras deshabilitar eventos.
 /// Redirige automáticamente a la pantalla principal después de 2 segundos.
@@ -16,7 +17,9 @@ class _SuccessDisablePageState extends State<SuccessDisablePage> {
 
     // Espera 2 segundos antes de volver al inicio
     Future.delayed(const Duration(seconds: 2), () {
-      Navigator.popUntil(context, (route) => route.isFirst);
+      Navigator.pushReplacement(context,
+      MaterialPageRoute(builder: (context) => DisableEventPage()),
+      );
     });
   }
 
@@ -35,7 +38,7 @@ class _SuccessDisablePageState extends State<SuccessDisablePage> {
 
             // Mensaje de confirmación
             Text(
-              "EVENTO(S) DESHBAILITADO(S) \n EXISOTSAMENTE!",
+              "EVENTO(S) DESHABAILITADO(S) \n EXISOTSAMENTE!",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),

@@ -4,6 +4,7 @@ import '../../models/event_model.dart';
 import '../../repositories/event_repository.dart';
 import 'confirm_disable_page.dart';
 import 'error_disable_page.dart';
+import '../home/admin_home_page.dart';
 
 /// Página para seleccionar uno o varios eventos que se desean deshabilitar.
 /// Solo se muestran los eventos con estado "activo".
@@ -158,7 +159,7 @@ class _DisableEventPageState extends State<DisableEventPage> {
                       ActionButton(
                             text: 'VOLVER',
                             color: Colors.blue,
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () => Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => const AdminHomePage()),),
                       ),
                       ActionButton(
                         text: 'CONTINUAR',
