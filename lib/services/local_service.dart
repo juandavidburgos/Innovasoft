@@ -16,6 +16,20 @@ class LocalService {
   /// Nombre de la tabla donde se almacenan los usuarios.
   static const String tableUsuarios = 'usuarios';
 
+  Future<void> deleteDB() async {
+    try {
+      // Obtén la ruta de la base de datos
+      final path = join(await getDatabasesPath(), 'eventos.db');
+      
+      // Elimina la base de datos
+      await deleteDatabase(path);
+
+      print("Base de datos eliminada con éxito.");
+    } catch (e) {
+      print("Error al eliminar la base de datos: $e");
+    }
+  }
+
   /// Getter que retorna la instancia de la base de datos.
   /// Si aún no ha sido inicializada, llama a `initDB()`.
   Future<Database> get database async {
@@ -36,17 +50,22 @@ class LocalService {
   Future<Database> initDB() async {
     try {
       final path = join(await getDatabasesPath(), 'eventos.db');
-
+      
+      // Asegurarse de que se elimina la base de datos antes de crearla de nuevo
+      //await deleteDB();  // Llama a la función para eliminar la base de datos
+      
       return await openDatabase(
         path,
-        version: 2, // Subimos la versión de la BD
+        version: 3, // Incrementar la versión para la migración
         onCreate: (db, version) async {
-          await db.execute('''
+          await db.execute(''' 
             CREATE TABLE $tableEventos (
               id_evento INTEGER PRIMARY KEY AUTOINCREMENT,
               nombre TEXT NOT NULL,
-              fecha TEXT NOT NULL,
+              fecha_hora_inicio TEXT NOT NULL,
+              fecha_hora_fin TEXT NOT NULL,
               ubicacion TEXT NOT NULL,
+              descripcion TEXT,  -- Nueva columna para la descripción del evento
               id_usuario INTEGER,
               estado TEXT CHECK(estado IN ('activo', 'inactivo')) DEFAULT 'activo'
             );
@@ -80,31 +99,20 @@ class LocalService {
         },
         onUpgrade: (db, oldVersion, newVersion) async {
           if (oldVersion < 2) {
-            await db.execute('''
-              CREATE TABLE $tableUsuarios (
-                id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
-                nombre TEXT NOT NULL,
-                email TEXT NOT NULL UNIQUE,
-                rol TEXT CHECK(rol IN ('Monitor', 'Administrador')) NOT NULL
-              );
+            // Agregar la columna 'descripcion'
+            await db.execute(''' 
+              ALTER TABLE $tableEventos ADD COLUMN descripcion TEXT;
             ''');
 
-            // Insertar usuarios si se actualiza desde una BD antigua
-            await db.insert(tableUsuarios, {
-              'nombre': 'Carlos Ramírez',
-              'email': 'carlos@indc.gov',
-              'rol': 'Monitor',
-            });
-            await db.insert(tableUsuarios, {
-              'nombre': 'Laura Pérez',
-              'email': 'laura@indc.gov',
-              'rol': 'Monitor',
-            });
-            await db.insert(tableUsuarios, {
-              'nombre': 'Admin General',
-              'email': 'admin@indc.gov',
-              'rol': 'Administrador',
-            });
+            // Agregar las nuevas columnas 'fecha_hora_inicio' y 'fecha_hora_fin'
+            await db.execute(''' 
+              ALTER TABLE $tableEventos ADD COLUMN fecha_hora_inicio TEXT NOT NULL;
+            ''');
+            await db.execute(''' 
+              ALTER TABLE $tableEventos ADD COLUMN fecha_hora_fin TEXT NOT NULL;
+            ''');
+
+            // Aquí puedes agregar lógica para migrar datos si es necesario.
           }
         },
       );
@@ -112,7 +120,6 @@ class LocalService {
       throw Exception('Error al inicializar la base de datos: $e');
     }
   }
-
   /// Inserta un nuevo evento en la base de datos.
   /// 
   /// [evento] es una instancia de `EventModel` que se convierte a un mapa.
@@ -125,8 +132,10 @@ class LocalService {
       tableEventos,
       {
         'nombre': evento.nombre,
-        'fecha': evento.fecha.toIso8601String(), // Guardar en formato ISO
+        'fecha_hora_inicio': evento.fechaHoraInicio.toIso8601String(),
+        'fecha_hora_fin': evento.fechaHoraFin.toIso8601String(),
         'ubicacion': evento.ubicacion,
+        'descripcion': evento.descripcion,
         'id_usuario': null, // si no lo usas por ahora
         'estado': 'activo', // por defecto
       },
@@ -151,26 +160,32 @@ Future<List<EventModel>> getEventos({bool soloActivos = false}) async {
 
   // Convertir los registros obtenidos en una lista de objetos EventModel
   return List.generate(maps.length, (i) {
-    DateTime? fecha;
+    DateTime? fechaHoraInicio;
+    DateTime? fechaHoraFin;
     try {
       // Intentar parsear la fecha en formato ISO 8601
-      fecha = DateTime.parse(maps[i]['fecha']);
+      fechaHoraInicio = DateTime.parse(maps[i]['fecha_hora_inicio']);
+      fechaHoraFin = DateTime.parse(maps[i]['fecha_hora_fin']);
     } catch (e) {
       try {
         // Si falla el parseo ISO 8601, intenta con un formato diferente
-        final DateFormat format = DateFormat('dd-MM-yyyy');
-        fecha = format.parse(maps[i]['fecha']);
+        final DateFormat format = DateFormat('dd-MM-yyyy HH:mm');
+        fechaHoraInicio  = format.parse(maps[i]['fecha_hora_inicio']);
+        fechaHoraFin = format.parse(maps[i]['fecha_hora_fin']);
       } catch (e) {
         // Si ambos intentos fallan, asigna una fecha por defecto o maneja el error de alguna manera
-        fecha = DateTime.now();  // O puedes lanzar una excepción si lo prefieres
+        fechaHoraInicio = DateTime.now();
+        fechaHoraFin = DateTime.now();  //lanzar una excepción
       }
     }
 
     return EventModel(
       idEvento: maps[i]['id_evento'],
       nombre: maps[i]['nombre'],
-      fecha: fecha,
+      fechaHoraInicio: fechaHoraInicio,
+      fechaHoraFin: fechaHoraFin,
       ubicacion: maps[i]['ubicacion'],
+      descripcion: maps[i]['descripcion'] ?? '',
       idUsuario: maps[i]['id_usuario'],
       estado: maps[i]['estado'],
     );
@@ -337,4 +352,22 @@ Future<List<EventModel>> getEventos({bool soloActivos = false}) async {
     );
   }
 
+  /// Obtiene todos los eventos que tienen un monitor asignado (id_usuario no es nulo).
+  /// 
+  /// Retorna una lista de [EventModel] con los eventos que tienen un monitor asignado.
+  Future<List<EventModel>> obtenerEventosConMonitoresAsignados() async {
+    final db = await database;
+
+    // Realizamos una consulta para obtener solo los eventos donde `id_usuario` no sea nulo.
+    final List<Map<String, dynamic>> eventosMap = await db.query(
+      tableEventos,
+      where: 'id_usuario IS NOT NULL', // Solo seleccionamos eventos con un monitor asignado
+    );
+
+    // Convertimos los resultados de la consulta a una lista de EventModel
+    return List.generate(eventosMap.length, (i) {
+      return EventModel.fromMap(eventosMap[i]);
+    });
+  }
+  
 }

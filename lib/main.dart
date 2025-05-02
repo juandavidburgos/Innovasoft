@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
 import 'pages/home/admin_home_page.dart';
 import 'pages/create_event/create_event_page.dart';
+import 'pages/create_event/view_events_page.dart';
 import 'pages/edit_event/edit_event_page.dart';
 import 'pages/assign_trainer/trainer_assignment_page.dart';
+import 'pages/assign_trainer/view_assignment_page.dart';
 import 'pages/disable_event/disable_event_page.dart';
 import 'pages/home/trainer_home_page.dart';
 
@@ -32,9 +34,11 @@ class MyApp extends StatelessWidget {
         '/admin_home': (context) => const AdminHomePage(),
         '/trainer_home': (context) => const TrainerHomePage(),
         '/crear_evento': (context) => const CreateEventPage(),
+        '/view_event': (context) => const ViewEventsPage(),
         '/edit_event': (context) => const EditEventPage(),
         '/disable_event': (context) => const DisableEventPage(),
         '/assign_trainer': (context) => const TrainerAssignmentPage(),
+        '/view_assign': (context) => const ViewAssignmentPage(),
         
       },
     );
