@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import '../pages/create_event_page.dart'; // Asegúrate de importar la página correcta
+import 'create_event_page.dart'; // Asegúrate de importar la página correcta
 
 class EventSuccessPage extends StatelessWidget {
   const EventSuccessPage({super.key});
@@ -16,16 +16,21 @@ class EventSuccessPage extends StatelessWidget {
     });
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 100),
+            Icon(Icons.check_circle, color: Colors.green, size: 150),
             const SizedBox(height: 20),
             const Text(
-              'EVENT CREATED!',
+              'EVENTO CREADO \n EXITOSAMENTE!',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
+            SizedBox(height: 20),
+
+            // Mensaje de redirección
+            const Text("Regresando...", style: TextStyle(color: Colors.grey)),
           ],
         ),
       ),

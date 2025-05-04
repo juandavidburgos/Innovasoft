@@ -1,108 +1,11 @@
-/*import 'package:flutter/material.dart';
-import 'create_event_page.dart'; // Importar la página a la que vamos a navegar
-
-/// Página de inicio de sesión donde el usuario puede ingresar su correo y contraseña.
-/// Simula un inicio de sesión y navega a la pantalla principal de la app.
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  // Clave global para identificar el formulario y validar su contenido.
-  final _formKey = GlobalKey<FormState>();
-
-  // Variables que almacenan temporalmente los valores ingresados por el usuario.
-  String _email = '';
-  String _password = '';
-
-  /// Método que se llama cuando el usuario presiona el botón "Iniciar sesión".
-  /// Valida el formulario, muestra un mensaje y navega a la pantalla de eventos.
-  void _iniciarSesion() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-
-      // Simula autenticación exitosa.
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Inicio de sesión exitoso'),
-      ));
-
-      // Navega a la página principal de la app.
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const CreateEventPage()),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // Barra superior con el título de la pantalla.
-      appBar: AppBar(title: const Text('Iniciar Sesión')),
-
-      // Contenido principal de la pantalla con padding.
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-
-        // Formulario que contiene los campos de correo y contraseña.
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Campo para ingresar el correo electrónico.
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Correo electrónico'),
-                keyboardType: TextInputType.emailAddress,
-                validator: (val) {
-                  if (val == null || val.isEmpty) {
-                    return 'Por favor ingresa tu correo';
-                  }
-                  if (!val.contains('@')) {
-                    return 'Correo inválido';
-                  }
-                  return null;
-                },
-                onSaved: (val) => _email = val!,
-              ),
-
-              // Campo para ingresar la contraseña.
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Contraseña'),
-                obscureText: true,
-                validator: (val) {
-                  if (val == null || val.isEmpty) {
-                    return 'Por favor ingresa tu contraseña';
-                  }
-                  if (val.length < 6) {
-                    return 'La contraseña debe tener al menos 6 caracteres';
-                  }
-                  return null;
-                },
-                onSaved: (val) => _password = val!,
-              ),
-
-              const SizedBox(height: 20),
-
-              // Botón que ejecuta el proceso de inicio de sesión.
-              ElevatedButton(
-                onPressed: _iniciarSesion,
-                child: const Text('Iniciar Sesión'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}*/
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'create_event_page.dart'; // Asegúrate de tener esta ruta correctamente configurada
-import 'admin_home_page.dart';
+import 'create_event/create_event_page.dart';
+import 'home/admin_home_page.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -115,34 +18,55 @@ class _LoginPageState extends State<LoginPage> {
   String _email = '';
   String _password = '';
 
-  void _iniciarSesion() {
+  void _iniciarSesion() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Inicio de sesión exitoso'),
-      ));
-
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) {
-            return const AdminHomePage();
-          },
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return ScaleTransition(
-              scale: animation,  // 'animation' controla el tamaño de la pantalla
-              child: child,  // Aquí está la pantalla que se va a mostrar
-            );
-          },
-        ),
+      //Conexion con el back-end
+      final url = Uri.parse('https://tu-backend.com/api/login'); // Tu endpoint
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _email,
+          'password': _password,
+        }),
       );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final String token = data['token']; // El token que te envía el backend
+
+        // Guardar el token en local
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('jwt_token', token);
+
+        // Decodificar token para leer el rol
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+        String rol = decodedToken['rol']; // el backend debe meter esto en el JWT
+
+        // Navegar según el rol
+        if (rol == 'admin') {
+          Navigator.pushReplacementNamed(context, '/admin_home');
+        } else if (rol == 'trainer') {
+          Navigator.pushReplacementNamed(context, '/trainer_home');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Rol no reconocido')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Credenciales inválidas: ${response.body}')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),

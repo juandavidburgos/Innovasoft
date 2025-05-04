@@ -4,31 +4,40 @@ import 'package:intl/intl.dart';
 class EventModel {
   final int? idEvento;
   final String nombre;
+  final String descripcion;
   final String ubicacion;
-  final DateTime fecha;
+  //final DateTime fecha;
+  final DateTime fechaHoraInicio;
+  final DateTime fechaHoraFin;
   final int? idUsuario;
   final String estado;
 
-  // Formatter para fechas en formato 'dd-MM-yyyy'
-  static final DateFormat _formatter = DateFormat('dd-MM-yyyy');
+  // Formatter para fechas y horas
+  static final DateFormat _formatter = DateFormat('dd-MM-yyyy HH:mm');
 
   EventModel({
     this.idEvento,
     required this.nombre,
+    required this.descripcion,
     required this.ubicacion,
-    required this.fecha,
+    required this.fechaHoraInicio,
+    required this.fechaHoraFin,
     this.idUsuario,
     this.estado = 'activo',
   });
 
-  /// Convierte un Map en un objeto EventModel.
+  /// Convierte un Map en un objeto EventModel(para SQLite).
   factory EventModel.fromMap(Map<String, dynamic> map) => EventModel(
         idEvento: map['id_evento'],
         nombre: map['nombre'],
+        descripcion: map['descripcion'],
         ubicacion: map['ubicacion'],
-        fecha: map['fecha'] != null && map['fecha'].toString().isNotEmpty
-            ? _formatter.parse(map['fecha'])  // Aquí está el cambio
+        fechaHoraInicio: map['fecha_hora_inicio'] != null
+            ? _formatter.parse(map['fecha_hora_inicio'])
             : DateTime.now(),
+        fechaHoraFin: map['fecha_hora_fin'] != null
+            ? _formatter.parse(map['fecha_hora_fin'])
+            : DateTime.now().add(Duration(hours: 1)),
         idUsuario: map['id_usuario'],
         estado: map['estado'],
       );
@@ -37,8 +46,10 @@ class EventModel {
   Map<String, dynamic> toMap() => {
         if (idEvento != null) 'id_evento': idEvento,
         'nombre': nombre,
+        'descripcion': descripcion,
         'ubicacion': ubicacion,
-        'fecha': _formatter.format(fecha), // Formato compatible con tu DB
+        'fecha_hora_inicio': _formatter.format(fechaHoraInicio),
+        'fecha_hora_fin': _formatter.format(fechaHoraFin),
         'id_usuario': idUsuario,
         'estado': estado,
       };
@@ -47,8 +58,10 @@ class EventModel {
   factory EventModel.fromJson(Map<String, dynamic> json) => EventModel(
         idEvento: json['id_evento'],
         nombre: json['nombre'],
+        descripcion: json['descripcion'],
         ubicacion: json['ubicacion'],
-        fecha: DateTime.parse(json['fecha']), // asume ISO
+        fechaHoraInicio: DateTime.parse(json['fecha_hora_inicio']),
+        fechaHoraFin: DateTime.parse(json['fecha_hora_fin']),
         idUsuario: json['id_usuario'],
         estado: json['estado'],
       );
@@ -57,8 +70,10 @@ class EventModel {
   Map<String, dynamic> toJson() => {
         if (idEvento != null) 'id_evento': idEvento,
         'nombre': nombre,
+        'descripcion': descripcion,
         'ubicacion': ubicacion,
-        'fecha': fecha.toIso8601String(),
+        'fecha_hora_inicio': fechaHoraInicio.toIso8601String(),
+        'fecha_hora_fin': fechaHoraFin.toIso8601String(),
         'id_usuario': idUsuario,
         'estado': estado,
       };

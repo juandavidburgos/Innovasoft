@@ -28,4 +28,9 @@ class EventRepository {
     return _localService.asignarMonitorAEvento(eventoId, monitorId);
   }
   
+  Future<List<EventModel>> obtenerEventosConMonitoresAsignados() {
+  return _localService.obtenerEventosConMonitoresAsignados();
+  }
+
+
 }

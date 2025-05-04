@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'widgets/main_button.dart';
-import '../../models/event_model.dart';
-
+import '../widgets/main_button.dart';
 class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key});
 
@@ -27,7 +25,7 @@ class AdminHomePage extends StatelessWidget {
                 const SizedBox(height: 40),
                 MainButton(
                   texto: 'Crear evento',
-                  color: Colors.blue,
+                  color: Colors.green,
                   onPressed: () {
                     Navigator.pushNamed(context,'/crear_evento');
                   },
@@ -37,22 +35,16 @@ class AdminHomePage extends StatelessWidget {
                   texto: 'Editar evento',
                   color: Colors.orange,
                   onPressed: () {
-                    //Ejemplo de prueba
-                    /*final eventToEdit = EventModel(
-                      id: 1,
-                      name: 'Evento de prueba',
-                      description: 'Descripción',
-                      location: 'Lugar',
-                      date: DateTime.now(),
-                    );
-                    
-                    Navigator.pushNamed(
-                      context, 
-                      '/edit_event',
-                      arguments: eventToEdit,
-                      );*/
                     //Redigir a la pagina
                     Navigator.pushNamed(context, '/edit_event');
+                  },
+                ),
+                const SizedBox(height: 15),
+                MainButton(
+                  texto: 'Ver eventos',
+                  color: Colors.blue,
+                  onPressed: () {
+                    Navigator.pushNamed(context,'/view_event');
                   },
                 ),
                 const SizedBox(height: 15),
@@ -69,7 +61,25 @@ class AdminHomePage extends StatelessWidget {
                     Navigator.pushNamed(context, '/assign_trainer');
                   },
                 ),
-                const SizedBox(height: 25),
+                const SizedBox(height: 15),
+                MainButton(
+                  texto: 'Editar asignacion entrenador',
+                  color: Colors.orange,
+                  onPressed: () {
+                    //Redigir a la pagina
+                    Navigator.pushNamed(context, '/edit_event');
+                  },
+                ),
+                const SizedBox(height: 15),
+                MainButton(
+                  texto: 'Ver asignaciones',
+                  color: Colors.blue,
+                  onPressed: () {
+                    //Redigir a la pagina
+                    Navigator.pushNamed(context, '/view_assign');
+                  },
+                ),
+                const SizedBox(height: 35),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pushReplacementNamed(context, '/');
