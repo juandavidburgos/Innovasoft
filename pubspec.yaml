@@ -30,4 +30,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/indeportes_logo.png
+    - assets/images/logo_indeportes.png
+    - assets/images/logo2_indeportes.png
     - assets/utils/municipios_cauca.json

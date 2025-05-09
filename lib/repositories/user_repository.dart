@@ -8,17 +8,17 @@ class UserRepository {
 
   /// Inserta un usuario en la base de datos local
   Future<int> agregarUsuario(UserModel usuario) {
-    return _localService.insertUsuario(usuario);
+    return _localService.guardarUsuario(usuario);
   }
 
   /// Retorna todos los usuarios almacenados localmente
   Future<List<UserModel>> obtenerUsuarios() {
-    return _localService.getUsuarios();
+    return _localService.obtenerUsuarios();
   }
 
   /// Actualiza un usuario en la base de datos local
   Future<int> actualizarUsuario(UserModel usuario) {
-    return _localService.updateUsuario(usuario);
+    return _localService.editarUusario(usuario);
   }
 
   /// Verifica remotamente si un correo ya está registrado
@@ -52,7 +52,7 @@ class UserRepository {
   Future<void> sincronizarDesdeServidor() async {
     final usuariosRemotos = await obtenerUsuariosRemotos();
     for (var user in usuariosRemotos) {
-      final existe = await _localService.existeUsuarioPorCorreo(user.email);
+      final existe = await _localService.verificarUsuarioPorCorreo(user.email);
       if (!existe) {
         await agregarUsuario(user);
       } else {

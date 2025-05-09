@@ -1,3 +1,5 @@
+import 'package:basic_flutter/pages/home/admin_event_home_page.dart';
+import 'package:basic_flutter/pages/home/admin_trainer_home_page.dart';
 import 'package:basic_flutter/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
@@ -32,6 +34,8 @@ class MyApp extends StatelessWidget {
         'splash': (context) => const SplashScreen(),
         '/': (context) => const LoginPage(),
         '/admin_home': (context) => const AdminHomePage(),
+        '/home_admin_trainer' : (context) => const AdminTrainerHomePage(),
+        '/home_events': (context) => const AdminEventHomePage(),
         '/trainer_home': (context) => const TrainerHomePage(),
         '/crear_evento': (context) => const CreateEventPage(),
         '/view_event': (context) => const ViewEventsPage(),

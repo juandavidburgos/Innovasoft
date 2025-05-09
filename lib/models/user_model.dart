@@ -5,12 +5,14 @@ class UserModel {
   final int? idUsuario;
   final String nombre;
   final String email;
+  final String contrasena;
   final String rol; // 'Monitor' equivale a 'Entrenador'
 
   UserModel({
     this.idUsuario,
     required this.nombre,
     required this.email,
+    required this.contrasena,
     required this.rol,
   });
 
@@ -19,6 +21,7 @@ class UserModel {
         idUsuario: map['id_usuario'],
         nombre: map['nombre'],
         email: map['email'],
+        contrasena: map['contrasena'],
         rol: map['rol'],
       );
 
@@ -35,6 +38,7 @@ class UserModel {
         idUsuario: json['id_usuario'],
         nombre: json['nombre'],
         email: json['email'],
+        contrasena: json['contrasena'],
         rol: json['rol'],
       );
 
@@ -43,6 +47,7 @@ class UserModel {
         if (idUsuario != null) 'id_usuario': idUsuario,
         'nombre': nombre,
         'email': email,
+        'contrasena':contrasena,
         'rol': rol,
       };
 }

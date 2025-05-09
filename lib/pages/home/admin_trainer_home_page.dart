@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/main_button.dart';
-class AdminHomePage extends StatelessWidget {
-  const AdminHomePage({super.key});
+class AdminTrainerHomePage extends StatelessWidget {
+  const AdminTrainerHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,26 +24,34 @@ class AdminHomePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 15),
                 MainButton(
-                  texto: 'Gestión de eventos',
-                  color: const Color.fromARGB(255, 146, 89, 4),
+                  texto: 'Asignar entrenador',
+                  color: Colors.green,
                   onPressed: () {
-                    //Redigir a la pagina
-                    Navigator.pushNamed(context, '/home_events');
+                    Navigator.pushNamed(context, '/assign_trainer');
                   },
                 ),
                 const SizedBox(height: 15),
                 MainButton(
-                  texto: 'Asignación de entrenadores',
-                  color: const Color.fromARGB(255, 16, 88, 146),
+                  texto: 'Editar asignacion entrenador',
+                  color: Colors.orange,
                   onPressed: () {
                     //Redigir a la pagina
-                    Navigator.pushNamed(context, '/home_admin_trainer');
+                    Navigator.pushNamed(context, '/edit_event');
+                  },
+                ),
+                const SizedBox(height: 15),
+                MainButton(
+                  texto: 'Ver asignaciones',
+                  color: Colors.blue,
+                  onPressed: () {
+                    //Redigir a la pagina
+                    Navigator.pushNamed(context, '/view_assign');
                   },
                 ),
                 const SizedBox(height: 35),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/');
+                    Navigator.pushReplacementNamed(context, '/admin_home');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red[800],
