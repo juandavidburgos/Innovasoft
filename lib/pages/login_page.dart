@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'create_event/create_event_page.dart';
-import 'home/admin_home_page.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,50 +16,55 @@ class _LoginPageState extends State<LoginPage> {
   String _email = '';
   String _password = '';
 
-  void _iniciarSesion() async {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
+  
+void _iniciarSesion() async {
+  if (_formKey.currentState!.validate()) {
+    _formKey.currentState!.save();
 
-      //Conexion con el back-end
-      final url = Uri.parse('https://tu-backend.com/api/login'); // Tu endpoint
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': _email,
-          'password': _password,
-        }),
-      );
+    final url = Uri.parse('https://tu-backend.com/api/login');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': _email,
+        'password': _password,
+      }),
+    );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final String token = data['token']; // El token que te envía el backend
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final String token = data['token'];
 
-        // Guardar el token en local
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('jwt_token', token);
+      // Decodificar el token
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      String rol = decodedToken['rol'];
+      String nombre = decodedToken['nombre'];
+      int idUsuario = decodedToken['id_usuario'];
 
-        // Decodificar token para leer el rol
-        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
-        String rol = decodedToken['rol']; // el backend debe meter esto en el JWT
+      // Guardar en SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('jwt_token', token);
+      await prefs.setString('nombreUsuario', nombre);
+      await prefs.setInt('idUsuario', idUsuario);
+      await prefs.setString('rol', rol);
 
-        // Navegar según el rol
-        if (rol == 'admin') {
-          Navigator.pushReplacementNamed(context, '/admin_home');
-        } else if (rol == 'trainer') {
-          Navigator.pushReplacementNamed(context, '/trainer_home');
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Rol no reconocido')),
-          );
-        }
+      // Navegar según el rol
+      if (rol == 'admin') {
+        Navigator.pushReplacementNamed(context, '/admin_home');
+      } else if (rol == 'trainer') {
+        Navigator.pushReplacementNamed(context, '/trainer_home');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Credenciales inválidas: ${response.body}')),
+          const SnackBar(content: Text('Rol no reconocido')),
         );
       }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Credenciales inválidas: ${response.body}')),
+      );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {

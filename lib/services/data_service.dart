@@ -1,3 +1,5 @@
+import 'package:basic_flutter/models/answer_model.dart';
+import 'package:basic_flutter/models/form_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 //import '../models/formulario.dart';
@@ -63,7 +65,7 @@ Future<Database> get database async {
 
           // Crear tabla usuarios
           await db.execute('''
-            CREATE TABLE usuarios (
+            CREATE TABLE $tableUsuarios (
             id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
             nombre TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
@@ -77,24 +79,24 @@ Future<Database> get database async {
             'nombre': 'Carlos Ramírez',
             'email': 'carlos@uni.edu',
             'contrasena': 'holis12wer33',
-            'rol': 'Monitor',
+            'rol': 'ENTRENADOR',
           });
           await db.insert(tableUsuarios, {
             'nombre': 'Laura Pérez',
             'email': 'laura@uni.edu',
             'contrasena': 'holis1wrewe233',
-            'rol': 'Monitor',
+            'rol': 'ADMINISTRADOR',
           });
           await db.insert(tableUsuarios, {
             'nombre': 'Admin General',
             'email': 'admin@uni.edu',
             'contrasena': 'holisewrwe1233',
-            'rol': 'Administrador',
+            'rol': 'ENTRENADOR',
           });
 
           // Crear tabla formularios
           await db.execute('''
-            CREATE TABLE formularios (
+            CREATE TABLE $tableFormularios (
               id_formulario INTEGER PRIMARY KEY AUTOINCREMENT,
               titulo TEXT NOT NULL,
               descripcion TEXT,
@@ -111,7 +113,7 @@ Future<Database> get database async {
 
         // Crear tabla preguntas
           await db.execute('''
-            CREATE TABLE preguntas (
+            CREATE TABLE $tablePreguntas(
               id_pregunta INTEGER PRIMARY KEY AUTOINCREMENT,
               formulario_id INTEGER NOT NULL,
               contenido TEXT NOT NULL,
@@ -122,8 +124,8 @@ Future<Database> get database async {
           ''');
 
           // Crear tabla respuestas
-          await db.execute('''
-            CREATE TABLE respuestas (
+          await db.execute(''' 
+            CREATE TABLE $tableRespuestas (
               id_respuesta INTEGER PRIMARY KEY AUTOINCREMENT,
               pregunta_id INTEGER NOT NULL,
               formulario_id INTEGER NOT NULL,
@@ -384,21 +386,20 @@ Future<Database> get database async {
       return EventModel.fromMap(eventosMap[i]);
     });
   }
-  
-}
 
-/*
-  // Métodos para formularios
-  Future<void> insertarFormulario(Formulario formulario) async {
+  /// Métodos para formularios
+  //Insertar formulario
+  Future<void> insertForm(FormModel formulario) async {
     final db = await database;
     await db.insert(
       tableFormularios,
       {
-        'id': formulario.id,
+        'id': formulario.idFormulario,
         'titulo': formulario.titulo,
         'descripcion': formulario.descripcion,
         'fechaCreacion': formulario.fechaCreacion.toIso8601String(),
         'eventoId': formulario.eventoId,
+        'usuarioId': formulario.usuarioId,
         'latitud': formulario.latitud,
         'longitud': formulario.longitud,
         'pathImagen': formulario.pathImagen,
@@ -407,7 +408,7 @@ Future<Database> get database async {
     );
   }
 
-  Future<void> insertarRespuestas(List<Respuesta> respuestas) async {
+  Future<void> insertAnswer(List<AnswerModel> respuestas) async {
     final db = await database;
     Batch batch = db.batch();
     for (var respuesta in respuestas) {
@@ -425,23 +426,26 @@ Future<Database> get database async {
     await batch.commit(noResult: true);
   }
 
-  Future<List<Formulario>> obtenerFormulariosPendientes() async {
+
+  Future<List<FormModel>> getForms() async {
     final db = await database;
     final result = await db.query(tableFormularios);
 
-    return result.map((json) => Formulario(
-      id: json['id'] as int,
+    return result.map((json) => FormModel(
+      idFormulario: json['idFormulario'] as int,
       titulo: json['titulo'] as String,
       descripcion: json['descripcion'] as String,
       fechaCreacion: DateTime.parse(json['fechaCreacion'] as String),
       eventoId: json['eventoId'] as int,
+      usuarioId: json['usuarioId'] as int,
       latitud: json['latitud'] as double?,
       longitud: json['longitud'] as double?,
       pathImagen: json['pathImagen'] as String?,
     )).toList();
   }
 
-  Future<List<Respuesta>> obtenerRespuestasDeFormulario(int formularioId) async {
+
+  Future<List<AnswerModel>> getAnswers(int formularioId) async {
     final db = await database;
     final result = await db.query(
       tableRespuestas,
@@ -449,7 +453,7 @@ Future<Database> get database async {
       whereArgs: [formularioId],
     );
 
-    return result.map((json) => Respuesta(
+    return result.map((json) => AnswerModel(
       id: json['id'] as int,
       preguntaId: json['preguntaId'] as int,
       contenido: json['contenido'] as String,
@@ -457,7 +461,8 @@ Future<Database> get database async {
     )).toList();
   }
 
-  Future<void> eliminarFormularioYRespuestas(int formularioId) async {
+
+  Future<void> deleteFormAnswers(int formularioId) async {
     final db = await database;
     await db.delete(
       tableFormularios,
@@ -470,7 +475,8 @@ Future<Database> get database async {
       whereArgs: [formularioId],
     );
   }
-
+}
+/*
   // Métodos para eventos
   Future<int> insertEvento(EventModel evento) async {
     final db = await database;

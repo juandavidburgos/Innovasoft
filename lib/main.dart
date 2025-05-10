@@ -1,3 +1,5 @@
+import 'package:basic_flutter/pages/caracterization/final_register_page.dart';
+import 'package:basic_flutter/pages/caracterization/trainer_select_event_page.dart';
 import 'package:basic_flutter/pages/home/admin_event_home_page.dart';
 import 'package:basic_flutter/pages/home/admin_trainer_home_page.dart';
 import 'package:basic_flutter/splash_screen.dart';
@@ -11,6 +13,8 @@ import 'pages/assign_trainer/trainer_assignment_page.dart';
 import 'pages/assign_trainer/view_assignment_page.dart';
 import 'pages/disable_event/disable_event_page.dart';
 import 'pages/home/trainer_home_page.dart';
+import 'pages/caracterization/assistence_register_page.dart';
+import 'models/event_model.dart';
 
 void main() {
   runApp(const MyApp());
@@ -27,7 +31,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
       //home: const LoginPage(),
       // Aquí defines la ruta inicial
-      initialRoute: '/admin_home',
+      initialRoute: '/register_asistence',
       
       // Aquí defines todas las rutas disponibles en tu app
       routes: {
@@ -43,7 +47,21 @@ class MyApp extends StatelessWidget {
         '/disable_event': (context) => const DisableEventPage(),
         '/assign_trainer': (context) => const TrainerAssignmentPage(),
         '/view_assign': (context) => const ViewAssignmentPage(),
-        
+        '/register_asistence': (context) {
+            final evento = ModalRoute.of(context)!.settings.arguments as EventModel;
+            return AssistenceRegisterPage(evento: evento);
+          },
+        '/trainer_select_event': (context) => const TrainerSelectEventPage(),
+        '/final_register': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          final asistentes = args['asistentes'] as List<Map<String, dynamic>>;
+          final evento = args['evento'] as EventModel;
+
+          return FinalRegisterPage(
+            asistentes: asistentes,
+            evento: evento,
+          );
+        },
       },
     );
   }
