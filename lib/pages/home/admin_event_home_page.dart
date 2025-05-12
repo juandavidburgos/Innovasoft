@@ -15,10 +15,10 @@ class AdminEventHomePage extends StatelessWidget {
             child: Column(
               children: [
                 Image.asset(
-                  'assets/images/indeportes_logo.png',
+                  'assets/images/logo_indeportes.png',
                   width: 250,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 30),
                 const Text(
                   '“Indeportes somos todos”',
                   style: TextStyle(fontStyle: FontStyle.italic),
@@ -26,7 +26,7 @@ class AdminEventHomePage extends StatelessWidget {
                 const SizedBox(height: 40),
                 MainButton(
                   texto: 'Crear evento',
-                  color: Colors.green,
+                  color: Color(0xFF038C65),
                   onPressed: () {
                     Navigator.pushNamed(context,'/crear_evento');
                   },
@@ -34,7 +34,7 @@ class AdminEventHomePage extends StatelessWidget {
                 const SizedBox(height: 15),
                 MainButton(
                   texto: 'Editar evento',
-                  color: Colors.orange,
+                  color: Color(0xFFF25430),
                   onPressed: () {
                     //Redigir a la pagina
                     Navigator.pushNamed(context, '/edit_event');
@@ -43,7 +43,7 @@ class AdminEventHomePage extends StatelessWidget {
                 const SizedBox(height: 15),
                 MainButton(
                   texto: 'Ver eventos',
-                  color: Colors.blue,
+                  color: Color(0xFF1D5273),
                   onPressed: () {
                     Navigator.pushNamed(context,'/view_event');
                   },
@@ -51,7 +51,7 @@ class AdminEventHomePage extends StatelessWidget {
                 const SizedBox(height: 15),
                 MainButton(
                   texto: 'Deshabilitar evento',
-                  color: Colors.red,
+                  color: Color(0xFFE53935),
                   onPressed: () {Navigator.pushNamed(context, '/disable_event');},
                 ),
                 const SizedBox(height: 35),
@@ -60,7 +60,7 @@ class AdminEventHomePage extends StatelessWidget {
                     Navigator.pushReplacementNamed(context, '/admin_home');
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[800],
+                    backgroundColor: Color(0xFFB71C1C),
                     padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                   ),
                   child: const Text('Salir', style: TextStyle(color: Colors.white)),

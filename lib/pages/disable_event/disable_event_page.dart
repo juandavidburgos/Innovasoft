@@ -82,7 +82,7 @@ class _DisableEventPageState extends State<DisableEventPage> {
                 children: [
                   const SizedBox(height: 20),
                   Image.asset(
-                    'assets/images/indeportes_logo.png',
+                    'assets/images/logo_indeportes.png',
                     width: 200,
                   ),
                   const SizedBox(height: 10),
@@ -161,7 +161,7 @@ class _DisableEventPageState extends State<DisableEventPage> {
                     children: [
                       ActionButton(
                         text: 'VOLVER',
-                        color: Colors.blue,
+                        color: Color(0xFF1D5273),
                         onPressed: () => Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
@@ -171,7 +171,7 @@ class _DisableEventPageState extends State<DisableEventPage> {
                       ),
                       ActionButton(
                         text: 'CONTINUAR',
-                        color: Colors.green,
+                        color: Color(0xFF038C65),
                         onPressed: _goToConfirmPage,
                       ),
                       const SizedBox(height: 20),

@@ -24,13 +24,16 @@ class EventRepository {
   return _localService.eliminarTodosLosEventos();
   }
 
-  Future<int> asignarMonitorAEvento(int eventoId, int monitorId) {
-    return _localService.asignarMonitor(eventoId, monitorId);
+  /*Future<int> asignarEntrenadoresAEvento(int eventoId, List<int> trainerIds) {
+  return _localService.asignarEntrenadores(eventoId, trainerIds);
   }
   
-  Future<List<EventModel>> obtenerEventosConMonitoresAsignados() {
-  return _localService.obtenerEventosConMonitoresAsignados();
+  Future<List<EventModel>> obtenerEventosConEntrenadoresAsignados() {
+  return _localService.obtenerEventosConEntrenadoresAsignados();
   }
 
+  Future<List<Map<String, dynamic>>> obtenerEntrenadoresPorEvento(int eventoId) {
+  return _localService.obtenerEntrenadoresPorEvento(eventoId);
+  }*/
 
 }

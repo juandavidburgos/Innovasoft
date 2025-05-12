@@ -60,7 +60,7 @@ class _EditEventPageState extends State<EditEventPage> {
             key: _formKey,
             child: Column(
               children: [
-                Image.asset('assets/images/indeportes_logo.png', width: 200),
+                Image.asset('assets/images/logo_indeportes.png', width: 200),
                 const SizedBox(height: 10),
                 const Text('“Indeportes somos todos”', style: TextStyle(fontStyle: FontStyle.italic)),
                 const SizedBox(height: 20),
@@ -79,7 +79,7 @@ class _EditEventPageState extends State<EditEventPage> {
                   children: [
                     ActionButton(
                       text: 'ACTUALIZAR',
-                      color: Colors.green,
+                      color: Color(0xFF038C65),
                       onPressed: () async {
                         if (_formKey.currentState!.validate() &&
                             fechaHoraInicio != null &&
@@ -127,7 +127,7 @@ class _EditEventPageState extends State<EditEventPage> {
                     ),
                     ActionButton(
                       text: 'VOLVER',
-                      color: Colors.blue,
+                      color: Color(0xFF1D5273),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
