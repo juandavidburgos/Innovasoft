@@ -48,14 +48,24 @@ class LocalService {
     await DatabaseService.db.deleteAllEvents();
   }
 
-  // Asignar un monitor a un evento
-  Future <int> asignarMonitor (int eventId, int monitorId) async{
-    return await DatabaseService.db.assingTrainer(eventId, monitorId);
+  // Asignar uno o más entrenadores a un evento
+  Future<int> asignarEntrenadores(int eventId, List<int> trainerIds) async {
+    return await DatabaseService.db.assignTrainers(eventId, trainerIds);
   }
 
-  //Obtener eventos con sus respectivos monitores asignados
-  Future<List<EventModel>> obtenerEventosConMonitoresAsignados() async{
-    return await DatabaseService.db.getAssingsEvents();
+  // Obtener eventos que tienen al menos un entrenador asignado
+  /*Future<List<EventModel>> obtenerEventosConEntrenadoresAsignados() async {
+    return await DatabaseService.db.getAssignedEvents();
+  }*/
+  Future<List<Map<String, dynamic>>> obtenerEventosConEntrenadoresAsignados() async {
+  // Llamamos al método de la base de datos para traer los eventos y los entrenadores
+  return await DatabaseService.db.getAssignedEvents();
+
+  }
+
+  // Obtener los entrenadores asignados a un evento específico
+  Future<List<Map<String, dynamic>>> obtenerEntrenadoresPorEvento(int eventId) async {
+    return await DatabaseService.db.getTrainersByEventId(eventId);
   }
 
   ///Métodos asociados a los usuarios

@@ -15,6 +15,7 @@ class DatabaseService {
 
   static const String tableEventos = 'eventos';
   static const String tableUsuarios = 'usuarios';
+  static const String tableAsignaciones = 'asignaciones';
   static const String tableFormularios = 'formularios';
   static const String tablePreguntas = 'preguntas';
   static const String tableRespuestas = 'respuestas';
@@ -24,7 +25,7 @@ class DatabaseService {
   Future<void> deleteDB() async {
     try {
       // Obtén la ruta de la base de datos
-      final path = join(await getDatabasesPath(), 'eventos.db');
+      final path = join(await getDatabasesPath(), 'app.db');
       
       // Elimina la base de datos
       await deleteDatabase(path);
@@ -44,6 +45,8 @@ Future<Database> get database async {
     try {
       final path = join(await getDatabasesPath(), 'app.db');
 
+      //await deleteDB();
+
       return await openDatabase(
         path,
         version: 2,
@@ -57,9 +60,7 @@ Future<Database> get database async {
               fecha_hora_fin TEXT NOT NULL,
               ubicacion TEXT NOT NULL,
               descripcion TEXT,  -- Nueva columna para la descripción del evento
-              id_usuario INTEGER,
-              estado TEXT CHECK(estado IN ('activo', 'inactivo')) DEFAULT 'activo',
-              FOREIGN KEY (id_usuario) REFERENCES usuarios (id_usuario)
+              estado TEXT CHECK(estado IN ('activo', 'inactivo')) DEFAULT 'activo'
             );
           ''');
 
@@ -85,14 +86,50 @@ Future<Database> get database async {
             'nombre': 'Laura Pérez',
             'email': 'laura@uni.edu',
             'contrasena': 'holis1wrewe233',
-            'rol': 'ADMINISTRADOR',
+            'rol': 'ENTRENADOR',
+          });
+          await db.insert(tableUsuarios, {
+            'nombre': 'Matias Acosta',
+            'email': 'matias@uni.edu',
+            'contrasena': 'holis12wer33',
+            'rol': 'ENTRENADOR',
+          });
+          await db.insert(tableUsuarios, {
+            'nombre': 'Henry Zapata',
+            'email': 'henry@uni.edu',
+            'contrasena': 'holis1wrewe233',
+            'rol': 'ENTRENADOR',
+          });
+          await db.insert(tableUsuarios, {
+            'nombre': 'Lucas Araujo',
+            'email': 'lucas@uni.edu',
+            'contrasena': 'holis12wer33',
+            'rol': 'ENTRENADOR',
+          });
+          await db.insert(tableUsuarios, {
+            'nombre': 'Maria Dolores',
+            'email': 'maria@uni.edu',
+            'contrasena': 'holis1wrewe233',
+            'rol': 'ENTRENADOR',
           });
           await db.insert(tableUsuarios, {
             'nombre': 'Admin General',
             'email': 'admin@uni.edu',
             'contrasena': 'holisewrwe1233',
-            'rol': 'ENTRENADOR',
+            'rol': 'ADMINISTRADOR',
           });
+
+          // Crear tabla evento_entrenadores (relación muchos a muchos entre eventos y entrenadores)
+          await db.execute('''
+            CREATE TABLE $tableAsignaciones (
+              id_asignacion  INTEGER PRIMARY KEY AUTOINCREMENT,
+              id_evento INTEGER NOT NULL,
+              id_usuario INTEGER NOT NULL,
+              FOREIGN KEY (id_evento) REFERENCES $tableEventos(id_evento),
+              FOREIGN KEY (id_usuario) REFERENCES $tableUsuarios(id_usuario),
+              UNIQUE(id_evento, id_usuario) -- Evita duplicados
+            );
+          ''');
 
           // Crear tabla formularios
           await db.execute('''
@@ -351,40 +388,111 @@ Future<Database> get database async {
     return maps.isNotEmpty;
   }
 
-  /// Asigna un monitor a un evento, actualizando el campo `id_usuario` del evento.
+  ///Metodos para asignacion
+  /// Asigna uno o más entrenadores a un evento insertando registros en la tabla `asignaciones`.
+  ///
+  /// [eventoId] es el ID del evento.
+  /// [trainerIds] es una lista de IDs de entrenadores a asignar.
   /// 
-  /// [eventoId] es el ID del evento al que se le asignará el monitor.
-  /// [monitorId] es el ID del monitor (usuario) que se asignará al evento.
-  /// 
-  /// Retorna el número de filas afectadas (1 si la asignación fue exitosa).
-  Future<int> assingTrainer(int eventoId, int monitorId) async {
+  /// Retorna el número de asignaciones insertadas correctamente.
+  Future<int> assignTrainers(int eventoId, List<int> trainerIds) async {
     final db = await database;
+    int count = 0;
 
-    // Actualizamos el campo `id_usuario` del evento con el ID del monitor.
-    return await db.update(
-      tableEventos,
-      {'id_usuario': monitorId}, // Asignamos el ID del monitor al campo id_usuario
-      where: 'id_evento = ?',
-      whereArgs: [eventoId],
-    );
+    for (int trainerId in trainerIds) {
+      try {
+        await db.insert(
+          tableAsignaciones,
+          {
+            'id_evento': eventoId,
+            'id_usuario': trainerId,
+          },
+          conflictAlgorithm: ConflictAlgorithm.ignore, // Ignora si ya existe
+        );
+        count++;
+      } catch (e) {
+        // Si hay un error (como violación UNIQUE), lo ignoramos aquí
+        // Registro del error para depuración
+        print("Error al asignar entrenador (ID: $trainerId) a evento (ID: $eventoId): $e");
+        }
+    }
+
+    return count;
   }
 
-  /// Obtiene todos los eventos que tienen un monitor asignado (id_usuario no es nulo).
+  /// Obtiene todos los eventos que tienen al menos un entrenador asignado.
   /// 
-  /// Retorna una lista de [EventModel] con los eventos que tienen un monitor asignado.
-  Future<List<EventModel>> getAssingsEvents() async {
+  /// Retorna una lista de [EventModel].
+  Future<List<Map<String, dynamic>>> getAssignedEvents() async {
     final db = await database;
 
-    // Realizamos una consulta para obtener solo los eventos donde `id_usuario` no sea nulo.
-    final List<Map<String, dynamic>> eventosMap = await db.query(
-      tableEventos,
-      where: 'id_usuario IS NOT NULL', // Solo seleccionamos eventos con un monitor asignado
-    );
+    final result = await db.rawQuery('''
+      SELECT 
+        e.*, 
+        GROUP_CONCAT(u.nombre, ', ') AS entrenadores
+      FROM $tableEventos e
+      INNER JOIN $tableAsignaciones a ON e.id_evento = a.id_evento
+      INNER JOIN $tableUsuarios u ON a.id_usuario = u.id_usuario
+      GROUP BY e.id_evento
+    ''');
 
-    // Convertimos los resultados de la consulta a una lista de EventModel
-    return List.generate(eventosMap.length, (i) {
-      return EventModel.fromMap(eventosMap[i]);
-    });
+    return result.map((map) {
+      DateTime? fechaHoraInicio;
+      DateTime? fechaHoraFin;
+
+      final rawInicio = map['fecha_hora_inicio'];
+      final rawFin = map['fecha_hora_fin'];
+
+      try {
+        fechaHoraInicio = DateTime.parse(rawInicio.toString());
+        fechaHoraFin = DateTime.parse(rawFin.toString());
+      } catch (_) {
+        try {
+          final format = DateFormat('dd-MM-yyyy HH:mm');
+          fechaHoraInicio = format.parse(rawInicio.toString());
+          fechaHoraFin = format.parse(rawFin.toString());
+        } catch (_) {
+          fechaHoraInicio = DateTime.now();
+          fechaHoraFin = DateTime.now().add(Duration(hours: 1));
+        }
+      }
+
+      return {
+        'evento': EventModel(
+          idEvento: int.tryParse(map['id_evento']?.toString() ?? '') ?? null, // Usamos tryParse para convertir
+          nombre: map['nombre']?.toString() ?? '', // Convertimos a String
+          descripcion: map['descripcion']?.toString() ?? '', // Convertimos a String
+          ubicacion: map['ubicacion']?.toString() ?? '', // Convertimos a String
+          fechaHoraInicio: fechaHoraInicio!,
+          fechaHoraFin: fechaHoraFin!,
+          estado: map['estado']?.toString() ?? '', // Convertimos a String
+        ),
+        'entrenadores': map['entrenadores'], // String con los nombres
+      };
+    }).toList();
+  }
+
+
+  ///ES UNA OPCION
+  /// Obtiene la lista de entrenadores asignados a un evento específico.
+  ///
+  /// [eventoId] es el ID del evento.
+  /// Retorna una lista de mapas con los datos de los entrenadores.
+  Future<List<Map<String, dynamic>>> getTrainersByEventId(int eventoId) async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> result = await db.rawQuery('''
+      SELECT u.* FROM $tableUsuarios u
+      INNER JOIN $tableAsignaciones a ON u.id_usuario = a.id_usuario
+      WHERE a.id_evento = ?
+    ''', [eventoId]);
+
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getAllAssignments() async {
+  final db = await database;
+  return await db.query(tableAsignaciones);
   }
 
   /// Métodos para formularios

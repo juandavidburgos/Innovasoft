@@ -138,7 +138,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 Center(
                   child: Column(
                     children: [
-                      Image.asset('assets/images/indeportes_logo.png', height: 100),
+                      Image.asset('assets/images/logo_indeportes.png', height: 100),
                       const Text('"Indeportes somos todos"',
                           style: TextStyle(fontStyle: FontStyle.italic)),
                       const SizedBox(height: 20),
@@ -225,12 +225,12 @@ class _CreateEventPageState extends State<CreateEventPage> {
                   children: [
                     ActionButton(
                       text: 'GUARDAR',
-                      color: Colors.green,
+                      color: Color(0xFF038C65),
                       onPressed: _guardarEvento,
                     ),
                     ActionButton(
                       text: 'VOLVER',
-                      color: Colors.blue,
+                      color: Color(0xFF1D5273),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],

@@ -25,7 +25,7 @@ class AdminTrainerHomePage extends StatelessWidget {
                 const SizedBox(height: 15),
                 MainButton(
                   texto: 'Asignar entrenador',
-                  color: Colors.green,
+                  color: Color(0xFF038C65),
                   onPressed: () {
                     Navigator.pushNamed(context, '/assign_trainer');
                   },
@@ -33,7 +33,7 @@ class AdminTrainerHomePage extends StatelessWidget {
                 const SizedBox(height: 15),
                 MainButton(
                   texto: 'Editar asignacion entrenador',
-                  color: Colors.orange,
+                  color: Color(0xFFF25430),
                   onPressed: () {
                     //Redigir a la pagina
                     Navigator.pushNamed(context, '/edit_event');
@@ -42,7 +42,7 @@ class AdminTrainerHomePage extends StatelessWidget {
                 const SizedBox(height: 15),
                 MainButton(
                   texto: 'Ver asignaciones',
-                  color: Colors.blue,
+                  color: Color(0xFF1D5273),
                   onPressed: () {
                     //Redigir a la pagina
                     Navigator.pushNamed(context, '/view_assign');

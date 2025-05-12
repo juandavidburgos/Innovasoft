@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
       //home: const LoginPage(),
       // Aquí defines la ruta inicial
-      initialRoute: '/register_asistence',
+      initialRoute: '/admin_home',
       
       // Aquí defines todas las rutas disponibles en tu app
       routes: {
