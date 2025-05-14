@@ -78,8 +78,11 @@ void _iniciarSesion() async {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('assets/images/indeportes_logo.png', height: 180),
-                const SizedBox(height: 10),
+                Image.asset(
+                  'assets/images/logo_indeportes.png',
+                  width: 250,
+                ),
+                const SizedBox(height: 20),
                 const Text(
                   '“Indeportes somos todos”',
                   style: TextStyle(fontStyle: FontStyle.italic),
@@ -87,59 +90,85 @@ void _iniciarSesion() async {
                 const SizedBox(height: 30),
                 const Text(
                   'Iniciar sesión',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
 
-                // Campo de correo electrónico con validación
-                TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: 'Correo electrónico',
-                    hintText: 'Ingrese su correo...',
-                    border: OutlineInputBorder(),
+                // Campo de correo electrónico
+                Align(
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    width: 300,
+                    child: TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Correo electrónico',
+                        hintText: 'Ingrese su correo...',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (val) {
+                        if (val == null || val.isEmpty) {
+                          return 'Por favor ingresa tu correo';
+                        }
+                        if (!val.contains('@')) {
+                          return 'Correo inválido';
+                        }
+                        return null;
+                      },
+                      onSaved: (val) => _email = val!,
+                    ),
                   ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (val) {
-                    if (val == null || val.isEmpty) {
-                      return 'Por favor ingresa tu correo';
-                    }
-                    if (!val.contains('-')) {
-                      return 'Correo inválido';
-                    }
-                    return null;
-                  },
-                  onSaved: (val) => _email = val!,
                 ),
                 const SizedBox(height: 16),
 
-                // Campo de contraseña con validación
-                TextFormField(
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Contraseña',
-                    hintText: 'Ingrese la contraseña...',
-                    border: OutlineInputBorder(),
+                // Campo de contraseña
+                Align(
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    width: 300,
+                    child: TextFormField(
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Contraseña',
+                        hintText: 'Ingrese la contraseña...',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (val) {
+                        if (val == null || val.isEmpty) {
+                          return 'Por favor ingresa tu contraseña';
+                        }
+                        if (val.length < 6) {
+                          return 'La contraseña debe tener al menos 6 caracteres';
+                        }
+                        return null;
+                      },
+                      onSaved: (val) => _password = val!,
+                    ),
                   ),
-                  validator: (val) {
-                    if (val == null || val.isEmpty) {
-                      return 'Por favor ingresa tu contraseña';
-                    }
-                    if (val.length < 6) {
-                      return 'La contraseña debe tener al menos 6 caracteres';
-                    }
-                    return null;
-                  },
-                  onSaved: (val) => _password = val!,
                 ),
                 const SizedBox(height: 24),
 
-                ElevatedButton(
-                  onPressed: _iniciarSesion,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    minimumSize: const Size(double.infinity, 50),
+                // Botón ingresar más estrecho
+                Align(
+                  alignment: Alignment.center,
+                  child: SizedBox(
+                    width: 180,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: _iniciarSesion,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2E7D32), // verde oscuro
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: const Text(
+                        'INGRESAR',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
                   ),
-                  child: const Text('INGRESAR', style: TextStyle(color: Colors.white)),
                 ),
                 const SizedBox(height: 16),
 
@@ -162,5 +191,6 @@ void _iniciarSesion() async {
       ),
     );
   }
+
 }
 
