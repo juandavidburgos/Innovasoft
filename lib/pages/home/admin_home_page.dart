@@ -1,4 +1,3 @@
-import 'package:basic_flutter/pages/widgets/action_button.dart';
 import 'package:basic_flutter/pages/widgets/logout_button.dart';
 import 'package:flutter/material.dart';
 import '../widgets/main_button.dart';
@@ -14,7 +13,7 @@ class AdminHomePage extends StatelessWidget {
           children: [
             // Botón logout (arriba a la derecha)
             Positioned(
-              top: 0, // sobresale hacia arriba
+              top: 10, // sobresale hacia arriba
               left: -20, // sobresale hacia la izquierda
               child: LogoutIconButton(
                 ancho: 65,

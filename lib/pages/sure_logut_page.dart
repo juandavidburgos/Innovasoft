@@ -1,3 +1,4 @@
+import 'package:basic_flutter/pages/widgets/action_button.dart';
 import 'package:flutter/material.dart';
 
 /// Página para confirmar si realmente se desea cerrar sesión.
@@ -25,24 +26,20 @@ class ConfirmLogoutPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 // Botón Cancelar
-                ElevatedButton(
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    overlayColor: Colors.blueGrey,
-                  ),
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancelar", style: TextStyle(color: Colors.white)),
+                ActionButton(
+                  text: "Cancelar",
+                  color: Color(0xFF1A3E58),
+                  onPressed: (){
+                    Navigator.pushReplacementNamed(context, "/admin_home");
+                  }
                 ),
                 // Botón Confirmar
-                ElevatedButton(
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 107, 107, 107),
-                    overlayColor: Colors.blueGrey,
-                  ),
+                ActionButton(
+                  text: "Confirmar",
+                  color: Color.fromARGB(255, 134, 134, 134),
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/');
+                    Navigator.pushReplacementNamed(context, '/trainer_home');
                   },
-                  child: const Text("Confirmar", style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),

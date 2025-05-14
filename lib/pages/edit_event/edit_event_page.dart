@@ -78,8 +78,10 @@ class _EditEventPageState extends State<EditEventPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ActionButton(
-                      text: 'ACTUALIZAR',
+                      text: 'Actualizar',
                       color: Color(0xFF038C65),
+                      ancho: 145,
+                      alto: 48,
                       onPressed: () async {
                         if (_formKey.currentState!.validate() &&
                             fechaHoraInicio != null &&
@@ -126,8 +128,11 @@ class _EditEventPageState extends State<EditEventPage> {
                       },
                     ),
                     ActionButton(
-                      text: 'VOLVER',
-                      color: Color(0xFF1D5273),
+                      text: 'Regresar',
+                      color: Color.fromARGB(255, 134, 134, 134),
+                      icono: Icons.arrow_back,
+                      ancho: 145,
+                      alto: 48,
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],

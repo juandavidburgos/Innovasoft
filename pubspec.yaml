@@ -19,6 +19,7 @@ dependencies:
   shared_preferences: ^2.2.2
   geolocator: ^10.1.0
   image_picker: ^1.0.4
+  geocoding: ^2.1.0
 
 
 dev_dependencies:

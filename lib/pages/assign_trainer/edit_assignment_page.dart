@@ -1,3 +1,4 @@
+import 'package:basic_flutter/pages/widgets/main_button.dart';
 import 'package:flutter/material.dart';
 import '../../repositories/assignment_repository.dart';
 import '../../repositories/user_repository.dart';
@@ -109,10 +110,11 @@ class _EditTrainerAssignmentPageState extends State<EditTrainerAssignmentPage> {
             key: _formKey,
             child: Column(
               children: [
+                const SizedBox(height: 140),
                 Image.asset('assets/images/logo2_indeportes.png', width: 400),
                 const SizedBox(height: 10),
                 const Text('“Indeportes somos todos”', style: TextStyle(fontStyle: FontStyle.italic)),
-                const SizedBox(height: 20),
+                const SizedBox(height: 40),
                 const Text('Editar Asignación de Entrenadores', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 20),
 
@@ -127,24 +129,26 @@ class _EditTrainerAssignmentPageState extends State<EditTrainerAssignmentPage> {
                         _buildTrainerDropdown(i),
                         const SizedBox(height: 15),
                       ],
-                      const SizedBox(height: 20),
-                      ActionButton(
-                        text: 'AGREGAR MÁS ENTRENADORES',
-                        color: Color(0xFF038C65),
+                      MainButton(
+                        texto: 'Agregar un entrenador más',
+                        color: Color(0xFF1A3E58),
                         onPressed: _agregarEntrenador,
                       ),
                       const SizedBox(height: 30),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          ActionButton(
-                            text: 'ACTUALIZAR',
+                          MainButton(
+                            texto: 'Actualizar',
                             color: Color(0xFF038C65),
                             onPressed: _actualizarAsignacion,
                           ),
                           ActionButton(
-                            text: 'VOLVER',
-                            color: Color(0xFF1D5273),
+                            text: 'Regresar',
+                            color: Color.fromARGB(255, 134, 134, 134),
+                            icono: Icons.arrow_back,
+                            ancho: 145,
+                            alto: 48,
                             onPressed: () => Navigator.pop(context),
                           ),
                         ],

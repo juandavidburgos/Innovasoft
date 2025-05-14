@@ -1,10 +1,13 @@
 import 'package:basic_flutter/models/answer_model.dart';
 import 'package:basic_flutter/models/form_model.dart';
+import 'package:basic_flutter/pages/widgets/main_button.dart';
 import 'package:basic_flutter/repositories/register_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:basic_flutter/models/event_model.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:geocoding/geocoding.dart';
+
 
 
 class FinalRegisterPage extends StatefulWidget {
@@ -29,6 +32,7 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
   double? latitud;
   double? longitud;
   String? pathImagen;
+  String? ubicacionNombre;
 
   @override
   void initState() {
@@ -93,12 +97,23 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
       return;
     }
 
+    // Obtener coordenadas
     Position posicion = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    // Geocodificación inversa
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      posicion.latitude,
+      posicion.longitude,
+    );
+
+    Placemark lugar = placemarks.first;
 
     setState(() {
       latitud = posicion.latitude;
       longitud = posicion.longitude;
+      ubicacionNombre = '${lugar.locality}, ${lugar.administrativeArea}'; // ej. Popayán, Cauca
     });
   }
 
@@ -160,61 +175,70 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Indeportes Cauca'),
-        backgroundColor: const Color(0xFF004A7F),
-        centerTitle: true,
+        title: const Text(
+          'Registro de comprobación',
+          style: TextStyle(color: Colors.white)),
+        backgroundColor: Color(0xFF1A3E58),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Center(
-              child: Text(
-                'Registro final',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
+
+            const Divider(thickness: 1.5, color: Color(0xFFCCCCCC), height: 30),
+
             Text(
-              'Nombre: $nombreUsuario',
-              style: const TextStyle(fontSize: 16),
+              'Usuario: $nombreUsuario',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 30),
-            _buildStyledButton('Registrar ubicación', const Color(0xFF00944C), _obtenerUbicacion),
-            if (latitud != null && longitud != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text('Ubicación: ($latitud, $longitud)', style: const TextStyle(fontSize: 14)),
+
+            const Divider(thickness: 1.5, color: Color(0xFFCCCCCC), height: 30),
+
+            // Bloque central centrado vertical y horizontalmente
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildStyledButton('Registrar mi ubicación', const Color(0xFF1A3E58), _obtenerUbicacion, Icons.location_city),
+                    if (ubicacionNombre != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text('Coordenadas: ($latitud, $longitud) \n Ubicación: $ubicacionNombre', style: const TextStyle(fontSize: 14)),
+                      ),
+                    const SizedBox(height: 30),
+                    _buildStyledButton('Cargar imagen grupal', const Color(0xFF1A3E58), _cargarImagen, Icons.upload),
+                    if (pathImagen != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text('Imagen: $pathImagen', style: const TextStyle(fontSize: 14)),
+                      ),
+                    const SizedBox(height: 60),
+                    _buildStyledButton('Enviar reporte', const Color(0xFF00944C), _guardarReporte, Icons.save),
+                  ],
+                ),
               ),
-            const SizedBox(height: 30),
-            _buildStyledButton('Cargar imagen grupal', const Color(0xFF004A7F), _cargarImagen),
-            if (pathImagen != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text('Imagen: $pathImagen', style: const TextStyle(fontSize: 14)),
-              ),
-            const Spacer(),
-            _buildStyledButton('Enviar reporte', const Color(0xFF00944C), _guardarReporte),
+            ),
           ],
         ),
       ),
+
+
     );
   }
 
-  Widget _buildStyledButton(String text, Color color, VoidCallback onPressed) {
-    return ElevatedButton(
+  Widget _buildStyledButton(String text, Color color, VoidCallback onPressed, IconData icono) {
+    return MainButton(
       onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
-        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-      ),
-      child: Text(text),
+      color: color,
+      texto:text,
+      ancho:250,
+      alto:60,
+      icono: icono,
     );
   }
 
