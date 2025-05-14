@@ -20,10 +20,21 @@ class AssignmentRepository {
     return _localService.obtenerEventosConEntrenadoresAsignados();
   }
 
-  /// Obtiene entrenadores asignados a un evento específico
+  /// Actualiza la lista de entrenadores asignados a un evento
+  Future<bool> actualizarAsignacionesDeEvento(int eventoId, List<int> trainerIds) {
+    return _localService.actualizarAsignacionesDeEvento(eventoId, trainerIds);
+  }
+
+  /// Obtiene las asignaciones con el nombre del evento (para dropdown)
+  Future<List<Map<String, dynamic>>> obtenerAsignacionesConNombreEvento() {
+    return _localService.obtenerAsignacionesConNombreEvento();
+  }
+
+  /// Obtiene los entrenadores asignados a un evento específico
   Future<List<Map<String, dynamic>>> obtenerEntrenadoresPorEvento(int eventoId) {
     return _localService.obtenerEntrenadoresPorEvento(eventoId);
   }
+
   /// (Opcional) Método para eliminar una asignación
   /*Future<int> eliminarAsignacion(int idAsignacion) {
     return _localService.eliminarAsignacion(idAsignacion);

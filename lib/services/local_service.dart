@@ -63,9 +63,19 @@ class LocalService {
 
   }
 
-  // Obtener los entrenadores asignados a un evento específico
+  // Actualizar asignaciones de entrenadores para un evento
+  Future<bool> actualizarAsignacionesDeEvento(int eventId, List<int> trainerIds) async {
+    return await DatabaseService.db.updateEventAssignments(eventId, trainerIds);
+  }
+
+  // Obtener lista de eventos que tienen entrenadores asignados (para mostrar en un dropdown)
+  Future<List<Map<String, dynamic>>> obtenerAsignacionesConNombreEvento() async {
+    return await DatabaseService.db.getAsignacionesConNombreEvento();
+  }
+
+  // Obtener entrenadores asignados a un evento específico
   Future<List<Map<String, dynamic>>> obtenerEntrenadoresPorEvento(int eventId) async {
-    return await DatabaseService.db.getTrainersByEventId(eventId);
+    return await DatabaseService.db.getTrainersByEvento(eventId);
   }
 
   ///Métodos asociados a los usuarios

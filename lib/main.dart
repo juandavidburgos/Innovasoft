@@ -11,6 +11,7 @@ import 'pages/create_event/view_events_page.dart';
 import 'pages/edit_event/edit_event_page.dart';
 import 'pages/assign_trainer/trainer_assignment_page.dart';
 import 'pages/assign_trainer/view_assignment_page.dart';
+import 'pages/assign_trainer/edit_assignment_page.dart';
 import 'pages/disable_event/disable_event_page.dart';
 import 'pages/home/trainer_home_page.dart';
 import 'pages/caracterization/assistence_register_page.dart';
@@ -47,6 +48,7 @@ class MyApp extends StatelessWidget {
         '/disable_event': (context) => const DisableEventPage(),
         '/assign_trainer': (context) => const TrainerAssignmentPage(),
         '/view_assign': (context) => const ViewAssignmentPage(),
+        '/edit_assign': (context) => const EditTrainerAssignmentPage(),
         '/register_asistence': (context) {
             final evento = ModalRoute.of(context)!.settings.arguments as EventModel;
             return AssistenceRegisterPage(evento: evento);

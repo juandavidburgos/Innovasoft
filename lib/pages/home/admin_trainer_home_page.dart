@@ -36,7 +36,7 @@ class AdminTrainerHomePage extends StatelessWidget {
                   color: Color(0xFFF25430),
                   onPressed: () {
                     //Redigir a la pagina
-                    Navigator.pushNamed(context, '/edit_event');
+                    Navigator.pushNamed(context, '/edit_assign');
                   },
                 ),
                 const SizedBox(height: 15),

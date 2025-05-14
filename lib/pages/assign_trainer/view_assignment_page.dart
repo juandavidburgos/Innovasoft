@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../models/event_model.dart';
 import '../../repositories/assignment_repository.dart';
 
@@ -23,6 +24,21 @@ class _ViewAssignmentPageState extends State<ViewAssignmentPage> {
   Future<void> _cargarEventosAsignados() async {
     try {
       final eventos = await _assignmentRepo.obtenerEventosConEntrenadoresAsignados();
+
+      eventos.sort((a, b) {
+        final eventoA = a['evento'] as EventModel;
+        final eventoB = b['evento'] as EventModel;
+
+        // Ordenar por estado: activos primero
+        if (eventoA.estado != eventoB.estado) {
+          if (eventoA.estado == 'activo') return -1;
+          if (eventoB.estado == 'activo') return 1;
+        }
+
+        // Si el estado es igual, ordenar por fecha de inicio
+        return eventoA.fechaHoraInicio.compareTo(eventoB.fechaHoraInicio);
+      });
+
       setState(() {
         _eventosAsignados = eventos;
       });
@@ -32,6 +48,11 @@ class _ViewAssignmentPageState extends State<ViewAssignmentPage> {
         const SnackBar(content: Text('Error al cargar los eventos asignados.')),
       );
     }
+  }
+
+  String formatearFecha(DateTime fecha) {
+    final formato = DateFormat('dd/MM/yyyy HH:mm');
+    return formato.format(fecha);
   }
 
   @override
@@ -62,8 +83,8 @@ class _ViewAssignmentPageState extends State<ViewAssignmentPage> {
                         subtitle: Text(
                           'Ubicación: ${evento.ubicacion}\n'
                           'Descripción: ${evento.descripcion}\n'
-                          'Inicio: ${evento.fechaHoraInicio}\n'
-                          'Fin: ${evento.fechaHoraFin}\n'
+                          'Inicio: ${formatearFecha(evento.fechaHoraInicio)}\n'
+                          'Fin: ${formatearFecha(evento.fechaHoraFin)}\n'
                           'Entrenadores: $entrenadores',
                         ),
                         trailing: Text(

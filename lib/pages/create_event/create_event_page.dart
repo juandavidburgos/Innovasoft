@@ -20,7 +20,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
   final _formKey = GlobalKey<FormState>();
   final EventRepository _repo = EventRepository();
 
-  //final DateFormat _dateFormat = DateFormat('dd-MM-yyyy');
   final DateFormat _dateTimeFormat = DateFormat('dd-MM-yyyy HH:mm');
 
   String _name = '';
@@ -156,7 +155,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 const SizedBox(height: 16),
                 TextFormField(
                   decoration: _inputDecoration('Descripción'),
-                  //onSaved: (val) {},
                   onSaved: (val) => _descripcion = val ?? '',
                 ),
                 const SizedBox(height: 16),
@@ -214,8 +212,15 @@ class _CreateEventPageState extends State<CreateEventPage> {
                     child: TextFormField(
                       controller: _endDateTimeController,
                       decoration: _inputDecoration('Fecha y hora de finalización'),
-                      validator: (_) =>
-                          _endDateTime == null ? 'Este campo es obligatorio' : null,
+                      validator: (_) {
+                        if (_endDateTime == null) {
+                          return 'Este campo es obligatorio';
+                        }
+                        if (_endDateTime!.isBefore(_startDateTime!)) {
+                          return 'La fecha de finalización no puede ser anterior a la fecha de inicio';
+                        }
+                        return null;
+                      },
                     ),
                   ),
                 ),
@@ -243,4 +248,3 @@ class _CreateEventPageState extends State<CreateEventPage> {
     );
   }
 }
-

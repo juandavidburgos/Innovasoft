@@ -422,7 +422,7 @@ Future<Database> get database async {
 
   /// Obtiene todos los eventos que tienen al menos un entrenador asignado.
   /// 
-  /// Retorna una lista de [EventModel].
+  /// Retorna una lista de [EventModel] y el nombre de los entrenadores.
   Future<List<Map<String, dynamic>>> getAssignedEvents() async {
     final db = await database;
 
@@ -472,27 +472,79 @@ Future<Database> get database async {
     }).toList();
   }
 
-
-  ///ES UNA OPCION
-  /// Obtiene la lista de entrenadores asignados a un evento específico.
+  /// Actualiza las asignaciones de entrenadores para un evento.
+  /// Primero elimina las asignaciones existentes y luego inserta las nuevas.
   ///
   /// [eventoId] es el ID del evento.
-  /// Retorna una lista de mapas con los datos de los entrenadores.
-  Future<List<Map<String, dynamic>>> getTrainersByEventId(int eventoId) async {
+  /// [trainerIds] es la nueva lista de IDs de entrenadores.
+  ///
+  /// Retorna `true` si la operación fue exitosa, `false` si falló.
+  Future<bool> updateEventAssignments(int eventoId, List<int> trainerIds) async {
     final db = await database;
 
-    final List<Map<String, dynamic>> result = await db.rawQuery('''
-      SELECT u.* FROM $tableUsuarios u
-      INNER JOIN $tableAsignaciones a ON u.id_usuario = a.id_usuario
-      WHERE a.id_evento = ?
-    ''', [eventoId]);
+    try {
+      // Iniciar una transacción para mantener la integridad
+      await db.transaction((txn) async {
+        // Eliminar asignaciones existentes para el evento
+        await txn.delete(
+          tableAsignaciones,
+          where: 'id_evento = ?',
+          whereArgs: [eventoId],
+        );
+
+        // Insertar las nuevas asignaciones
+        for (int trainerId in trainerIds) {
+          await txn.insert(
+            tableAsignaciones,
+            {
+              'id_evento': eventoId,
+              'id_usuario': trainerId,
+            },
+            conflictAlgorithm: ConflictAlgorithm.ignore,
+          );
+        }
+      });
+
+      return true;
+    } catch (e) {
+      print('Error al actualizar asignaciones del evento $eventoId: $e');
+      return false;
+    }
+  }
+
+  /// Obtiene la lista de asignaciones con el nombre del evento.
+  /// 
+  /// Retorna una lista de mapas con `id_evento` y `nombre_evento`.
+  Future<List<Map<String, dynamic>>> getAsignacionesConNombreEvento() async {
+    final db = await database;
+
+    final result = await db.rawQuery('''
+      SELECT DISTINCT e.id_evento, e.nombre
+      FROM $tableAsignaciones a
+      INNER JOIN $tableEventos e ON a.id_evento = e.id_evento
+      WHERE e.estado = 'activo'
+      ORDER BY e.nombre
+    ''');
 
     return result;
   }
 
-  Future<List<Map<String, dynamic>>> getAllAssignments() async {
-  final db = await database;
-  return await db.query(tableAsignaciones);
+  /// Obtiene los entrenadores asignados a un evento específico.
+  /// 
+  /// [eventoId] es el ID del evento seleccionado.
+  ///
+  /// Retorna una lista de mapas con los datos de los entrenadores.
+  Future<List<Map<String, dynamic>>> getTrainersByEvento(int eventoId) async {
+    final db = await database;
+
+    final result = await db.rawQuery('''
+      SELECT u.id_usuario, u.nombre
+      FROM $tableAsignaciones a
+      INNER JOIN $tableUsuarios u ON a.id_usuario = u.id_usuario
+      WHERE a.id_evento = ?
+    ''', [eventoId]);
+
+    return result;
   }
 
   /// Métodos para formularios
