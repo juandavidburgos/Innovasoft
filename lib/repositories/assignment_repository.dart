@@ -24,7 +24,6 @@ class AssignmentRepository {
   Future<List<Map<String, dynamic>>> obtenerEntrenadoresPorEvento(int eventoId) {
     return _localService.obtenerEntrenadoresPorEvento(eventoId);
   }
-
   /// (Opcional) Método para eliminar una asignación
   /*Future<int> eliminarAsignacion(int idAsignacion) {
     return _localService.eliminarAsignacion(idAsignacion);

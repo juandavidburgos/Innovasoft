@@ -158,34 +158,65 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Registro final')),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Indeportes Cauca'),
+        backgroundColor: const Color(0xFF004A7F),
+        centerTitle: true,
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Nombre: $nombreUsuario'),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _obtenerUbicacion,
-              child: const Text('Registrar ubicación'),
+            const Center(
+              child: Text(
+                'Registro final',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
             ),
+            const SizedBox(height: 30),
+            Text(
+              'Nombre: $nombreUsuario',
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 30),
+            _buildStyledButton('Registrar ubicación', const Color(0xFF00944C), _obtenerUbicacion),
             if (latitud != null && longitud != null)
-              Text('Ubicación: ($latitud, $longitud)'),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _cargarImagen,
-              child: const Text('Cargar imagen grupal'),
-            ),
-            if (pathImagen != null) Text('Imagen: $pathImagen'),
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text('Ubicación: ($latitud, $longitud)', style: const TextStyle(fontSize: 14)),
+              ),
+            const SizedBox(height: 30),
+            _buildStyledButton('Cargar imagen grupal', const Color(0xFF004A7F), _cargarImagen),
+            if (pathImagen != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text('Imagen: $pathImagen', style: const TextStyle(fontSize: 14)),
+              ),
             const Spacer(),
-            ElevatedButton(
-              onPressed: () => _guardarReporte(),
-              child: const Text('Enviar reporte'),
-            ),
+            _buildStyledButton('Enviar reporte', const Color(0xFF00944C), _guardarReporte),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildStyledButton(String text, Color color, VoidCallback onPressed) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
+        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+      ),
+      child: Text(text),
+    );
+  }
+
+
 }

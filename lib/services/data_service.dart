@@ -28,7 +28,7 @@ class DatabaseService {
       final path = join(await getDatabasesPath(), 'app.db');
       
       // Elimina la base de datos
-      await deleteDatabase(path);
+      //await deleteDatabase(path);
 
       print("Base de datos eliminada con éxito.");
     } catch (e) {
@@ -119,7 +119,7 @@ Future<Database> get database async {
             'rol': 'ADMINISTRADOR',
           });
 
-          // Crear tabla evento_entrenadores (relación muchos a muchos entre eventos y entrenadores)
+          // Crear tabla asignaciones (relación muchos a muchos entre eventos y entrenadores)
           await db.execute('''
             CREATE TABLE $tableAsignaciones (
               id_asignacion  INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -190,7 +190,7 @@ Future<Database> get database async {
         'fecha_hora_fin': evento.fechaHoraFin.toIso8601String(),
         'ubicacion': evento.ubicacion,
         'descripcion': evento.descripcion,
-        'id_usuario': null, // si no lo usas por ahora
+        //'id_usuario': evento.idUsuario, // si no lo usas por ahora
         'estado': 'activo', // por defecto
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -502,10 +502,10 @@ Future<Database> get database async {
     await db.insert(
       tableFormularios,
       {
-        'id': formulario.idFormulario,
+        //'id': formulario.idFormulario,
         'titulo': formulario.titulo,
         'descripcion': formulario.descripcion,
-        'fechaCreacion': formulario.fechaCreacion.toIso8601String(),
+        //'fechaCreacion': formulario.fechaCreacion.toIso8601String(),
         'eventoId': formulario.eventoId,
         'usuarioId': formulario.usuarioId,
         'latitud': formulario.latitud,
@@ -583,7 +583,31 @@ Future<Database> get database async {
       whereArgs: [formularioId],
     );
   }
+
+/// Obtiene el evento asignado a un usuario (entrenador), usando relación muchos a muchos.
+/// Usa consulta SQL segura con parámetros para prevenir inyección.
+  Future<List<Map<String, dynamic>>> obtenerEventosAsignadosPorUsuario(int idUsuario) async {
+    final db = await database;
+
+    final result = await db.rawQuery(
+      '''
+      SELECT e.* 
+      FROM $tableEventos e
+      INNER JOIN $tableAsignaciones a ON e.id_evento = a.id_evento
+      WHERE a.id_usuario = ?;
+      ''',
+      [idUsuario],
+    );
+
+    return result;
+  }
+
 }
+
+
+
+
+
 /*
   // Métodos para eventos
   Future<int> insertEvento(EventModel evento) async {

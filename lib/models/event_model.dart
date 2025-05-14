@@ -15,6 +15,19 @@ class EventModel {
   // Formatter para fechas y horas
   static final DateFormat _formatter = DateFormat('dd-MM-yyyy HH:mm');
 
+  static DateTime _parseFechaDinamica(String fecha) {
+  try {
+    return DateTime.parse(fecha); // ISO 8601
+  } catch (_) {
+    try {
+      return DateFormat('dd-MM-yyyy HH:mm').parse(fecha); // formato manual
+    } catch (e) {
+      throw FormatException('Formato de fecha inválido: $fecha');
+    }
+  }
+}
+
+
   EventModel({
     this.idEvento,
     required this.nombre,
@@ -33,12 +46,12 @@ class EventModel {
         descripcion: map['descripcion'],
         ubicacion: map['ubicacion'],
         fechaHoraInicio: map['fecha_hora_inicio'] != null
-            ? _formatter.parse(map['fecha_hora_inicio'])
+            ? _parseFechaDinamica(map['fecha_hora_inicio'])
             : DateTime.now(),
         fechaHoraFin: map['fecha_hora_fin'] != null
-            ? _formatter.parse(map['fecha_hora_fin'])
-            : DateTime.now().add(Duration(hours: 1)),
-        idUsuario: map['id_usuario'],
+          ? _parseFechaDinamica(map['fecha_hora_fin']) // ✔️ Correcto para '2025-05-31T14:21:00.000'
+          : DateTime.now().add(Duration(hours: 1)),
+       // idUsuario: map['id_usuario'],
         estado: map['estado'],
       );
 
@@ -50,7 +63,7 @@ class EventModel {
         'ubicacion': ubicacion,
         'fecha_hora_inicio': _formatter.format(fechaHoraInicio),
         'fecha_hora_fin': _formatter.format(fechaHoraFin),
-        'id_usuario': idUsuario,
+        //'id_usuario': idUsuario,
         'estado': estado,
       };
 
@@ -62,7 +75,7 @@ class EventModel {
         ubicacion: json['ubicacion'],
         fechaHoraInicio: DateTime.parse(json['fecha_hora_inicio']),
         fechaHoraFin: DateTime.parse(json['fecha_hora_fin']),
-        idUsuario: json['id_usuario'],
+       // idUsuario: json['id_usuario'],
         estado: json['estado'],
       );
 
@@ -74,7 +87,7 @@ class EventModel {
         'ubicacion': ubicacion,
         'fecha_hora_inicio': fechaHoraInicio.toIso8601String(),
         'fecha_hora_fin': fechaHoraFin.toIso8601String(),
-        'id_usuario': idUsuario,
+       // 'id_usuario': idUsuario,
         'estado': estado,
       };
 }

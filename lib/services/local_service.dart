@@ -130,4 +130,10 @@ class LocalService {
   Future<void> eliminarFormularioYRespuestas(int formularioId) async{
     return await DatabaseService.db.deleteFormAnswers(formularioId);
   }
+
+  //Obtener evento asignado
+  Future<List<EventModel>> obtenerEventosAsignados(int idUsuario) async {
+    final data = await DatabaseService.db.obtenerEventosAsignadosPorUsuario(idUsuario);
+    return data.map((map) => EventModel.fromMap(map)).toList();
+  }
 }

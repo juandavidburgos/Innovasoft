@@ -21,7 +21,11 @@ class EventRepository {
   }
 
   Future<void> eliminarTodosEventos() {
-  return _localService.eliminarTodosLosEventos();
+    return _localService.eliminarTodosLosEventos();
+  }
+
+  Future<List<EventModel>> obtenerEventosDelEntrenador(int idEntrenador) async {
+    return await _localService.obtenerEventosAsignados(idEntrenador);
   }
 
   /*Future<int> asignarEntrenadoresAEvento(int eventoId, List<int> trainerIds) {

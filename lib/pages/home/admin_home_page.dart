@@ -25,7 +25,7 @@ class AdminHomePage extends StatelessWidget {
                 const SizedBox(height: 15),
                 MainButton(
                   texto: 'Gestión de eventos',
-                  color: const Color.fromARGB(255, 146, 89, 4),
+                  color: const Color.fromARGB(255, 232, 78, 17),
                   onPressed: () {
                     //Redigir a la pagina
                     Navigator.pushNamed(context, '/home_events');
@@ -43,7 +43,7 @@ class AdminHomePage extends StatelessWidget {
                 const SizedBox(height: 35),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/');
+                    Navigator.pushReplacementNamed(context, '/trainer_select_event');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red[800],
