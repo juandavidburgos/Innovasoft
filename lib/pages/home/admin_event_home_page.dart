@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/main_button.dart';
-class AdminHomePage extends StatelessWidget {
-  const AdminHomePage({super.key});
+
+class AdminEventHomePage extends StatelessWidget {
+  const AdminEventHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,36 +18,49 @@ class AdminHomePage extends StatelessWidget {
                   'assets/images/logo_indeportes.png',
                   width: 250,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 30),
                 const Text(
                   '“Indeportes somos todos”',
                   style: TextStyle(fontStyle: FontStyle.italic),
                 ),
-                const SizedBox(height: 15),
+                const SizedBox(height: 40),
                 MainButton(
-                  texto: 'Gestión de eventos',
-                  color: const Color.fromARGB(255, 232, 78, 17),
+                  texto: 'Crear evento',
+                  color: Color(0xFF038C65),
                   onPressed: () {
-                    //Redigir a la pagina
-                    Navigator.pushNamed(context, '/home_events');
+                    Navigator.pushNamed(context,'/crear_evento');
                   },
                 ),
                 const SizedBox(height: 15),
                 MainButton(
-                  texto: 'Asignación de entrenadores',
-                  color: const Color.fromARGB(255, 16, 88, 146),
+                  texto: 'Editar evento',
+                  color: Color(0xFFF25430),
                   onPressed: () {
                     //Redigir a la pagina
-                    Navigator.pushNamed(context, '/home_admin_trainer');
+                    Navigator.pushNamed(context, '/edit_event');
                   },
+                ),
+                const SizedBox(height: 15),
+                MainButton(
+                  texto: 'Ver eventos',
+                  color: Color(0xFF1D5273),
+                  onPressed: () {
+                    Navigator.pushNamed(context,'/view_event');
+                  },
+                ),
+                const SizedBox(height: 15),
+                MainButton(
+                  texto: 'Deshabilitar evento',
+                  color: Color(0xFFE53935),
+                  onPressed: () {Navigator.pushNamed(context, '/disable_event');},
                 ),
                 const SizedBox(height: 35),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/trainer_select_event');
+                    Navigator.pushReplacementNamed(context, '/admin_home');
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[800],
+                    backgroundColor: Color(0xFFB71C1C),
                     padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                   ),
                   child: const Text('Salir', style: TextStyle(color: Colors.white)),

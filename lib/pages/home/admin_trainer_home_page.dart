@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/main_button.dart';
-class AdminHomePage extends StatelessWidget {
-  const AdminHomePage({super.key});
+class AdminTrainerHomePage extends StatelessWidget {
+  const AdminTrainerHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,26 +24,34 @@ class AdminHomePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 15),
                 MainButton(
-                  texto: 'Gestión de eventos',
-                  color: const Color.fromARGB(255, 232, 78, 17),
+                  texto: 'Asignar entrenador',
+                  color: Color(0xFF038C65),
                   onPressed: () {
-                    //Redigir a la pagina
-                    Navigator.pushNamed(context, '/home_events');
+                    Navigator.pushNamed(context, '/assign_trainer');
                   },
                 ),
                 const SizedBox(height: 15),
                 MainButton(
-                  texto: 'Asignación de entrenadores',
-                  color: const Color.fromARGB(255, 16, 88, 146),
+                  texto: 'Editar asignacion entrenador',
+                  color: Color(0xFFF25430),
                   onPressed: () {
                     //Redigir a la pagina
-                    Navigator.pushNamed(context, '/home_admin_trainer');
+                    Navigator.pushNamed(context, '/edit_assign');
+                  },
+                ),
+                const SizedBox(height: 15),
+                MainButton(
+                  texto: 'Ver asignaciones',
+                  color: Color(0xFF1D5273),
+                  onPressed: () {
+                    //Redigir a la pagina
+                    Navigator.pushNamed(context, '/view_assign');
                   },
                 ),
                 const SizedBox(height: 35),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/trainer_select_event');
+                    Navigator.pushReplacementNamed(context, '/admin_home');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red[800],

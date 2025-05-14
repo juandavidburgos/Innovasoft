@@ -17,6 +17,8 @@ dependencies:
   path: ^1.9.0
   jwt_decoder: ^2.0.1
   shared_preferences: ^2.2.2
+  geolocator: ^10.1.0
+  image_picker: ^1.0.4
 
 
 dev_dependencies:
@@ -30,4 +32,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/indeportes_logo.png
+    - assets/images/logo_indeportes.png
+    - assets/images/logo2_indeportes.png
     - assets/utils/municipios_cauca.json
