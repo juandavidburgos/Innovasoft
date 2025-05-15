@@ -5,6 +5,9 @@ import '../../repositories/event_repository.dart';
 import '../../repositories/assignment_repository.dart';
 import '../../models/event_model.dart';
 import '../widgets/action_button.dart';
+import 'assignment_error_page.dart';
+import 'assignment_success_page.dart';
+import '../home/admin_trainer_home_page.dart';
 
 class TrainerAssignmentPage extends StatefulWidget {
   const TrainerAssignmentPage({super.key});
@@ -48,7 +51,7 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
     });
   }
 
-  Future<void> _asignarEntrenadores() async {
+  /*Future<void> _asignarEntrenadores() async {
     if (selectedEventId == null || selectedTrainerIds.contains(null)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor selecciona evento y todos los entrenadores')),
@@ -77,6 +80,43 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
         trainerCount = 0;
         selectedTrainerIds = [];
       });
+    }
+  }*/
+
+  Future<void> _asignarEntrenadores() async {
+    if (selectedEventId == null || selectedTrainerIds.contains(null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor selecciona evento y todos los entrenadores')),
+      );
+      return;
+    }
+
+    final ids = selectedTrainerIds.map((id) => int.parse(id!)).toList();
+
+    final result = await _assignmentRepo.asignarEntrenadoresAEvento(
+      int.parse(selectedEventId!),
+      ids,
+    );
+
+    if (result == ids.length) {
+      // Éxito total
+      setState(() {
+        selectedEventId = null;
+        trainerCount = 0;
+        selectedTrainerIds = [];
+      });
+
+      // Navega a la página de éxito
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AssignmentSuccessPage()),
+      );
+    } else {
+      // Falla (asignación parcial o total fallida)
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AssignmentErrorPage()),
+      );
     }
   }
 
@@ -151,7 +191,14 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
                             icono: Icons.arrow_back,
                             ancho: 145,
                             alto: 48,
-                            onPressed: () => Navigator.pop(context),
+                            //onPressed: () => Navigator.pop(context),
+                            onPressed: () {
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (context) => AdminTrainerHomePage()),
+                                (Route<dynamic> route) => false, // elimina todas las rutas anteriores
+                              );
+                            },
                           ),
                         ],
                       ),

@@ -87,7 +87,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
     }
   }
 
-  Future<DateTime?> _pickDateTime(BuildContext context) async {
+  /*Future<DateTime?> _pickDateTime(BuildContext context) async {
     final date = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -103,6 +103,38 @@ class _CreateEventPageState extends State<CreateEventPage> {
     if (time == null) return null;
 
     return DateTime(date.year, date.month, date.day, time.hour, time.minute);
+  }*/
+
+  Future<DateTime?> _pickDateTime(BuildContext context, {required DateTime firstDate}) async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: firstDate.isAfter(DateTime.now()) ? firstDate : DateTime.now(),
+      firstDate: firstDate,
+      lastDate: DateTime(2100),
+    );
+    if (date == null) return null;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (time == null) return null;
+
+    final pickedDateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+
+    // Validación adicional: si se selecciona una hora anterior a la hora de inicio
+    if (_startDateTime != null &&
+        date.year == _startDateTime!.year &&
+        date.month == _startDateTime!.month &&
+        date.day == _startDateTime!.day &&
+        pickedDateTime.isBefore(_startDateTime!)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('La hora de finalización no puede ser anterior a la hora de inicio')),
+      );
+      return null;
+    }
+
+    return pickedDateTime;
   }
 
   Future<List<String>> cargarMunicipios() async {
@@ -180,7 +212,8 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 const SizedBox(height: 16),
                 GestureDetector(
                   onTap: () async {
-                    final picked = await _pickDateTime(context);
+                    //final picked = await _pickDateTime(context);
+                    final picked = await _pickDateTime(context, firstDate: DateTime.now());
                     if (picked != null) {
                       setState(() {
                         _startDateTime = picked;
@@ -192,15 +225,27 @@ class _CreateEventPageState extends State<CreateEventPage> {
                     child: TextFormField(
                       controller: _startDateTimeController,
                       decoration: _inputDecoration('Fecha y hora de inicio'),
-                      validator: (_) =>
-                          _startDateTime == null ? 'Este campo es obligatorio' : null,
+                      validator: (_) {
+                        if (_startDateTime == null) {
+                          return 'Este campo es obligatorio';
+                        }
+                        final now = DateTime.now();
+                        if (_startDateTime!.isBefore(now)) {
+                          return 'La fecha de inicio no puede ser anterior a la fecha actual';
+                        }
+                        return null;
+                      },
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
                 GestureDetector(
                   onTap: () async {
-                    final picked = await _pickDateTime(context);
+                    //final picked = await _pickDateTime(context);
+                     final picked = await _pickDateTime(
+                      context,
+                      firstDate: _startDateTime ?? DateTime.now(),
+                    );
                     if (picked != null) {
                       setState(() {
                         _endDateTime = picked;
@@ -216,9 +261,23 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         if (_endDateTime == null) {
                           return 'Este campo es obligatorio';
                         }
+                        if (_startDateTime == null) {
+                          return 'Primero selecciona la fecha de inicio';
+                        }
+
                         if (_endDateTime!.isBefore(_startDateTime!)) {
                           return 'La fecha de finalización no puede ser anterior a la fecha de inicio';
                         }
+
+                        // Validación adicional: si son el mismo día, compara horas
+                        final sameDay = _startDateTime!.year == _endDateTime!.year &&
+                            _startDateTime!.month == _endDateTime!.month &&
+                            _startDateTime!.day == _endDateTime!.day;
+
+                        if (sameDay && _endDateTime!.isBefore(_startDateTime!)) {
+                          return 'La hora de finalización no puede ser anterior a la hora de inicio';
+                        }
+
                         return null;
                       },
                     ),
