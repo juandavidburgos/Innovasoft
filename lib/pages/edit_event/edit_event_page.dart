@@ -4,6 +4,10 @@ import 'package:flutter/services.dart' show rootBundle;
 import '../../models/event_model.dart';
 import '../../repositories/event_repository.dart';
 import '../widgets/action_button.dart';
+import '../home/admin_event_home_page.dart';
+import 'edit_event_success_page.dart';
+import 'edit_event_error_page.dart';
+
 import 'dart:convert';
 
 class EditEventPage extends StatefulWidget {
@@ -84,8 +88,6 @@ class _EditEventPageState extends State<EditEventPage> {
                       alto: 48,
                       onPressed: () async {
                         if (_formKey.currentState!.validate() &&
-                            fechaHoraInicio != null &&
-                            fechaHoraFin != null &&
                             selectedEvent != null &&
                             selectedMunicipio != null) {
                           final idEvento = int.parse(selectedEvent!);
@@ -102,25 +104,20 @@ class _EditEventPageState extends State<EditEventPage> {
                           final result = await _repo.actualizarEvento(eventoActualizado);
 
                           if (result > 0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Evento actualizado con éxito')),
+                            // Ir a página de éxito
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const EditEventSuccessPage()),
                             );
-                            await _cargarEventos();
-                            setState(() {
-                              selectedEvent = null;
-                              nameController.clear();
-                              locationController.clear();
-                              descripcionController.clear();
-                              fechaHoraInicio = null;
-                              fechaHoraFin = null;
-                              selectedMunicipio = null;
-                            });
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Error al actualizar el evento')),
+                            // Ir a página de error
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const EditEventErrorPage()),
                             );
                           }
                         } else {
+                          // Campos incompletos: aún puedes usar un SnackBar aquí si deseas
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Por favor completa todos los campos')),
                           );
@@ -133,7 +130,14 @@ class _EditEventPageState extends State<EditEventPage> {
                       icono: Icons.arrow_back,
                       ancho: 145,
                       alto: 48,
-                      onPressed: () => Navigator.pop(context),
+                      //onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => AdminEventHomePage()),
+                          (Route<dynamic> route) => false, // elimina todas las rutas anteriores
+                        );
+                      },
                     ),
                   ],
                 ),

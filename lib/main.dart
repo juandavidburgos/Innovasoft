@@ -12,7 +12,7 @@ import 'pages/create_event/view_events_page.dart';
 import 'pages/edit_event/edit_event_page.dart';
 import 'pages/assign_trainer/trainer_assignment_page.dart';
 import 'pages/assign_trainer/view_assignment_page.dart';
-import 'pages/assign_trainer/edit_assignment_page.dart';
+import 'pages/edit_assign_trainer/edit_assignment_page.dart';
 import 'pages/disable_event/disable_event_page.dart';
 import 'pages/home/trainer_home_page.dart';
 import 'pages/caracterization/assistence_register_page.dart';
