@@ -1,3 +1,5 @@
+import 'package:basic_flutter/pages/widgets/main_button.dart';
+import 'package:basic_flutter/pages/widgets/action_button.dart';
 import 'package:flutter/material.dart';
 import '../../repositories/event_repository.dart';
 import '../../models/event_model.dart';
@@ -52,37 +54,76 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Indeportes Cauca'),
-        backgroundColor: const Color(0xFF004A7F),
-        centerTitle: true,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          Text(
-            'Bienvenido, $nombreUsuario',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 30),
-          const Text(
-            'Seleccionar evento asignado',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 15),
-          _buildDropdownEventos(),
-          const SizedBox(height: 50),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildButton('COMENZAR REGISTRO', const Color(0xFF00944C), _iniciarRegistro),
-              _buildButton('VOLVER', const Color(0xFF004A7F), () => Navigator.pushReplacementNamed(context,'/admin_home')),
+              // Logo y frase centrados
+              Center(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 150),
+                    Image.asset(
+                      'assets/images/logo_indeportes.png',
+                      width: 250,
+                    ),
+                    const SizedBox(height: 15),
+                    const Text(
+                      '“Indeportes somos todos”',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ],
+                ),
+              ),
+              
+              const Divider(
+                thickness: 1.5,
+                color: Color(0xFFCCCCCC),
+                height: 30,
+              ),
+              const SizedBox(height: 20),
+              // Texto centrado para selección de evento
+              const Center(
+                child: Text(
+                  'Seleccione el evento asignado',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              _buildDropdownEventos(),
+
+              const SizedBox(height: 50),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildButton('Comenzar registro', const Color(0xFF00944C), _iniciarRegistro),
+                  Align(
+                  alignment: Alignment.bottomCenter,
+                  child: ActionButton(
+                    text: 'Regresar',
+                    color: Color.fromARGB(255, 134, 134, 134),
+                    icono: Icons.arrow_back,
+                    ancho: 145,
+                    alto: 48,
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/trainer_home');
+                      },
+                  ),
+                ),
+                ],
+              ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
+
+
 
   Widget _buildDropdownEventos() {
     if (eventosAsignados.isEmpty) {
@@ -115,19 +156,10 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
   }
 
   Widget _buildButton(String text, Color color, VoidCallback onPressed) {
-  return ElevatedButton(
+  return MainButton(
     onPressed: onPressed,
-    style: ElevatedButton.styleFrom(
-      backgroundColor: color,
-      foregroundColor: Colors.white, // ✅ Texto blanco sin "morado"
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(30),
-      ),
-      textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-      elevation: 2,
-    ),
-    child: Text(text),
+    color: color,
+    texto:text,
   );
 }
 

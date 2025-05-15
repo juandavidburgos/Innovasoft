@@ -2,6 +2,7 @@ import 'package:basic_flutter/pages/caracterization/final_register_page.dart';
 import 'package:basic_flutter/pages/caracterization/trainer_select_event_page.dart';
 import 'package:basic_flutter/pages/home/admin_event_home_page.dart';
 import 'package:basic_flutter/pages/home/admin_trainer_home_page.dart';
+import 'package:basic_flutter/pages/sure_logut_page.dart';
 import 'package:basic_flutter/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
@@ -11,7 +12,7 @@ import 'pages/create_event/view_events_page.dart';
 import 'pages/edit_event/edit_event_page.dart';
 import 'pages/assign_trainer/trainer_assignment_page.dart';
 import 'pages/assign_trainer/view_assignment_page.dart';
-import 'pages/assign_trainer/edit_assignment_page.dart';
+import 'pages/edit_assign_trainer/edit_assignment_page.dart';
 import 'pages/disable_event/disable_event_page.dart';
 import 'pages/home/trainer_home_page.dart';
 import 'pages/caracterization/assistence_register_page.dart';
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
       routes: {
         'splash': (context) => const SplashScreen(),
         '/': (context) => const LoginPage(),
+        '/logout_page': (context) => const ConfirmLogoutPage(),
         '/admin_home': (context) => const AdminHomePage(),
         '/home_admin_trainer' : (context) => const AdminTrainerHomePage(),
         '/home_events': (context) => const AdminEventHomePage(),

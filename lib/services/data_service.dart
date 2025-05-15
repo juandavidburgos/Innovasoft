@@ -28,7 +28,7 @@ class DatabaseService {
       final path = join(await getDatabasesPath(), 'app.db');
       
       // Elimina la base de datos
-      //await deleteDatabase(path);
+     // await deleteDatabase(path);
 
       print("Base de datos eliminada con éxito.");
     } catch (e) {

@@ -1,8 +1,12 @@
+import 'package:basic_flutter/pages/widgets/main_button.dart';
 import 'package:flutter/material.dart';
 import '../../repositories/assignment_repository.dart';
 import '../../repositories/user_repository.dart';
 import '../../models/user_model.dart';
 import '../widgets/action_button.dart';
+import 'edit_assignmen_success_page.dart';
+import 'edit_assignmen_error_page.dart';
+import '../home/admin_trainer_home_page.dart';
 
 class EditTrainerAssignmentPage extends StatefulWidget {
   const EditTrainerAssignmentPage({super.key});
@@ -52,7 +56,7 @@ class _EditTrainerAssignmentPageState extends State<EditTrainerAssignmentPage> {
     });
   }
 
-  Future<void> _actualizarAsignacion() async {
+  /*Future<void> _actualizarAsignacion() async {
     if (selectedEventId == null || selectedTrainerIds.contains(null)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor selecciona evento y todos los entrenadores')),
@@ -82,6 +86,35 @@ class _EditTrainerAssignmentPageState extends State<EditTrainerAssignmentPage> {
         ),
       );
     }
+  }*/
+
+  Future<void> _actualizarAsignacion() async {
+    if (selectedEventId == null || selectedTrainerIds.contains(null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor selecciona evento y todos los entrenadores')),
+      );
+      return;
+    }
+
+    final ids = selectedTrainerIds.map((id) => int.parse(id!)).toList();
+    final result = await _assignmentRepo.actualizarAsignacionesDeEvento(
+      int.parse(selectedEventId!),
+      ids,
+    );
+
+    if (result) {
+      // Si se actualizó correctamente, mostrar pantalla de éxito
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const EditAssignmentSuccessPage()),
+      );
+    } else {
+      // Si falló la actualización, mostrar pantalla de error
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const EditAssignmentErrorPage()),
+      );
+    }
   }
 
   List<UserModel> _monitoresDisponiblesPara(int index) {
@@ -109,10 +142,11 @@ class _EditTrainerAssignmentPageState extends State<EditTrainerAssignmentPage> {
             key: _formKey,
             child: Column(
               children: [
+                const SizedBox(height: 140),
                 Image.asset('assets/images/logo2_indeportes.png', width: 400),
                 const SizedBox(height: 10),
                 const Text('“Indeportes somos todos”', style: TextStyle(fontStyle: FontStyle.italic)),
-                const SizedBox(height: 20),
+                const SizedBox(height: 40),
                 const Text('Editar Asignación de Entrenadores', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 20),
 
@@ -127,25 +161,34 @@ class _EditTrainerAssignmentPageState extends State<EditTrainerAssignmentPage> {
                         _buildTrainerDropdown(i),
                         const SizedBox(height: 15),
                       ],
-                      const SizedBox(height: 20),
-                      ActionButton(
-                        text: 'AGREGAR MÁS ENTRENADORES',
-                        color: Color(0xFF038C65),
+                      MainButton(
+                        texto: 'Agregar un entrenador más',
+                        color: Color(0xFF1A3E58),
                         onPressed: _agregarEntrenador,
                       ),
                       const SizedBox(height: 30),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          ActionButton(
-                            text: 'ACTUALIZAR',
+                          MainButton(
+                            texto: 'Actualizar',
                             color: Color(0xFF038C65),
                             onPressed: _actualizarAsignacion,
                           ),
                           ActionButton(
-                            text: 'VOLVER',
-                            color: Color(0xFF1D5273),
-                            onPressed: () => Navigator.pop(context),
+                            text: 'Regresar',
+                            color: Color.fromARGB(255, 134, 134, 134),
+                            icono: Icons.arrow_back,
+                            ancho: 145,
+                            alto: 48,
+                            //onPressed: () => Navigator.pop(context),
+                            onPressed: () {
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (context) => AdminTrainerHomePage()),
+                                (Route<dynamic> route) => false, // elimina todas las rutas anteriores
+                              );
+                            },
                           ),
                         ],
                       ),

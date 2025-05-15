@@ -1,3 +1,4 @@
+import 'package:basic_flutter/pages/widgets/logout_button.dart';
 import 'package:flutter/material.dart';
 import '../widgets/main_button.dart';
 class AdminHomePage extends StatelessWidget {
@@ -8,54 +9,69 @@ class AdminHomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              children: [
-                Image.asset(
-                  'assets/images/logo_indeportes.png',
-                  width: 250,
+        child: Stack(
+          children: [
+            // Botón logout (arriba a la derecha)
+            Positioned(
+              top: 10, // sobresale hacia arriba
+              left: -20, // sobresale hacia la izquierda
+              child: LogoutIconButton(
+                ancho: 65,
+                alto: 40,
+                color: const Color.fromARGB(255, 143, 3, 3),
+                icono: Icons.logout,
+                alignment: MainAxisAlignment.end,
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/logout_page');
+                },
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(height: 20),
-                const Text(
-                  '“Indeportes somos todos”',
-                  style: TextStyle(fontStyle: FontStyle.italic),
-                ),
-                const SizedBox(height: 15),
-                MainButton(
-                  texto: 'Gestión de eventos',
-                  color: const Color.fromARGB(255, 232, 78, 17),
-                  onPressed: () {
-                    //Redigir a la pagina
-                    Navigator.pushNamed(context, '/home_events');
-                  },
-                ),
-                const SizedBox(height: 15),
-                MainButton(
-                  texto: 'Asignación de entrenadores',
-                  color: const Color.fromARGB(255, 16, 88, 146),
-                  onPressed: () {
-                    //Redigir a la pagina
-                    Navigator.pushNamed(context, '/home_admin_trainer');
-                  },
-                ),
-                const SizedBox(height: 35),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/trainer_select_event');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[800],
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                  ),
-                  child: const Text('Salir', style: TextStyle(color: Colors.white)),
-                ),
-              ],
+              ),
             ),
-          ),
+            // Contenido principal centrado
+            Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/images/logo_indeportes.png',
+                      width: 250,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      '“Indeportes somos todos”',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                    const SizedBox(height: 15),
+                    MainButton(
+                      texto: 'Gestión de eventos',
+                      color: const Color.fromARGB(255, 232, 78, 17),
+                      ancho: 260,
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/home_events');
+                      },
+                    ),
+                    const SizedBox(height: 15),
+                    MainButton(
+                      texto: 'Asignación de entrenadores',
+                      color: const Color.fromARGB(255, 16, 88, 146),
+                      ancho: 260,
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/home_admin_trainer');
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+
+
 }

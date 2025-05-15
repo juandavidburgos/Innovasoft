@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
 import '../widgets/main_button.dart';
+import '../widgets/action_button.dart';
 class AdminTrainerHomePage extends StatelessWidget {
   const AdminTrainerHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final alturaPantalla = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
+            child: SizedBox(
+              height: alturaPantalla * 0.85, // Centra más abajo
+              child: Column(
+              mainAxisAlignment: MainAxisAlignment.start, // Empieza desde arriba
               children: [
+                const SizedBox(height: 120), // <-- EMPUJA TODO HACIA ABAJO
                 Image.asset(
                   'assets/images/logo_indeportes.png',
                   width: 250,
@@ -22,48 +29,55 @@ class AdminTrainerHomePage extends StatelessWidget {
                   '“Indeportes somos todos”',
                   style: TextStyle(fontStyle: FontStyle.italic),
                 ),
-                const SizedBox(height: 15),
+                const SizedBox(height: 30),
                 MainButton(
                   texto: 'Asignar entrenador',
-                  color: Color(0xFF038C65),
+                  color: Color(0xFF1A3E58),
+                  icono: Icons.assignment,
+                  ancho: 260,
                   onPressed: () {
                     Navigator.pushNamed(context, '/assign_trainer');
                   },
                 ),
                 const SizedBox(height: 15),
                 MainButton(
-                  texto: 'Editar asignacion entrenador',
-                  color: Color(0xFFF25430),
+                  texto: 'Editar asignación',
+                  color: Color(0xFF1A3E58),
+                  icono: Icons.create,
+                  ancho: 260,
                   onPressed: () {
-                    //Redigir a la pagina
                     Navigator.pushNamed(context, '/edit_assign');
                   },
                 ),
                 const SizedBox(height: 15),
                 MainButton(
-                  texto: 'Ver asignaciones',
-                  color: Color(0xFF1D5273),
+                  texto: 'Visualizar asignaciones',
+                  color: Color(0xFF1A3E58),
+                  icono: Icons.remove_red_eye,
+                  ancho: 260,
                   onPressed: () {
-                    //Redigir a la pagina
                     Navigator.pushNamed(context, '/view_assign');
                   },
                 ),
-                const SizedBox(height: 35),
-                ElevatedButton(
+                const SizedBox(height: 50),
+                ActionButton(
+                  text: 'Regresar',
+                  color: Color.fromARGB(255, 134, 134, 134),
+                  icono: Icons.arrow_back,
+                  ancho: 145,
+                  alto: 48,
                   onPressed: () {
                     Navigator.pushReplacementNamed(context, '/admin_home');
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[800],
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                  ),
-                  child: const Text('Salir', style: TextStyle(color: Colors.white)),
                 ),
               ],
+            ),
+
             ),
           ),
         ),
       ),
     );
   }
+
 }

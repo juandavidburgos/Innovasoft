@@ -32,8 +32,11 @@ class _ViewEventsPageState extends State<ViewEventsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Eventos Creados'),
-        backgroundColor: Colors.white,
+        title: const Text(
+          'Visualización de eventos',
+          style: TextStyle(color: Colors.white)),
+        backgroundColor: Color(0xFF1A3E58),
+        iconTheme: const IconThemeData(color: Colors.white), 
       ),
       backgroundColor: Colors.white,
       body: _eventos.isEmpty

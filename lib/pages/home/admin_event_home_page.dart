@@ -1,3 +1,4 @@
+import 'package:basic_flutter/pages/widgets/action_button.dart';
 import 'package:flutter/material.dart';
 import '../widgets/main_button.dart';
 
@@ -11,7 +12,7 @@ class AdminEventHomePage extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 30),
             child: Column(
               children: [
                 Image.asset(
@@ -26,15 +27,20 @@ class AdminEventHomePage extends StatelessWidget {
                 const SizedBox(height: 40),
                 MainButton(
                   texto: 'Crear evento',
-                  color: Color(0xFF038C65),
+                  color: Color(0xFF1A3E58),
+                  icono: Icons.add_circle_outline,
+                  ancho: 280,
                   onPressed: () {
                     Navigator.pushNamed(context,'/crear_evento');
+                  
                   },
                 ),
                 const SizedBox(height: 15),
                 MainButton(
                   texto: 'Editar evento',
-                  color: Color(0xFFF25430),
+                  color: Color(0xFF1A3E58),
+                  icono: Icons.edit_outlined,
+                  ancho: 280,
                   onPressed: () {
                     //Redigir a la pagina
                     Navigator.pushNamed(context, '/edit_event');
@@ -42,8 +48,10 @@ class AdminEventHomePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 15),
                 MainButton(
-                  texto: 'Ver eventos',
-                  color: Color(0xFF1D5273),
+                  texto: 'Visualizar eventos creados',
+                  color: Color(0xFF1A3E58),
+                  icono: Icons.visibility_outlined,
+                  ancho: 280,
                   onPressed: () {
                     Navigator.pushNamed(context,'/view_event');
                   },
@@ -51,19 +59,24 @@ class AdminEventHomePage extends StatelessWidget {
                 const SizedBox(height: 15),
                 MainButton(
                   texto: 'Deshabilitar evento',
-                  color: Color(0xFFE53935),
+                  color: Color(0xFF1A3E58),
+                  icono: 	Icons.block,
+                  ancho: 280,
                   onPressed: () {Navigator.pushNamed(context, '/disable_event');},
                 ),
-                const SizedBox(height: 35),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/admin_home');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFB71C1C),
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                const SizedBox(height: 20),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: ActionButton(
+                    text: 'Regresar',
+                    color: Color.fromARGB(255, 134, 134, 134),
+                    icono: Icons.arrow_back,
+                    ancho: 145,
+                    alto: 48,
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/admin_home');
+                      },
                   ),
-                  child: const Text('Salir', style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),
@@ -72,4 +85,5 @@ class AdminEventHomePage extends StatelessWidget {
       ),
     );
   }
+
 }
