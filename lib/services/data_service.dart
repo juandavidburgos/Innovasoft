@@ -148,7 +148,7 @@ Future<Database> get database async {
             );
           ''');
 
-        // Crear tabla preguntas
+          // Crear tabla preguntas
           await db.execute('''
             CREATE TABLE $tablePreguntas(
               id_pregunta INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -557,12 +557,12 @@ Future<Database> get database async {
         //'id': formulario.idFormulario,
         'titulo': formulario.titulo,
         'descripcion': formulario.descripcion,
-        //'fechaCreacion': formulario.fechaCreacion.toIso8601String(),
-        'eventoId': formulario.eventoId,
-        'usuarioId': formulario.usuarioId,
+        'fecha_creacion': formulario.fechaCreacion.toIso8601String(),
+        'evento_id': formulario.eventoId,
+        'id_usuario': formulario.usuarioId,
         'latitud': formulario.latitud,
         'longitud': formulario.longitud,
-        'pathImagen': formulario.pathImagen,
+        'path_imagen': formulario.pathImagen,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -575,10 +575,10 @@ Future<Database> get database async {
       batch.insert(
         tableRespuestas,
         {
-          'id': respuesta.id,
-          'preguntaId': respuesta.preguntaId,
+          'id_respuesta': respuesta.id,
+          'pregunta_id': respuesta.preguntaId,
           'contenido': respuesta.contenido,
-          'formularioId': respuesta.formularioId,
+          'formulario_id': respuesta.formularioId,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -603,6 +603,29 @@ Future<Database> get database async {
       pathImagen: json['pathImagen'] as String?,
     )).toList();
   }
+
+  // NO SE A PROBADO
+  Future<List<FormModel>> getFormsByEvent(int eventoId) async {
+    final db = await database;
+    final result = await db.query(
+      tableFormularios,
+      where: 'evento_id = ?',
+      whereArgs: [eventoId],
+    );
+
+    return result.map((json) => FormModel(
+      idFormulario: json['id_formulario'] as int,
+      titulo: json['titulo'] as String,
+      descripcion: json['descripcion'] as String,
+      fechaCreacion: DateTime.parse(json['fecha_creacion'] as String),
+      eventoId: json['evento_id'] as int,
+      usuarioId: json['id_usuario'] as int,
+      latitud: json['latitud'] != null ? (json['latitud'] as num).toDouble() : null,
+      longitud: json['longitud'] != null ? (json['longitud'] as num).toDouble() : null,
+      pathImagen: json['path_imagen'] as String?,
+    )).toList();
+  }
+
 
 
   Future<List<AnswerModel>> getAnswers(int formularioId) async {
