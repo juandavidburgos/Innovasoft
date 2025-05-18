@@ -36,6 +36,7 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
   int usuarioId = 0;
   String rol ='';
   String email = '';
+  String estado = '';
   double? latitud;
   double? longitud;
   String? pathImagen;
@@ -73,9 +74,10 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
     final prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      usuarioId = prefs.getInt('usuarioId') ?? 0;
-      nombreUsuario = prefs.getString('nombreUsuario') ?? 'Desconocido';
-      rol = prefs.getString('rolUsuario') ?? 'Sin rol';
+      //usuarioId = prefs.getInt('usuarioId') ?? 0;
+      nombreUsuario = prefs.getString('nombre') ?? 'Desconocido';
+      rol = prefs.getString('rol') ?? 'Sin rol';
+      email = prefs.getString('email') ?? 'Desconocido';
     });
   }
 
@@ -182,6 +184,7 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
         nombre: nombreUsuario ?? 'Desconocido',
         rol: rol ?? 'Sin rol',
         email: email,
+        estado: estado,
       ),
       asistentes: widget.asistentes,
     );

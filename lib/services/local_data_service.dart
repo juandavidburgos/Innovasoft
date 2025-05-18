@@ -2,16 +2,15 @@ import 'package:basic_flutter/models/answer_model.dart';
 import 'package:basic_flutter/models/form_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-//import '../models/formulario.dart';
-//import '../models/respuesta.dart';
-import '../models/event_model.dart'; // Importa tu modelo de eventos
+import '../models/event_model.dart'; 
 import 'dart:async';
 import '../models/user_model.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class DatabaseService {
+class LocalDataService {
   static Database? _db;
-  static final DatabaseService db = DatabaseService._();
+  static final LocalDataService db = LocalDataService._();
 
   static const String tableEventos = 'eventos';
   static const String tableUsuarios = 'usuarios';
@@ -20,7 +19,7 @@ class DatabaseService {
   static const String tablePreguntas = 'preguntas';
   static const String tableRespuestas = 'respuestas';
 
-  DatabaseService._();
+  LocalDataService._();
 
   Future<void> deleteDB() async {
     try {
@@ -71,7 +70,8 @@ Future<Database> get database async {
             nombre TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
             contrasena TEXT NOT NULL,
-            rol TEXT CHECK(rol IN ('ENTRENADOR', 'ADMINISTRADOR')) NOT NULL
+            rol TEXT CHECK(rol IN ('ENTRENADOR', 'ADMINISTRADOR')) NOT NULL,
+            estado TEXT CHECK(estado IN ('ACTIVO', 'INACTIVO')) DEFAULT 'activo'
           );
           ''');
 
@@ -306,9 +306,52 @@ Future<Database> get database async {
         'email': user.email,
         'contrasena': user.contrasena,
         'rol': user.rol,
+        'estado':user.estado,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+  }
+
+  Future<List<UserModel>> getEntrenadoresActivos() async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableUsuarios,
+      where: 'rol = ? AND estado = ?',
+      whereArgs: ['ENTRENADOR', 'ACTIVO'],
+    );
+
+    return List.generate(maps.length, (i) {
+      return UserModel(
+        idUsuario: maps[i]['id_usuario'],
+        nombre: maps[i]['nombre'],
+        email: maps[i]['email'],
+        contrasena: maps[i]['contrasena'],
+        rol: maps[i]['rol'],
+        estado: maps[i]['estado'],
+      );
+    });
+  }
+
+  Future<List<UserModel>> getEntrenadores() async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableUsuarios,
+      where: 'rol = ?',
+      whereArgs: ['ENTRENADOR'],
+    );
+
+    return List.generate(maps.length, (i) {
+      return UserModel(
+        idUsuario: maps[i]['id_usuario'],
+        nombre: maps[i]['nombre'],
+        email: maps[i]['email'],
+        contrasena: maps[i]['contrasena'],
+        rol: maps[i]['rol'],
+        estado: maps[i]['estado'],
+      );
+    });
   }
 
   /// Obtiene todos los usuarios desde la base de datos.
@@ -325,9 +368,11 @@ Future<Database> get database async {
         email: maps[i]['email'],
         contrasena: maps[i]['contrasena'],
         rol: maps[i]['rol'],
+        estado: maps[i]['estado'],
       );
     });
   }
+
 
   /// Actualiza un usuario existente en la base de datos.
   /// 
@@ -353,6 +398,19 @@ Future<Database> get database async {
     final db = await database;
     return await db.delete(
       tableUsuarios,
+      where: 'id_usuario = ?',
+      whereArgs: [id],
+    );
+  }
+
+  ///Deshabilitar entrenadores
+  ///Cambia su estado a "INACTIVO" 
+  
+  Future<int> disableUser(int id) async {
+    final db = await database;
+    return await db.update(
+      tableUsuarios,
+      {'estado': 'INACTIVO'},
       where: 'id_usuario = ?',
       whereArgs: [id],
     );
@@ -459,7 +517,7 @@ Future<Database> get database async {
 
       return {
         'evento': EventModel(
-          idEvento: int.tryParse(map['id_evento']?.toString() ?? '') ?? null, // Usamos tryParse para convertir
+          idEvento: int.tryParse(map['id_evento']?.toString() ?? ''), // Usamos tryParse para convertir
           nombre: map['nombre']?.toString() ?? '', // Convertimos a String
           descripcion: map['descripcion']?.toString() ?? '', // Convertimos a String
           ubicacion: map['ubicacion']?.toString() ?? '', // Convertimos a String
@@ -654,62 +712,44 @@ Future<Database> get database async {
     return result;
   }
 
-    Future<UserModel?> autenticarUsuario(String email, String password) async {
-      final db = await database;
-      final resultado = await db.query(
-        'usuarios',
-        where: 'email = ? AND contrasena = ?', // <- ¡OJO aquí!
-        whereArgs: [email, password],
-      );
+  Future<UserModel?> autenticarUsuario(String email, String password) async {
+    final db = await database;
+    final resultado = await db.query(
+      'usuarios',
+      where: 'email = ? AND contrasena = ?', // <- ¡OJO aquí!
+      whereArgs: [email, password],
+    );
 
-      if (resultado.isNotEmpty) {
-        return UserModel.fromMap(resultado.first); // <- depende de tu implementación
-      }
-      return null;
+    if (resultado.isNotEmpty) {
+      return UserModel.fromMap(resultado.first); // <- depende de tu implementación
     }
+    return null;
+  }
 
+  Future<void> logOutLocal() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('id_usuario');
+    await prefs.remove('nombre_usuario');
+    await prefs.remove('email_usuario');
+    await prefs.remove('rol_usuario');
+    // Nota: No hay jwt_token en sesiones locales
+  }
+
+    Future<int> crearAdminTemporal() async {
+      final db = await database;
+
+      return await db.insert(
+        'usuarios',
+        {
+          'nombre': 'Juan Burgos',
+          'email': 'admin@local.com',
+          'contrasena': 'Admin123!', // contraseña temporal
+          'rol': 'ADMINISTRADOR',
+          'estado': 'ACTIVO',
+        },
+        conflictAlgorithm: ConflictAlgorithm.ignore, // evita duplicados si ya existe
+      );
+  }
 
 }
 
-
-
-
-
-/*
-  // Métodos para eventos
-  Future<int> insertEvento(EventModel evento) async {
-    final db = await database;
-    return await db.insert(
-      tableEventos,
-      {
-        'nombre': evento.nombre,
-        'fecha': evento.fecha.toIso8601String(),
-        'ubicacion': evento.ubicacion,
-        'id_usuario': evento.idUsuario,
-        'estado': evento.estado,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
-
-  Future<List<EventModel>> getEventos({bool soloActivos = false}) async {
-    final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      tableEventos,
-      where: soloActivos ? 'estado = ?' : null,
-      whereArgs: soloActivos ? ['activo'] : null,
-    );
-
-    return List.generate(maps.length, (i) {
-      DateTime fecha = DateTime.tryParse(maps[i]['fecha']) ?? DateTime.now();
-      return EventModel(
-        idEvento: maps[i]['id_evento'],
-        nombre: maps[i]['nombre'],
-        fecha: fecha,
-        ubicacion: maps[i]['ubicacion'],
-        idUsuario: maps[i]['id_usuario'],
-        estado: maps[i]['estado'],
-      );
-    });
-  }
-}*/

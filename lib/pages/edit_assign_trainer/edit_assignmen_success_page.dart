@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'edit_assignment_page.dart'; // Asegúrate de importar la página correcta
 
 class EditAssignmentSuccessPage extends StatelessWidget {
@@ -24,7 +23,7 @@ class EditAssignmentSuccessPage extends StatelessWidget {
             Icon(Icons.check_circle, color: Colors.green, size: 150),
             const SizedBox(height: 20),
             const Text(
-              'ASIGNACION EDITADA \n EXITOSAMENTE!',
+              'Asignación exitosa!',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),

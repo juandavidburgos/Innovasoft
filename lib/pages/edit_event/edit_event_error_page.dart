@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../widgets/action_button.dart';
 class EditEventErrorPage extends StatelessWidget {
   const EditEventErrorPage({super.key});
 
@@ -24,11 +24,14 @@ class EditEventErrorPage extends StatelessWidget {
             style: TextStyle(color: Colors.grey)),
 
             const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-              onPressed: () => Navigator.pop(context),
-              child: const Text('VOLVER', style: TextStyle(color: Colors.white))
-            ),
+            ActionButton(
+                text: 'Regresar',
+                color: Color.fromARGB(255, 134, 134, 134),
+                icono: Icons.arrow_back,
+                ancho: 145,
+                alto: 48,
+                onPressed: () => Navigator.pop(context),
+              ),
           ],
         ),
       ),

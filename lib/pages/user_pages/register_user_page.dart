@@ -18,7 +18,8 @@ class _RegisterUserPage extends State<RegisterUserPage> {
   String nombre = '';
   String email = '';
   String contrasena = '';
-  String rol = 'ENTRENADOR';
+  String rol = '';
+  String estado = '';
   String _repeatPassword = '';
   String _tempPassword = '';
   bool _obscurePassword = true;
@@ -34,7 +35,8 @@ class _RegisterUserPage extends State<RegisterUserPage> {
         nombre: nombre,
         email: email,
         contrasena: contrasena,
-        rol: rol,
+        rol: 'ENTRENADOR',
+        estado: 'ACTIVO',
       );
 
       try {
@@ -44,9 +46,10 @@ class _RegisterUserPage extends State<RegisterUserPage> {
         // Guardar sesión en SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt('id_usuario', usuarioId);
-        await prefs.setString('nombre_usuario', nuevoUsuario.nombre);
-        await prefs.setString('email_usuario', nuevoUsuario.email);
-        await prefs.setString('rol_usuario', nuevoUsuario.rol);
+        await prefs.setString('nombre', nuevoUsuario.nombre);
+        await prefs.setString('email', nuevoUsuario.email);
+        await prefs.setString('rol', nuevoUsuario.rol);
+        await prefs.setString('estado', nuevoUsuario.estado);
 
         // Redirigir a página de éxito
         Navigator.pushReplacement(
@@ -145,7 +148,7 @@ class _RegisterUserPage extends State<RegisterUserPage> {
                       }
                       return null;
                     },
-                    onSaved: (val) => email = val!,
+                    onSaved: (val) =>  email = val!.trim().toLowerCase(),
                   ),
                 ),
 
