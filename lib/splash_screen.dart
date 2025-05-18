@@ -19,30 +19,51 @@ class _SplashScreenState extends State<SplashScreen> {
   void verificarSesion() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
+    final rolLocal = prefs.getString('rol_usuario');
 
-    await Future.delayed(const Duration(seconds: 2)); // Tiempo opcional de carga
+    await Future.delayed(const Duration(seconds: 2));
 
+    // Si el token existe y no ha expirado
     if (token != null && !JwtDecoder.isExpired(token)) {
-      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
-      String rol = decodedToken['rol'];
+      final decoded = JwtDecoder.decode(token);
+      final rol = decoded['rol'];
 
-      if (rol == 'admin') {
+      if (rol == 'ADMINISTRADOR') {
         Navigator.pushReplacementNamed(context, '/admin_home');
-      } else if (rol == 'trainer') {
+        return;
+      } else if (rol == 'ENTRENADOR') {
         Navigator.pushReplacementNamed(context, '/trainer_home');
-      } else {
-        Navigator.pushReplacementNamed(context, '/');
+        return;
       }
-    } else {
-      Navigator.pushReplacementNamed(context, '/');
     }
-  }
+
+    // Si no hay token, pero hay sesión local como entrenador
+    if (rolLocal == 'ENTRENADOR') {
+      Navigator.pushReplacementNamed(context, '/trainer_home');
+      return;
+    }
+
+    // Si no hay sesión válida
+    Navigator.pushReplacementNamed(context, '/');
+}
+
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
-        child: CircularProgressIndicator(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image(
+              image: AssetImage('assets/images/logo_indeportes.png'),
+              width: 200,
+            ),
+            SizedBox(height: 20),
+            CircularProgressIndicator(),
+          ],
+        ),
       ),
     );
   }

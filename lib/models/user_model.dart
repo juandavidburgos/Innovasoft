@@ -7,6 +7,7 @@ class UserModel {
   final String email;
   final String? contrasena;
   final String rol; // 'Monitor' equivale a 'Entrenador'
+  final String estado;
 
   UserModel({
     this.idUsuario,
@@ -14,6 +15,7 @@ class UserModel {
     required this.email,
     this.contrasena,
     required this.rol,
+    required this.estado,
   });
 
   /// Convierte un Map (por ejemplo desde SQLite) a un objeto UserModel
@@ -23,6 +25,7 @@ class UserModel {
         email: map['email'],
         contrasena: map['contrasena'],
         rol: map['rol'],
+        estado: map['estado'],
       );
 
   /// Convierte el objeto a un Map (por ejemplo para SQLite)
@@ -31,6 +34,7 @@ class UserModel {
         'nombre': nombre,
         'email': email,
         'rol': rol,
+        'estado':estado,
       };
 
   /// Convierte un JSON a un objeto UserModel
@@ -40,6 +44,7 @@ class UserModel {
         email: json['email'],
         contrasena: json['contrasena'],
         rol: json['rol'],
+        estado: json['estado']
       );
 
   /// Convierte un UserModel a JSON (por ejemplo para API)
@@ -49,5 +54,6 @@ class UserModel {
         'email': email,
         'contrasena':contrasena,
         'rol': rol,
+        'estado':estado,
       };
 }

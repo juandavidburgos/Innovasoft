@@ -2,6 +2,8 @@ import 'package:basic_flutter/pages/caracterization/final_register_page.dart';
 import 'package:basic_flutter/pages/caracterization/trainer_select_event_page.dart';
 import 'package:basic_flutter/pages/home/admin_event_home_page.dart';
 import 'package:basic_flutter/pages/home/admin_trainer_home_page.dart';
+import 'package:basic_flutter/pages/user_pages/view_users.dart';
+import 'package:basic_flutter/pages/user_pages/disable_users_page.dart';
 import 'package:basic_flutter/pages/user_pages/register_user_page.dart';
 import 'package:basic_flutter/pages/user_pages/sucsess_reigster_page.dart';
 import 'package:basic_flutter/pages/user_pages/sure_logut_page.dart';
@@ -35,7 +37,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
       //home: const LoginPage(),
       // Aquí defines la ruta inicial
-      initialRoute: '/trainer_home',
+      initialRoute: 'splash',
       
       // Aquí defines todas las rutas disponibles en tu app
       routes: {
@@ -74,6 +76,8 @@ class MyApp extends StatelessWidget {
         },*/
         '/user_register': (context) => const RegisterUserPage(),
         '/success_register_page': (context) => SuccessRegisterPage(),
+        '/view_users': (context) => ViewUsersPage(),
+        '/disable_users': (context) => DisableUsersPage(),
       },
     );
   }

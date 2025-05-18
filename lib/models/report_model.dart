@@ -1,6 +1,5 @@
 import '../models/event_model.dart';
 import '../models/user_model.dart';
-import 'package:intl/intl.dart';
 
 class Reporte {
   final EventModel evento;
