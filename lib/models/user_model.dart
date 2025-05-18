@@ -5,14 +5,14 @@ class UserModel {
   final int? idUsuario;
   final String nombre;
   final String email;
-  final String contrasena;
+  final String? contrasena;
   final String rol; // 'Monitor' equivale a 'Entrenador'
 
   UserModel({
     this.idUsuario,
     required this.nombre,
     required this.email,
-    required this.contrasena,
+    this.contrasena,
     required this.rol,
   });
 

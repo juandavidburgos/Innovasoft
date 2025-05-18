@@ -87,24 +87,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
     }
   }
 
-  /*Future<DateTime?> _pickDateTime(BuildContext context) async {
-    final date = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
-    );
-    if (date == null) return null;
-
-    final time = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (time == null) return null;
-
-    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
-  }*/
-
   Future<DateTime?> _pickDateTime(BuildContext context, {required DateTime firstDate}) async {
     final date = await showDatePicker(
       context: context,
@@ -164,11 +146,12 @@ class _CreateEventPageState extends State<CreateEventPage> {
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Center(
                   child: Column(
                     children: [
+                      const SizedBox(height: 50),
                       Image.asset('assets/images/logo_indeportes.png', height: 100),
                       const Text('"Indeportes somos todos"',
                           style: TextStyle(fontStyle: FontStyle.italic)),
@@ -242,7 +225,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 GestureDetector(
                   onTap: () async {
                     //final picked = await _pickDateTime(context);
-                     final picked = await _pickDateTime(
+                    final picked = await _pickDateTime(
                       context,
                       firstDate: _startDateTime ?? DateTime.now(),
                     );
@@ -293,8 +276,11 @@ class _CreateEventPageState extends State<CreateEventPage> {
                       onPressed: _guardarEvento,
                     ),
                     ActionButton(
-                      text: 'VOLVER',
-                      color: Color(0xFF1D5273),
+                      text: 'Regresar',
+                      color: Color.fromARGB(255, 134, 134, 134),
+                      icono: Icons.arrow_back,
+                      ancho: 145,
+                      alto: 48,
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
