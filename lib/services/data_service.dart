@@ -45,6 +45,9 @@ Future<Database> get database async {
     try {
       final path = join(await getDatabasesPath(), 'app.db');
 
+      //Mostrar la ruta en consola
+      print('Ruta de la base de datos: $path');
+
       //await deleteDB();
 
       return await openDatabase(

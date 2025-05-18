@@ -1,4 +1,4 @@
-/*import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../models/answer_model.dart';
 import '../../models/event_model.dart';
 import '../../services/data_service.dart';
@@ -87,4 +87,4 @@ class _CheckAssistantPageState extends State<CheckAssistantPage> {
             ),
     );
   }
-}*/
+}

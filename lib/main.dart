@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
       //home: const LoginPage(),
       // Aquí defines la ruta inicial
-      initialRoute: '/trainer_select_event',
+      initialRoute: '/trainer_home',
       
       // Aquí defines todas las rutas disponibles en tu app
       routes: {
@@ -68,6 +68,10 @@ class MyApp extends StatelessWidget {
               evento: evento,
             );
           },
+        /*'/check_assistant': (context) {
+          final evento = ModalRoute.of(context)!.settings.arguments as EventModel;
+          return CheckAssistantPage(evento: evento);
+        },*/
         '/user_register': (context) => const RegisterUserPage(),
         '/success_register_page': (context) => SuccessRegisterPage(),
       },
