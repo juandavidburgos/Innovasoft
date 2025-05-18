@@ -28,7 +28,7 @@ class DatabaseService {
       final path = join(await getDatabasesPath(), 'app.db');
       
       // Elimina la base de datos
-     // await deleteDatabase(path);
+      //await deleteDatabase(path); //--->REALMENTER ESTA LINEA ELIMINA LA BASE DE DATOS
 
       print("Base de datos eliminada con éxito.");
     } catch (e) {
@@ -76,7 +76,7 @@ Future<Database> get database async {
           ''');
 
           //Insertar usuarios iniciales
-          await db.insert(tableUsuarios, {
+          /*await db.insert(tableUsuarios, {
             'nombre': 'Carlos Ramírez',
             'email': 'carlos@uni.edu',
             'contrasena': 'holis12wer33',
@@ -118,7 +118,7 @@ Future<Database> get database async {
             'contrasena': 'holisewrwe1233',
             'rol': 'ADMINISTRADOR',
           });
-
+          */
           // Crear tabla asignaciones (relación muchos a muchos entre eventos y entrenadores)
           await db.execute('''
             CREATE TABLE $tableAsignaciones (
@@ -463,8 +463,8 @@ Future<Database> get database async {
           nombre: map['nombre']?.toString() ?? '', // Convertimos a String
           descripcion: map['descripcion']?.toString() ?? '', // Convertimos a String
           ubicacion: map['ubicacion']?.toString() ?? '', // Convertimos a String
-          fechaHoraInicio: fechaHoraInicio!,
-          fechaHoraFin: fechaHoraFin!,
+          fechaHoraInicio: fechaHoraInicio,
+          fechaHoraFin: fechaHoraFin,
           estado: map['estado']?.toString() ?? '', // Convertimos a String
         ),
         'entrenadores': map['entrenadores'], // String con los nombres
@@ -554,15 +554,15 @@ Future<Database> get database async {
     await db.insert(
       tableFormularios,
       {
-        //'id': formulario.idFormulario,
+        'id_formulario': formulario.idFormulario,
         'titulo': formulario.titulo,
         'descripcion': formulario.descripcion,
-        //'fechaCreacion': formulario.fechaCreacion.toIso8601String(),
-        'eventoId': formulario.eventoId,
-        'usuarioId': formulario.usuarioId,
+        'fecha_creacion': formulario.fechaCreacion.toIso8601String(),
+        'evento_id': formulario.eventoId,
+        'id_usuario': formulario.usuarioId,
         'latitud': formulario.latitud,
         'longitud': formulario.longitud,
-        'pathImagen': formulario.pathImagen,
+        'path_imagen': formulario.pathImagen
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -575,10 +575,10 @@ Future<Database> get database async {
       batch.insert(
         tableRespuestas,
         {
-          'id': respuesta.id,
-          'preguntaId': respuesta.preguntaId,
+          'id_respuesta': respuesta.id,
+          'pregunta_id': respuesta.preguntaId,
           'contenido': respuesta.contenido,
-          'formularioId': respuesta.formularioId,
+          'formulario_id': respuesta.formularioId,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -646,13 +646,28 @@ Future<Database> get database async {
       SELECT e.* 
       FROM $tableEventos e
       INNER JOIN $tableAsignaciones a ON e.id_evento = a.id_evento
-      WHERE a.id_usuario = ?;
+      WHERE a.id_usuario = ? AND e.estado = 'activo';
       ''',
       [idUsuario],
     );
 
     return result;
   }
+
+    Future<UserModel?> autenticarUsuario(String email, String password) async {
+      final db = await database;
+      final resultado = await db.query(
+        'usuarios',
+        where: 'email = ? AND contrasena = ?', // <- ¡OJO aquí!
+        whereArgs: [email, password],
+      );
+
+      if (resultado.isNotEmpty) {
+        return UserModel.fromMap(resultado.first); // <- depende de tu implementación
+      }
+      return null;
+    }
+
 
 }
 

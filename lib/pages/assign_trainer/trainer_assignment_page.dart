@@ -212,29 +212,50 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
     );
   }
 
-  Widget _buildEventoDropdown() {
-    return DropdownButtonFormField<String>(
-      decoration: InputDecoration(
-        labelText: 'Seleccionar evento',
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-        filled: true,
-        fillColor: Colors.grey[100],
+Widget _buildEventoDropdown() {
+  return SizedBox(
+    width: double.infinity,
+    child: Theme(
+      data: Theme.of(context).copyWith(
+        canvasColor: Colors.white,
+        cardTheme: CardTheme(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
       ),
-      items: _eventos.map((evento) {
-        return DropdownMenuItem<String>(
-          value: evento.idEvento.toString(),
-          child: Text(evento.nombre),
-        );
-      }).toList(),
-      value: selectedEventId,
-      onChanged: (value) {
-        setState(() {
-          selectedEventId = value;
-        });
-      },
-      validator: (value) => value == null ? 'Campo requerido' : null,
-    );
-  }
+      child: DropdownButtonFormField<String>(
+        isExpanded: true, // 👈 Necesario para que el texto se ajuste al ancho
+        decoration: InputDecoration(
+          labelText: 'Seleccionar evento',
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          filled: true,
+          fillColor: Colors.grey[100],
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        value: selectedEventId,
+        onChanged: (value) {
+          setState(() {
+            selectedEventId = value;
+          });
+        },
+        validator: (value) => value == null ? 'Campo requerido' : null,
+        items: _eventos.map((evento) {
+          return DropdownMenuItem<String>(
+            value: evento.idEvento.toString(),
+            child: Text(
+              evento.nombre,
+              maxLines: 1, // 👈 Solo una línea visible
+              overflow: TextOverflow.ellipsis, // 👈 Trunca el texto con "..."
+              style: const TextStyle(fontSize: 16),
+            ),
+          );
+        }).toList(),
+      ),
+    ),
+  );
+}
+
 
   Widget _buildCantidadEntrenadoresDropdown() {
     return DropdownButtonFormField<int>(

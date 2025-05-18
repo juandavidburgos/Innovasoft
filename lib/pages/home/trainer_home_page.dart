@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/main_button.dart';
 import '../widgets/logout_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class TrainerHomePage extends StatefulWidget {
   const TrainerHomePage({super.key});
@@ -10,8 +12,23 @@ class TrainerHomePage extends StatefulWidget {
 }
 
 class _TrainerHomePage extends State<TrainerHomePage> {
-  String nombreUsuario = 'Carlos Ramírez';
-  int usuarioId = 1; // Simulado
+  String nombreUsuario = 'Cargando...';
+  int usuarioId = -1;
+  String rolUsuario = '';
+  String emailUsuario = '';
+
+
+  Future<void> _cargarDatosSesion() async {
+  final prefs = await SharedPreferences.getInstance();
+  setState(() {
+    usuarioId = prefs.getInt('id_usuario') ?? -1;
+    nombreUsuario = prefs.getString('nombre_usuario') ?? 'Desconocido';
+    emailUsuario = prefs.getString('email_usuario') ?? 'Sin correo';
+    rolUsuario = prefs.getString('rol_usuario') ?? 'Sin rol';
+  });
+}
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,8 +80,9 @@ class _TrainerHomePage extends State<TrainerHomePage> {
 
                     // Bienvenida alineada a la izquierda
                     Text(
-                      'Bienvenido, $nombreUsuario',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      'Bienvenido, $nombreUsuario\nID: $usuarioId\nCorreo: $emailUsuario\nRol: $rolUsuario',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     ),
                     const Divider(
                       thickness: 1.5,

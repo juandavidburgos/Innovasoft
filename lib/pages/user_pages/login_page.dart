@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'package:basic_flutter/pages/widgets/main_button.dart';
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../widgets/main_button.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -148,27 +150,23 @@ void _iniciarSesion() async {
                 ),
                 const SizedBox(height: 24),
 
-                // Botón ingresar más estrecho
-                Align(
-                  alignment: Alignment.center,
-                  child: SizedBox(
-                    width: 180,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: _iniciarSesion,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2E7D32), // verde oscuro
-                        elevation: 3,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    MainButton(
+                        texto: 'Ingresar',
+                        color: const Color(0xFF2E7D32),
+                        onPressed: _iniciarSesion,
                       ),
-                      child: const Text(
-                        'INGRESAR',
-                        style: TextStyle(color: Colors.white),
+                    const SizedBox(width: 10), // espacio entre botones
+                    MainButton(
+                        texto: 'Registrarme',
+                        color: const Color(0xFF105892),
+                        onPressed: () {
+                          Navigator.pushReplacementNamed(context, '/user_register');
+                        },
                       ),
-                    ),
-                  ),
+                  ],
                 ),
                 const SizedBox(height: 16),
 

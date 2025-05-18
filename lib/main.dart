@@ -2,10 +2,12 @@ import 'package:basic_flutter/pages/caracterization/final_register_page.dart';
 import 'package:basic_flutter/pages/caracterization/trainer_select_event_page.dart';
 import 'package:basic_flutter/pages/home/admin_event_home_page.dart';
 import 'package:basic_flutter/pages/home/admin_trainer_home_page.dart';
-import 'package:basic_flutter/pages/sure_logut_page.dart';
+import 'package:basic_flutter/pages/user_pages/register_user_page.dart';
+import 'package:basic_flutter/pages/user_pages/sucsess_reigster_page.dart';
+import 'package:basic_flutter/pages/user_pages/sure_logut_page.dart';
 import 'package:basic_flutter/splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'pages/login_page.dart';
+import 'pages/user_pages/login_page.dart';
 import 'pages/home/admin_home_page.dart';
 import 'pages/create_event/create_event_page.dart';
 import 'pages/create_event/view_events_page.dart';
@@ -57,15 +59,17 @@ class MyApp extends StatelessWidget {
           },
         '/trainer_select_event': (context) => const TrainerSelectEventPage(),
         '/final_register': (context) {
-          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-          final asistentes = args['asistentes'] as List<Map<String, dynamic>>;
-          final evento = args['evento'] as EventModel;
+            final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+            final asistentes = args['asistentes'] as List<Map<String, dynamic>>;
+            final evento = args['evento'] as EventModel;
 
-          return FinalRegisterPage(
-            asistentes: asistentes,
-            evento: evento,
-          );
-        },
+            return FinalRegisterPage(
+              asistentes: asistentes,
+              evento: evento,
+            );
+          },
+        '/user_register': (context) => const RegisterUserPage(),
+        '/success_register_page': (context) => SuccessRegisterPage(),
       },
     );
   }

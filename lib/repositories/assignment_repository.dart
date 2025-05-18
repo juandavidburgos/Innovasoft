@@ -1,5 +1,3 @@
-import '../models/assignment_model.dart';
-import '../models/event_model.dart';
 import '../services/local_service.dart';
 
 class AssignmentRepository {

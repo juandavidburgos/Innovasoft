@@ -1,3 +1,5 @@
+import 'package:basic_flutter/services/auth_service.dart';
+
 import '../models/user_model.dart';
 import '../services/local_service.dart';
 import '../services/remote_service.dart';
@@ -5,6 +7,7 @@ import '../services/remote_service.dart';
 class UserRepository {
   final LocalService _localService = LocalService();
   final RemoteService _remoteService = RemoteService();
+  final AuthService _authService = AuthService();
 
   /// Inserta un usuario en la base de datos local
   Future<int> agregarUsuario(UserModel usuario) {
@@ -19,6 +22,10 @@ class UserRepository {
   /// Actualiza un usuario en la base de datos local
   Future<int> actualizarUsuario(UserModel usuario) {
     return _localService.editarUusario(usuario);
+  }
+
+  Future<UserModel?> autenticarUsuarioLocal(String email, password){
+    return _authService.login(email, password);
   }
 
   /// Verifica remotamente si un correo ya está registrado
