@@ -27,7 +27,7 @@ class LocalDataService {
       final path = join(await getDatabasesPath(), 'app.db');
       
       // Elimina la base de datos
-      //await deleteDatabase(path); //--->REALMENTER ESTA LINEA ELIMINA LA BASE DE DATOS
+      await deleteDatabase(path); //--->REALMENTER ESTA LINEA ELIMINA LA BASE DE DATOS
 
       print("Base de datos eliminada con éxito.");
     } catch (e) {
@@ -45,7 +45,7 @@ Future<Database> get database async {
       final path = join(await getDatabasesPath(), 'app.db');
 
       //Mostrar la ruta en consola
-      print('Ruta de la base de datos: $path');
+      //print('Ruta de la base de datos: $path');
 
       //await deleteDB();
 
@@ -687,7 +687,82 @@ Future<Database> get database async {
     )).toList();
   }
 
+  ///METODO SIN PROBAR
+  Future<List<Map<String, dynamic>>> getAsistentesFormulario(
+    int idUsuario, int idEvento) async {
+    
+    final db = await database;
 
+    // Obtener los formularios del usuario en ese evento
+    final formularios = await db.query(
+      'formularios',
+      where: 'evento_id = ? AND id_usuario = ?',
+      whereArgs: [idEvento, idUsuario],
+    );
+
+    print('formularios: $formularios');
+
+    List<Map<String, dynamic>> asistentes = [];
+
+    for (var formulario in formularios) {
+      final formularioId = formulario['id_formulario'];
+
+      // Obtener preguntas relacionadas al formulario que tengan que ver con nombre, correo, o identificación
+      final preguntas = await db.query(
+        'preguntas',
+        where: 'formulario_id = ? AND (LOWER(contenido) LIKE ? OR LOWER(contenido) LIKE ? OR LOWER(contenido) LIKE ?)',
+        whereArgs: [
+          formularioId,
+          '%nombre%',
+          '%correo%',
+          '%identificación%',
+        ],
+      );
+
+      for (var pregunta in preguntas) {
+        final preguntaId = pregunta['id_pregunta'];
+        final contenidoPregunta = pregunta['contenido'].toString().toLowerCase();
+
+        // Obtener respuestas para esa pregunta
+        final respuestas = await db.query(
+          'respuestas',
+          where: 'formulario_id = ? AND pregunta_id = ?',
+          whereArgs: [formularioId, preguntaId],
+        );
+
+        for (var respuesta in respuestas) {
+          final valor = respuesta['contenido'];
+
+          // Buscamos si ya hay un asistente con ese formulario
+          var asistente = asistentes.firstWhere(
+              (a) => a['formulario_id'] == formularioId,
+              orElse: () => {});
+
+          if (asistente.isEmpty) {
+            asistente = {
+              'formulario_id': formularioId,
+              'nombre': '',
+              'correo': '',
+              'identificacion': '',
+            };
+            asistentes.add(asistente);
+          }
+
+          // Asignamos según el tipo de pregunta
+          if (contenidoPregunta.contains('nombre')) {
+            asistente['nombre'] = valor;
+          } else if (contenidoPregunta.contains('correo')) {
+            asistente['correo'] = valor;
+          } else if (contenidoPregunta.contains('identificación') ||
+              contenidoPregunta.contains('identificacion')) {
+            asistente['identificacion'] = valor;
+          }
+        }
+      }
+    }
+
+    return asistentes;
+  }
 
   Future<List<AnswerModel>> getAnswers(int formularioId) async {
     final db = await database;

@@ -1,90 +1,89 @@
 import 'package:flutter/material.dart';
-import '../../models/answer_model.dart';
 import '../../models/event_model.dart';
-import '../../services/data_service.dart';
+import '../../repositories/register_repository.dart';
 
 class CheckAssistantPage extends StatefulWidget {
   final EventModel evento;
 
-  const CheckAssistantPage({Key? key, required this.evento}) : super(key: key);
+  const CheckAssistantPage({super.key, required this.evento});
 
   @override
   State<CheckAssistantPage> createState() => _CheckAssistantPageState();
 }
 
 class _CheckAssistantPageState extends State<CheckAssistantPage> {
-  final DatabaseService _dataService = DatabaseService();
-
-  List<Map<String, dynamic>> asistentes = []; // {'nombre': ..., 'identificacion': ..., 'marcado': ...}
+  final RegisterRepository _registerRepository = RegisterRepository();
+  List<Map<String, dynamic>> asistentes = [];
+  Map<int, bool> checks = {};
   bool isLoading = true;
 
+  late int idUsuario;
+
+  EventModel get evento => widget.evento;
+
   @override
-  void initState() {
-    super.initState();
-    _cargarAsistentes();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    idUsuario = 5; // Simulado
+    _loadAsistentes();
   }
 
-  Future<void> _cargarAsistentes() async {
-    final formularios = await _dataService.getFormsByEvent(widget.evento.idEvento);
-    
-    List<Map<String, dynamic>> tempAsistentes = [];
+  Future<void> _loadAsistentes() async {
+    final int? idEvento = evento.idEvento;
 
-    for (var form in formularios) {
-      final respuestas = await _dataService.getAnswers(form.idFormulario);
-
-      String? nombre;
-      String? identificacion;
-
-      for (var resp in respuestas) {
-        if (resp.preguntaId == 1) {
-          nombre = resp.contenido;
-        } else if (resp.preguntaId == 2) {
-          identificacion = resp.contenido;
-        }
-      }
-
-      if (nombre != null && identificacion != null) {
-        tempAsistentes.add({
-          'nombre': nombre,
-          'identificacion': identificacion,
-          'marcado': false,
-        });
-      }
+    if (idEvento != null) {
+      final result = await _registerRepository.obtenerAsistentesFormulario(idUsuario, idEvento);
+      setState(() {
+        asistentes = result;
+        checks = {for (var a in asistentes) a['formulario_id'] as int: false};
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        asistentes = [];
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: El evento no está disponible')),
+      );
     }
-
-    setState(() {
-      asistentes = tempAsistentes;
-      isLoading = false;
-    });
-  }
-
-  void _toggleCheck(int index, bool? value) {
-    setState(() {
-      asistentes[index]['marcado'] = value ?? false;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Asistentes - ${widget.evento.nombre}'),
-        backgroundColor: Colors.green[700],
+        title: Text('Lista de Asistentes'),
+        backgroundColor: Colors.green,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: asistentes.length,
-              itemBuilder: (context, index) {
-                final asistente = asistentes[index];
-                return CheckboxListTile(
-                  title: Text(asistente['nombre']),
-                  subtitle: Text('ID: ${asistente['identificacion']}'),
-                  value: asistente['marcado'],
-                  onChanged: (value) => _toggleCheck(index, value),
-                );
-              },
-            ),
+          : asistentes.isEmpty
+              ? const Center(child: Text('No hay asistentes registrados para este evento.'))
+              : ListView.builder(
+                  itemCount: asistentes.length,
+                  itemBuilder: (context, index) {
+                    final asistente = asistentes[index];
+                    final id = asistente['formulario_id'] as int;
+                    return CheckboxListTile(
+                      title: Text(asistente['nombre'] ?? 'Sin nombre'),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Correo: ${asistente['correo'] ?? 'N/A'}'),
+                          Text('ID: ${asistente['identificacion'] ?? 'N/A'}'),
+                        ],
+                      ),
+                      value: checks[id],
+                      onChanged: (bool? value) {
+                        setState(() {
+                          checks[id] = value ?? false;
+                        });
+                      },
+                    );
+                  },
+                ),
     );
   }
 }
+

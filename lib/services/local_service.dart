@@ -165,4 +165,9 @@ class LocalService {
     return await LocalDataService.db.crearAdminTemporal();
   }
 
+  /// Obtener asistentes del formulario para un entrenador y evento específico
+  Future<List<Map<String, dynamic>>> obtenerAsistentesFormulario(int userId, int eventId) async {
+    return await LocalDataService.db.getAsistentesFormulario(userId, eventId);
+  }
+
 }

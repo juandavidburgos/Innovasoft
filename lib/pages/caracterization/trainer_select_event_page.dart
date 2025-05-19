@@ -14,8 +14,8 @@ class TrainerSelectEventPage extends StatefulWidget {
 class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
   final EventRepository _eventRepo = EventRepository();
 
-  String nombreUsuario = 'Carlos Ramírez';
-  int usuarioId = 1; // Simulado
+  String nombreUsuario = 'Adrian Delgado';
+  int usuarioId = 5; // Simulado
   List<EventModel> eventosAsignados = [];
   EventModel? eventoSeleccionado;
 

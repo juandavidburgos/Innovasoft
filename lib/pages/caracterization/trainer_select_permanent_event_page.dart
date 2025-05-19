@@ -4,18 +4,18 @@ import 'package:flutter/material.dart';
 import '../../repositories/event_repository.dart';
 import '../../models/event_model.dart';
 
-class TrainerSelectPermanetEventPage extends StatefulWidget {
-  const TrainerSelectPermanetEventPage({super.key});
+class TrainerSelectPermanentEventPage extends StatefulWidget {
+  const TrainerSelectPermanentEventPage({super.key});
 
   @override
-  State<TrainerSelectPermanetEventPage> createState() => TrainerSelectPermanetEventPageState();
+  State<TrainerSelectPermanentEventPage> createState() => TrainerSelectPermanentEventPageState();
 }
 
-class TrainerSelectPermanetEventPageState extends State<TrainerSelectPermanetEventPage> {
+class TrainerSelectPermanentEventPageState extends State<TrainerSelectPermanentEventPage> {
   final EventRepository _eventRepo = EventRepository();
 
-  String nombreUsuario = 'Carlos Ramírez';
-  int usuarioId = 1; // Simulado
+  String nombreUsuario = 'Adrian Delgado';
+  int usuarioId = 5; // Simulado
   List<EventModel> eventosAsignados = [];
   EventModel? eventoSeleccionado;
 
@@ -45,8 +45,8 @@ class TrainerSelectPermanetEventPageState extends State<TrainerSelectPermanetEve
 
     Navigator.pushNamed(
       context,
-      '/register_asistence',
-      //'/check_assistant',
+      //'/register_asistence',
+      '/check_assistant',
       arguments: eventoSeleccionado,
     );
   }

@@ -20,6 +20,8 @@ import 'pages/edit_assign_trainer/edit_assignment_page.dart';
 import 'pages/disable_event/disable_event_page.dart';
 import 'pages/home/trainer_home_page.dart';
 import 'pages/caracterization/assistence_register_page.dart';
+import 'pages/caracterization/trainer_select_permanent_event_page.dart';
+import 'pages/caracterization/check_assistant_page.dart';
 import 'models/event_model.dart';
 
 void main() {
@@ -60,6 +62,7 @@ class MyApp extends StatelessWidget {
             return AssistenceRegisterPage(evento: evento);
           },
         '/trainer_select_event': (context) => const TrainerSelectEventPage(),
+        '/trainer_select_permanent_event': (context) => const TrainerSelectPermanentEventPage(),
         '/final_register': (context) {
             final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
             final asistentes = args['asistentes'] as List<Map<String, dynamic>>;
@@ -70,10 +73,10 @@ class MyApp extends StatelessWidget {
               evento: evento,
             );
           },
-        /*'/check_assistant': (context) {
+        '/check_assistant': (context) {
           final evento = ModalRoute.of(context)!.settings.arguments as EventModel;
           return CheckAssistantPage(evento: evento);
-        },*/
+        },
         '/user_register': (context) => const RegisterUserPage(),
         '/success_register_page': (context) => SuccessRegisterPage(),
         '/view_users': (context) => ViewUsersPage(),

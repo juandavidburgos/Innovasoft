@@ -104,7 +104,7 @@ class _TrainerHomePage extends State<TrainerHomePage> {
                       color: const Color.fromARGB(255, 16, 88, 146),
                       ancho: 260,
                       onPressed: () {
-                        Navigator.pushNamed(context, '/trainer_select_event');
+                        Navigator.pushNamed(context, '/trainer_select_permanent_event');
                       },
                     ),
                   ],

@@ -32,4 +32,9 @@ class RegisterRepository {
   Future<void> eliminarFormularioGuardado(int formularioId) {
     return _localService.eliminarFormularioYRespuestas(formularioId);
   }
+
+  Future<List<Map<String, dynamic>>> obtenerAsistentesFormulario(int userId, int eventId) {
+    return _localService.obtenerAsistentesFormulario(userId, eventId);
+  }
+
 }
