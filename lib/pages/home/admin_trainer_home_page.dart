@@ -34,7 +34,7 @@ class AdminTrainerHomePage extends StatelessWidget {
                   texto: 'Asignar entrenador',
                   color: Color(0xFF1A3E58),
                   icono: Icons.assignment,
-                  ancho: 260,
+                  ancho: 270,
                   onPressed: () {
                     Navigator.pushNamed(context, '/assign_trainer');
                   },
@@ -44,7 +44,7 @@ class AdminTrainerHomePage extends StatelessWidget {
                   texto: 'Editar asignación',
                   color: Color(0xFF1A3E58),
                   icono: Icons.create,
-                  ancho: 260,
+                  ancho: 270,
                   onPressed: () {
                     Navigator.pushNamed(context, '/edit_assign');
                   },
@@ -54,11 +54,31 @@ class AdminTrainerHomePage extends StatelessWidget {
                   texto: 'Visualizar asignaciones',
                   color: Color(0xFF1A3E58),
                   icono: Icons.remove_red_eye,
-                  ancho: 260,
+                  ancho: 270,
                   onPressed: () {
                     Navigator.pushNamed(context, '/view_assign');
                   },
                 ),
+                const SizedBox(height: 15),
+                  MainButton(
+                    texto: 'Listar entrenadores',
+                    color: Color(0xFF1A3E58),
+                    icono: Icons.view_agenda,
+                    ancho: 270,
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/view_users');
+                    },
+                  ),
+                  const SizedBox(height: 15),
+                  MainButton(
+                    texto: 'Deshabilitar entrenadores',
+                    color: Color(0xFF1A3E58),
+                    icono: Icons.disabled_visible,
+                    ancho: 270,
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/disable_users');
+                    },
+                  ),
                 const SizedBox(height: 50),
                 ActionButton(
                   text: 'Regresar',

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/main_button.dart';
 import '../widgets/logout_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class TrainerHomePage extends StatefulWidget {
   const TrainerHomePage({super.key});
@@ -10,8 +12,29 @@ class TrainerHomePage extends StatefulWidget {
 }
 
 class _TrainerHomePage extends State<TrainerHomePage> {
-  String nombreUsuario = 'Carlos Ramírez';
-  int usuarioId = 1; // Simulado
+  String nombreUsuario = 'Cargando...';
+  int usuarioId = -1;
+  String rolUsuario = '';
+  String emailUsuario = '';
+  String estado = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarDatosSesion();
+  }
+
+  Future<void> _cargarDatosSesion() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      usuarioId = prefs.getInt('id_usuario') ?? -1;
+      nombreUsuario = prefs.getString('nombre_usuario') ?? 'Desconocido';
+      emailUsuario = prefs.getString('email_usuario') ?? 'Sin correo';
+      rolUsuario = prefs.getString('rol_usuario') ?? 'Sin rol';
+      estado = prefs.getString('estado') ?? 'Inactivo';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,10 +42,10 @@ class _TrainerHomePage extends State<TrainerHomePage> {
       body: SafeArea(
         child: Stack(
           children: [
-            // Botón logout (arriba a la derecha)
+            // Botón logout (arriba a la izquierda)
             Positioned(
-              top: 10, // sobresale hacia arriba
-              left: -20, // sobresale hacia la izquierda
+              top: 10,
+              left: -20,
               child: LogoutIconButton(
                 ancho: 65,
                 alto: 40,
@@ -37,7 +60,8 @@ class _TrainerHomePage extends State<TrainerHomePage> {
                 ),
               ),
             ),
-            // Contenido principal centrado
+
+            // Contenido principal
             Center(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -54,24 +78,18 @@ class _TrainerHomePage extends State<TrainerHomePage> {
                       style: TextStyle(fontStyle: FontStyle.italic),
                     ),
                     const SizedBox(height: 20),
-                    // Línea divisora
-                    const Divider(
-                      thickness: 1.5,
-                      color: Color(0xFFCCCCCC),
-                      height: 30,
+
+                    const Divider(thickness: 1.5, color: Color(0xFFCCCCCC), height: 30),
+
+                    Text(
+                      'Bienvenido, $nombreUsuario!\nRol: $rolUsuario \n Estado: $estado' ,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     ),
 
-                    // Bienvenida alineada a la izquierda
-                    Text(
-                      'Bienvenido, $nombreUsuario',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                    ),
-                    const Divider(
-                      thickness: 1.5,
-                      color: Color(0xFFCCCCCC),
-                      height: 30,
-                    ),
+                    const Divider(thickness: 1.5, color: Color(0xFFCCCCCC), height: 30),
                     const SizedBox(height: 20),
+
                     MainButton(
                       texto: 'Evento nuevo',
                       color: const Color.fromARGB(255, 232, 78, 17),
@@ -86,7 +104,7 @@ class _TrainerHomePage extends State<TrainerHomePage> {
                       color: const Color.fromARGB(255, 16, 88, 146),
                       ancho: 260,
                       onPressed: () {
-                        Navigator.pushNamed(context, '/trainer_select_event');
+                        Navigator.pushNamed(context, '/trainer_select_permanent_event');
                       },
                     ),
                   ],
@@ -99,3 +117,4 @@ class _TrainerHomePage extends State<TrainerHomePage> {
     );
   }
 }
+

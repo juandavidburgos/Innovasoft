@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'edit_event_page.dart'; // Asegúrate de importar la página correcta
 
 class EditEventSuccessPage extends StatelessWidget {

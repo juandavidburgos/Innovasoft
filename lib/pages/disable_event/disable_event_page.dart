@@ -47,7 +47,6 @@ class _DisableEventPageState extends State<DisableEventPage> {
       );
       return;
     }
-
     try {
       Navigator.push(
         context,

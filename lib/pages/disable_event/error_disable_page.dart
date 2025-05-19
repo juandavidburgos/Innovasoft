@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/action_button.dart';
 
 /// Página que se muestra cuando ocurre un error al deshabilitar eventos.
 /// Regresa automáticamente a la pantalla anterior tras 2 segundos.
@@ -27,11 +28,14 @@ class ErrorDisablePage extends StatelessWidget {
             const Text("Comuníquese con el administrador de \n la aplicación para resolver el problema.",
             style: TextStyle(color: Colors.grey)),
             const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-              onPressed: () => Navigator.pop(context),
-              child: const Text('VOLVER', style: TextStyle(color: Colors.white))
-            ),
+            ActionButton(
+                text: 'Regresar',
+                color: Color.fromARGB(255, 134, 134, 134),
+                icono: Icons.arrow_back,
+                ancho: 145,
+                alto: 48,
+                onPressed: () => Navigator.pop(context),
+              ),
           ],
         ),
       ),

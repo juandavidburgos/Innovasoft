@@ -1,3 +1,5 @@
+import 'package:basic_flutter/services/auth_service.dart';
+
 import '../models/user_model.dart';
 import '../services/local_service.dart';
 import '../services/remote_service.dart';
@@ -5,6 +7,7 @@ import '../services/remote_service.dart';
 class UserRepository {
   final LocalService _localService = LocalService();
   final RemoteService _remoteService = RemoteService();
+  final AuthService _authService = AuthService();
 
   /// Inserta un usuario en la base de datos local
   Future<int> agregarUsuario(UserModel usuario) {
@@ -12,8 +15,24 @@ class UserRepository {
   }
 
   /// Retorna todos los usuarios almacenados localmente
-  Future<List<UserModel>> obtenerUsuarios() {
+  Future<List<UserModel>> obtenerUsuariosEntrenadoresActivos() {
+    return _localService.obtenerEntrenadoresActivos();
+  }
+
+  Future<List<UserModel>> obtenerTodosEntrenadores() async{
+    return _localService.obtenerEntrenadores();
+  }
+
+  Future<List<UserModel>> obtenerUsuarios(){
     return _localService.obtenerUsuarios();
+  }
+
+  Future<int> eliminarUsuario(int id) async{
+    return _localService.eliminarUsuario(id);
+  }
+
+  Future<int> deshabilitarEntrenador(int id) async{
+    return _localService.deshabilitarEntrenador(id);
   }
 
   /// Actualiza un usuario en la base de datos local
@@ -21,29 +40,33 @@ class UserRepository {
     return _localService.editarUusario(usuario);
   }
 
+  Future<UserModel?> autenticarUsuarioLocal(String email, password){
+    return _authService.localLogin(email, password);
+  }
+
   /// Verifica remotamente si un correo ya está registrado
   Future<bool> existeCorreoRemoto(String email) {
-    return _remoteService.existeCorreo(email);
+    return _remoteService.existeCorreoRemoto(email);
   }
 
   /// Envía un nuevo usuario al servidor remoto
   Future<bool> enviarUsuarioRemoto(UserModel usuario) {
-    return _remoteService.sendUsuario(usuario);
+    return _remoteService.guardarUsuarioRemoto(usuario);
   }
 
   /// Obtiene la lista de usuarios desde el servidor
   Future<List<UserModel>> obtenerUsuariosRemotos() {
-    return _remoteService.fetchUsuarios();
+    return _remoteService.buscarUsuariosRemoto();
   }
 
   /// Actualiza un usuario existente en el servidor
   Future<bool> actualizarUsuarioRemoto(UserModel usuario) {
-    return _remoteService.updateUsuario(usuario);
+    return _remoteService.actualizarUsuarioRemoto(usuario);
   }
 
   /// Elimina un usuario del servidor
   Future<bool> eliminarUsuarioRemoto(int idUsuario) {
-    return _remoteService.deleteUsuario(idUsuario);
+    return _remoteService.eliminarUsuarioRemoto(idUsuario);
   }
 
   /// --- MÉTODOS DE SINCRONIZACIÓN ---

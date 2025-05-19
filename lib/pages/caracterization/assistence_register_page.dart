@@ -73,8 +73,13 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
             }
             break;
           case 'correo_electronico':
-            if (value != null && value.isNotEmpty && !value.contains('@')) {
-              return 'Correo inválido';
+            if (value != null && value.isNotEmpty) {
+              if (value.contains(' ')) {
+                return 'El correo no debe contener espacios';
+              }
+              if (!value.contains('@') || !value.contains('.')) {
+                return 'Correo inválido';
+              }
             }
             break;
           case 'meses_embarazo':
@@ -128,6 +133,8 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Asistente registrado.')));
     }
+    _mostrarResumenAsistente(_asistentes.last);
+
   }
 
 void _finalizarRegistro() {
@@ -140,7 +147,7 @@ void _finalizarRegistro() {
         const SnackBar(content: 
           Text('Debe registrar al menos un asistente con todos los campos obligatorios.'),
           backgroundColor: Colors.red,
-          duration: Duration(seconds: 1),
+          duration: Duration(seconds: 5),
         ),
         
       );
@@ -166,6 +173,29 @@ void _finalizarRegistro() {
         asistentes: _asistentes,
         evento: widget.evento,
       ),
+    ),
+  );
+}
+
+void _mostrarResumenAsistente(Map<String, dynamic> asistente) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Asistente registrado'),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: asistente.entries.map((entry) {
+            return Text('${entry.key}: ${entry.value}');
+          }).toList(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cerrar'),
+        ),
+      ],
     ),
   );
 }

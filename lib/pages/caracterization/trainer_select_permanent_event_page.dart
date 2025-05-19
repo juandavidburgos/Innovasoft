@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import '../../repositories/event_repository.dart';
 import '../../models/event_model.dart';
 
-class TrainerSelectEventPage extends StatefulWidget {
-  const TrainerSelectEventPage({super.key});
+class TrainerSelectPermanentEventPage extends StatefulWidget {
+  const TrainerSelectPermanentEventPage({super.key});
 
   @override
-  State<TrainerSelectEventPage> createState() => _TrainerSelectEventPageState();
+  State<TrainerSelectPermanentEventPage> createState() => TrainerSelectPermanentEventPageState();
 }
 
-class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
+class TrainerSelectPermanentEventPageState extends State<TrainerSelectPermanentEventPage> {
   final EventRepository _eventRepo = EventRepository();
 
   String nombreUsuario = 'Adrian Delgado';
@@ -45,7 +45,8 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
 
     Navigator.pushNamed(
       context,
-      '/register_asistence',
+      //'/register_asistence',
+      '/check_assistant',
       arguments: eventoSeleccionado,
     );
   }
@@ -133,68 +134,25 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
       );
     }
 
-    return SizedBox(
-      width: double.infinity,
-      child: Theme(
-        data: Theme.of(context).copyWith(
-          canvasColor: Colors.white,
-          cardTheme: CardTheme(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-        child: DropdownButtonFormField<EventModel>(
-          isExpanded: true,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          ),
-          value: eventoSeleccionado,
-          hint: const Text('Seleccionar evento'),
-          selectedItemBuilder: (BuildContext context) {
-            // 👇 Esto personaliza lo que se ve cuando un evento está seleccionado
-            return eventosAsignados.map((evento) {
-              return Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  evento.nombre,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              );
-            }).toList();
-          },
-          items: eventosAsignados.map((evento) {
-            final fecha = evento.fechaHoraInicio.toLocal().toIso8601String().substring(0, 10);
-            return DropdownMenuItem<EventModel>(
-              value: evento,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    evento.nombre,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                    softWrap: true,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Fecha: $fecha',
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                  const Divider(color: Colors.grey, thickness: 0.5),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              eventoSeleccionado = value;
-            });
-          },
-        ),
+    return DropdownButtonFormField<EventModel>(
+      decoration: InputDecoration(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
+      value: eventoSeleccionado,
+      hint: const Text('Seleccionar evento'),
+      items: eventosAsignados.map((evento) {
+        final fecha = evento.fechaHoraInicio.toLocal().toIso8601String().substring(0, 10);
+        return DropdownMenuItem<EventModel>(
+          value: evento,
+          child: Text('${evento.nombre} - $fecha'),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          eventoSeleccionado = value;
+        });
+      },
     );
   }
 

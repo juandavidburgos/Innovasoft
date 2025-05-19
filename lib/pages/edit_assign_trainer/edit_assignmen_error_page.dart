@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/action_button.dart';
 
 class EditAssignmentErrorPage extends StatelessWidget {
   const EditAssignmentErrorPage({super.key});
@@ -14,7 +15,7 @@ class EditAssignmentErrorPage extends StatelessWidget {
             Icon(Icons.error, color: Colors.red, size: 150),
             const SizedBox(height: 10),
             const Text(
-              'FALLO AL EDITAR LA ASIGNACION DE EL/LOS \n ENTRENADOR(ES)',
+              'Fallo al editar la asignación de el/los \n entrenadores.',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
@@ -24,11 +25,14 @@ class EditAssignmentErrorPage extends StatelessWidget {
             style: TextStyle(color: Colors.grey)),
 
             const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-              onPressed: () => Navigator.pop(context),
-              child: const Text('VOLVER', style: TextStyle(color: Colors.white))
-            ),
+            ActionButton(
+                text: 'Regresar',
+                color: Color.fromARGB(255, 134, 134, 134),
+                icono: Icons.arrow_back,
+                ancho: 145,
+                alto: 48,
+                onPressed: () => Navigator.pop(context),
+              ),
           ],
         ),
       ),

@@ -1,6 +1,5 @@
 import 'package:basic_flutter/models/answer_model.dart';
 import 'package:basic_flutter/models/form_model.dart';
-import 'package:flutter/material.dart';
 import '../services/local_service.dart';
 
 class RegisterRepository {
@@ -33,4 +32,9 @@ class RegisterRepository {
   Future<void> eliminarFormularioGuardado(int formularioId) {
     return _localService.eliminarFormularioYRespuestas(formularioId);
   }
+
+  Future<List<Map<String, dynamic>>> obtenerAsistentesFormulario(int userId, int eventId) {
+    return _localService.obtenerAsistentesFormulario(userId, eventId);
+  }
+
 }
