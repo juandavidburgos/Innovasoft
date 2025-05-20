@@ -92,11 +92,11 @@ class _EditEventPageState extends State<EditEventPage> {
                             selectedMunicipio != null) {
                           final idEvento = int.parse(selectedEvent!);
                           final eventoActualizado = EventModel(
-                            idEvento: idEvento,
+                            id_evento: idEvento,
                             nombre: nameController.text.trim(),
                             descripcion: descripcionController.text.trim(),
-                            fechaHoraInicio: fechaHoraInicio!,
-                            fechaHoraFin: fechaHoraFin!,
+                            fecha_hora_inicio: fechaHoraInicio!,
+                            fecha_hora_fin: fechaHoraFin!,
                             ubicacion: selectedMunicipio!,
                             estado: 'activo',
                           );
@@ -159,7 +159,7 @@ class _EditEventPageState extends State<EditEventPage> {
       ),
       items: _eventos.map((evento) {
         return DropdownMenuItem<String>(
-          value: evento.idEvento.toString(),
+          value: evento.id_evento.toString(),
           child: Text(evento.nombre),
         );
       }).toList(),
@@ -167,13 +167,13 @@ class _EditEventPageState extends State<EditEventPage> {
       onChanged: (value) {
         setState(() {
           selectedEvent = value;
-          final evento = _eventos.firstWhere((e) => e.idEvento.toString() == value);
+          final evento = _eventos.firstWhere((e) => e.id_evento.toString() == value);
           nameController.text = evento.nombre;
           descripcionController.text = evento.descripcion ?? '';
           locationController.text = evento.ubicacion;
           selectedMunicipio = evento.ubicacion;
-          fechaHoraInicio = evento.fechaHoraInicio;
-          fechaHoraFin = evento.fechaHoraFin;
+          fechaHoraInicio = evento.fecha_hora_inicio;
+          fechaHoraFin = evento.fecha_hora_fin;
         });
       },
     );

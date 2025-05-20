@@ -1,19 +1,29 @@
+import 'package:basic_flutter/models/form_model.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/event_model.dart';
 import '../models/user_model.dart';
+import '../models/answer_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
 class RemoteDataService {
 
+  /// -------------------------------------------------
+  /// *MÉTODOS REMOTOS
+  /// -------------------------------------------------
+
+  // Url del api
   final String apiUrl = 'http://localhost:8080/api/eventos';
   final String apiUrlUsuarios = 'http://localhost:8080/api/usuarios';
 
   static final RemoteDataService dbR = RemoteDataService();
 
+  /// -------------------------------------------------
+  /// *MÉTODOS ASOCIADOS A EVENTOS
+  /// -------------------------------------------------
+
   /// Envía un nuevo evento al servidor mediante HTTP POST.
-  ///
   /// Retorna `true` si el servidor responde con éxito (200 o 201).
   Future<bool> sendEvent(EventModel event) async {
     try {
@@ -54,7 +64,7 @@ class RemoteDataService {
   Future<bool> updateEvento(EventModel evento) async {
     try {
       final response = await http.put(
-        Uri.parse('$apiUrl/${evento.idEvento}'),
+        Uri.parse('$apiUrl/${evento.id_evento}'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(evento.toJson()),
       );
@@ -89,7 +99,10 @@ class RemoteDataService {
       return false;
     }
   }
-  ///Metodos para usuario
+  
+  /// -------------------------------------------------
+  /// *MÉTODOS ASOCIADOS A LOS USUARIOS
+  /// -------------------------------------------------
   
   // Insertar un nuevo usuario
   Future<bool> sendUsuario(UserModel usuario) async {
@@ -125,7 +138,7 @@ class RemoteDataService {
   Future<bool> updateUsuario(UserModel usuario) async {
     try {
       final response = await http.put(
-        Uri.parse('$apiUrlUsuarios/${usuario.idUsuario}'),
+        Uri.parse('$apiUrlUsuarios/${usuario.id_usuario}'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(usuario.toJson()),
       );
@@ -146,6 +159,28 @@ class RemoteDataService {
       return false;
     }
   }
+
+  /// -------------------------------------------------
+  /// *MÉTODOS DE ASIGNACIONES
+  /// -------------------------------------------------
+
+  Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
+    final response = await http.get(
+      Uri.parse('$apiUrl/usuarios/$idUsuario/eventos'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as List;
+      return data.map((e) => EventModel.fromJson(e)).toList();
+    } else {
+      return [];
+    }
+  }
+
+
+  /// -------------------------------------------------
+  /// *MÉTODOS DE AUTENTICACIÓN DE USUARIOS
+  /// -------------------------------------------------
 
   // Verificar si un correo ya existe
   Future<bool> existeCorreo(String email) async {
@@ -186,7 +221,7 @@ class RemoteDataService {
         await prefs.setString('estado', decoded['estado']);
 
         return UserModel(
-          idUsuario: decoded['id_usuario'],
+          id_usuario: decoded['id_usuario'],
           nombre: decoded['nombre'],
           email: email,
           contrasena: '', // no se guarda
@@ -210,4 +245,27 @@ class RemoteDataService {
       await prefs.remove('rol_usuario');
 
   }
+
+  /// -------------------------------------------------
+  /// *MÉTODOS ASOCIADOS A LOS FORMULARIOS
+  /// -------------------------------------------------
+
+  Future<bool> sendFormularioRespondido(FormModel formulario, List<AnswerModel> respuestas) async {
+    final body = {
+      'formulario': formulario.toJson(),
+      'respuestas': respuestas.map((r) => r.toJson()).toList(),
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiUrl/formularios/responder'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      );
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (_) {
+      return false;
+    }
+  }  
+
 }

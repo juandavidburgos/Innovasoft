@@ -1,18 +1,25 @@
+import '../services/remote_service.dart';
 import '../services/local_service.dart';
+import '../models/event_model.dart';
 
 class AssignmentRepository {
   
   final LocalService _localService = LocalService();
+  final RemoteService _remoteService = RemoteService();                       
 
+  /// -------------------------------------------------
+  /// MÉTODOS DE GESTIÓN LOCAL
+  /// -------------------------------------------------
+
+  
+
+  /// 
   /// Asigna múltiples entrenadores a un evento
   Future<int> asignarEntrenadoresAEvento(int eventoId, List<int> trainerIds) {
     return _localService.asignarEntrenadores(eventoId, trainerIds);
   }
 
-  /// Retorna una lista de eventos con entrenadores ya asignados
-  /*Future<List<EventModel>> obtenerEventosConEntrenadoresAsignados() {
-    return _localService.obtenerEventosConEntrenadoresAsignados();
-  }*/
+  /// Obtiene eventos con entrenadores asignados
   Future<List<Map<String, dynamic>>> obtenerEventosConEntrenadoresAsignados() {
     // Llamamos al servicio que obtiene los eventos con los entrenadores asignados
     return _localService.obtenerEventosConEntrenadoresAsignados();
@@ -37,4 +44,12 @@ class AssignmentRepository {
   /*Future<int> eliminarAsignacion(int idAsignacion) {
     return _localService.eliminarAsignacion(idAsignacion);
   }*/
+
+  /// -------------------------------------------------
+  /// MÉTODOS DE GESTIÓN REMOTA
+  /// -------------------------------------------------
+
+  Future<List<EventModel>> getEventosAsignados(int idUsuario) async{
+    return _remoteService.obtenerEventosAsignadosRemoto(idUsuario);
+  }
 }

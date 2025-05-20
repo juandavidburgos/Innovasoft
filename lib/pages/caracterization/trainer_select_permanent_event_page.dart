@@ -142,7 +142,7 @@ class TrainerSelectPermanentEventPageState extends State<TrainerSelectPermanentE
       value: eventoSeleccionado,
       hint: const Text('Seleccionar evento'),
       items: eventosAsignados.map((evento) {
-        final fecha = evento.fechaHoraInicio.toLocal().toIso8601String().substring(0, 10);
+        final fecha = evento.fecha_hora_inicio.toLocal().toIso8601String().substring(0, 10);
         return DropdownMenuItem<EventModel>(
           value: evento,
           child: Text('${evento.nombre} - $fecha'),

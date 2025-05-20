@@ -1,3 +1,4 @@
+import 'package:basic_flutter/repositories/forms_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'final_register_page.dart';
@@ -13,6 +14,8 @@ class AssistenceRegisterPage extends StatefulWidget {
 }
 
 class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
+  final FormsRepository _repo = FormsRepository();
+
   final _formKey = GlobalKey<FormState>();
   final Map<String, dynamic> _formData = {};
   final List<Map<String, dynamic>> _asistentes = [];
@@ -200,6 +203,65 @@ void _mostrarResumenAsistente(Map<String, dynamic> asistente) {
   );
 }
 
+/* *VERIFICAR!!
+
+Future<bool> hayInternet() async {
+  final result = await Connectivity().checkConnectivity();
+  return result != ConnectivityResult.none;
+}
+
+List<AnswerModel> _crearRespuestasDesdeFormulario(int formId) {
+  int preguntaId = 1;
+  return _formData.entries.map((entry) {
+    return AnswerModel(
+      preguntaId: preguntaId++, // puedes definir este orden como quieras
+      formularioId: formId,
+      contenido: entry.value?.toString() ?? '',
+    );
+  }).toList();
+}
+
+void _guardarAsistente() async {
+  if (!_formKey.currentState!.validate()) return;
+
+  _formKey.currentState!.save();
+
+  final formId = DateTime.now().millisecondsSinceEpoch;
+
+  final form = FormModel(
+    idFormulario: formId,
+    eventoId: widget.evento.idEvento,
+    idUsuario: usuarioId,
+    titulo: 'Asistente',
+    descripcion: 'Registro individual',
+    fechaCreacion: DateTime.now().toIso8601String(),
+    latitud: null,
+    longitud: null,
+    pathImagen: null,
+  );
+
+  final respuestas = _crearRespuestasDesdeFormulario(formId);
+
+  final conectado = await hayInternet();
+
+  if (conectado) {
+    final enviado = await _repo.enviarFormularioConRespuestas(form, respuestas);
+    if (!enviado) await _repo.guardarEnColaPeticiones(form, respuestas);
+  } else {
+    await _repo.guardarEnColaPeticiones(form, respuestas);
+  }
+
+  _formKey.currentState!.reset();
+  _formData.clear();
+  _fechaController.clear();
+  _edadController.clear();
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Asistente registrado.')),
+  );
+}
+
+ */
 
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(

@@ -1,51 +1,51 @@
 class QuestionModel {
-  final int? id;
-  final int formularioId;
+  final int? id_pregunta;
+  final int formulario_id;
   final String contenido;
   final String tipo; // Ej: Texto, Número, Opción, Fecha, Si/No
-  final bool esObligatoria;
+  final bool es_obligatoria;
 
   QuestionModel({
-    this.id,
-    required this.formularioId,
+    this.id_pregunta,
+    required this.formulario_id,
     required this.contenido,
     required this.tipo,
-    this.esObligatoria = false,
+    this.es_obligatoria = false,
   });
 
   /// Convierte un Map (SQLite) a QuestionModel
   factory QuestionModel.fromMap(Map<String, dynamic> map) => QuestionModel(
-        id: map['id'],
-        formularioId: map['formulario_id'],
+        id_pregunta: map['id_pregunta'],
+        formulario_id: map['formulario_id'],
         contenido: map['contenido'],
         tipo: map['tipo'],
-        esObligatoria: map['es_obligatoria'] == 1,
+        es_obligatoria: map['es_obligatoria'] == 1,
       );
 
   /// Convierte un QuestionModel a Map (SQLite)
   Map<String, dynamic> toMap() => {
-        if (id != null) 'id': id,
-        'formulario_id': formularioId,
+        if (id_pregunta != null) 'id_pregunta': id_pregunta,
+        'formulario_id': formulario_id,
         'contenido': contenido,
         'tipo': tipo,
-        'es_obligatoria': esObligatoria ? 1 : 0,
+        'es_obligatoria': es_obligatoria ? 1 : 0,
       };
 
   /// Convierte un JSON a QuestionModel
   factory QuestionModel.fromJson(Map<String, dynamic> json) => QuestionModel(
-        id: json['id'],
-        formularioId: json['formulario_id'],
+        id_pregunta: json['id_pregunta'],
+        formulario_id: json['formulario_id'],
         contenido: json['contenido'],
         tipo: json['tipo'],
-        esObligatoria: json['es_obligatoria'] ?? false,
+        es_obligatoria: json['es_obligatoria'] ?? false,
       );
 
   /// Convierte un QuestionModel a JSON
   Map<String, dynamic> toJson() => {
-        if (id != null) 'id': id,
-        'formulario_id': formularioId,
+        if (id_pregunta != null) 'id_pregunta': id_pregunta,
+        'formulario_id': formulario_id,
         'contenido': contenido,
         'tipo': tipo,
-        'es_obligatoria': esObligatoria,
+        'es_obligatoria': es_obligatoria,
       };
 }

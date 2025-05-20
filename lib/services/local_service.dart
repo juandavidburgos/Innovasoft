@@ -10,7 +10,9 @@ import 'local_data_service.dart';
 class LocalService {
 
 
-  /// * Métodos asociados a los eventos
+  /// -------------------------------------------------
+  /// *MÉTODOS ASOCIADOS A EVENTOS
+  /// -------------------------------------------------
   
   // Eliminar tabla eventos
   Future <void> eliminarTablaEventos() async{
@@ -46,19 +48,19 @@ class LocalService {
     await LocalDataService.db.deleteAllEvents();
   }
 
+  
+  Future<List<Map<String, dynamic>>> obtenerEventosConEntrenadoresAsignados() async {
+  // Llamamos al método de la base de datos para traer los eventos y los entrenadores
+    return await LocalDataService.db.getAssignedEvents();
+  }
+
+  /// -------------------------------------------------
+  /// *MÉTODOS ASOCIADOS A ASIGNACIONES
+  /// -------------------------------------------------
+
   // Asignar uno o más entrenadores a un evento
   Future<int> asignarEntrenadores(int eventId, List<int> trainerIds) async {
     return await LocalDataService.db.assignTrainers(eventId, trainerIds);
-  }
-
-  // Obtener eventos que tienen al menos un entrenador asignado
-  /*Future<List<EventModel>> obtenerEventosConEntrenadoresAsignados() async {
-    return await DatabaseService.db.getAssignedEvents();
-  }*/
-  Future<List<Map<String, dynamic>>> obtenerEventosConEntrenadoresAsignados() async {
-  // Llamamos al método de la base de datos para traer los eventos y los entrenadores
-  return await LocalDataService.db.getAssignedEvents();
-
   }
 
   // Actualizar asignaciones de entrenadores para un evento
@@ -71,18 +73,27 @@ class LocalService {
     return await LocalDataService.db.getAsignacionesConNombreEvento();
   }
 
-  // Obtener entrenadores asignados a un evento específico
-  Future<List<Map<String, dynamic>>> obtenerEntrenadoresPorEvento(int eventId) async {
-    return await LocalDataService.db.getTrainersByEvento(eventId);
+  //Obtener evento asignado
+  Future<List<EventModel>> obtenerEventosAsignados(int idUsuario) async {
+    final data = await LocalDataService.db.obtenerEventosAsignadosPorUsuario(idUsuario);
+    return data.map((map) => EventModel.fromMap(map)).toList();
   }
 
-  ///Métodos asociados a los usuarios
+  /// -------------------------------------------------
+  /// *MÉTODOS ASOCIADOS A USUARIOS
+  /// -------------------------------------------------
+
   
   //Guardar usuario
   Future<int> guardarUsuario(UserModel usuario) async{
 
     return await LocalDataService.db.insertUser(usuario);
   } 
+
+  // Obtener entrenadores asignados a un evento específico
+  Future<List<Map<String, dynamic>>> obtenerEntrenadoresPorEvento(int eventId) async {
+    return await LocalDataService.db.getTrainersByEvento(eventId);
+  }
 
   //Obtener usuarios
   Future<List<UserModel>> obtenerEntrenadoresActivos() async{
@@ -117,26 +128,13 @@ class LocalService {
     return await LocalDataService.db.disableUser(id);
   }
 
-  // Verificar correo
-  Future<bool> verificarCorreo(String email) async{
-    return await LocalDataService.db.existeCorreo(email);
-  }
-
-  //Verifiar usuario por correo
-  Future<bool> verificarUsuarioPorCorreo(String email) async{
-    return await LocalDataService.db.existeUsuarioPorCorreo(email);
-  }
-
-  ///Métodos asociados al formulario
+  /// -------------------------------------------------
+  /// *MÉTODOS ASOCIADOS A FORMULARIOS Y RESPUESTAS
+  /// -------------------------------------------------
   
   //Guardar formulario
   Future<void> guardarFormularioLocal(FormModel formulario) async{
     await LocalDataService.db.insertForm(formulario);
-  }
-
-  //Guardar respuestas
-  Future<void> guardarRespuestasLocales(List<AnswerModel> respuestas) async{
-    await LocalDataService.db.insertAnswer(respuestas);
   }
 
   //Guardar formulario
@@ -144,6 +142,10 @@ class LocalService {
     return await LocalDataService.db.getForms();
   }
 
+  //Guardar respuestas
+  Future<void> guardarRespuestasLocales(List<AnswerModel> respuestas) async{
+    await LocalDataService.db.insertAnswer(respuestas);
+  }
   //Guardar respuestas
   Future<List<AnswerModel>> obtenerRespuestas(int formularioId) async{
     return await LocalDataService.db.getAnswers(formularioId);
@@ -155,19 +157,36 @@ class LocalService {
     return await LocalDataService.db.deleteFormAnswers(formularioId);
   }
 
-  //Obtener evento asignado
-  Future<List<EventModel>> obtenerEventosAsignados(int idUsuario) async {
-    final data = await LocalDataService.db.obtenerEventosAsignadosPorUsuario(idUsuario);
-    return data.map((map) => EventModel.fromMap(map)).toList();
+  /// Obtener asistentes del formulario para un entrenador y evento específico
+  Future<List<Map<String, dynamic>>> obtenerAsistentesFormulario(int userId, int eventId) async {
+    return await LocalDataService.db.getAsistentesFormulario(userId, eventId);
+  }
+
+    /// -------------------------------------------------
+  /// *MÉTODOS ASOCIADOS A AUTENTICACIÓN DE USUARIOS
+  /// -------------------------------------------------
+
+  // Verificar correo
+  Future<bool> verificarCorreo(String email) async{
+    return await LocalDataService.db.existeCorreo(email);
+  }
+
+  //Verifiar usuario por correo
+  Future<bool> verificarUsuarioPorCorreo(String email) async{
+    return await LocalDataService.db.existeUsuarioPorCorreo(email);
   }
 
   Future<int> crearAdminTemporal() async{
     return await LocalDataService.db.crearAdminTemporal();
   }
 
-  /// Obtener asistentes del formulario para un entrenador y evento específico
-  Future<List<Map<String, dynamic>>> obtenerAsistentesFormulario(int userId, int eventId) async {
-    return await LocalDataService.db.getAsistentesFormulario(userId, eventId);
-  }
+  /// -------------------------------------------------
+  /// *MÉTODOS ASOCIADOS A LA COLA DE PETICIONES
+  /// -------------------------------------------------
+  
+  Future<void> guardarEnColaPeticiones(FormModel formulario, List<AnswerModel> respuestas) async {
+    return await LocalDataService.db.guardarEnCola(formulario, respuestas);
 
+  }
+  
 }

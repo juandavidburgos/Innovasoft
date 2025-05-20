@@ -2,81 +2,81 @@ import 'package:intl/intl.dart';
 
 /// Modelo de datos para representar un formulario asociado a un evento.
 class FormModel {
-  final int? idFormulario;
-  final int? eventoId;
-  final int? usuarioId;
+  final int? id_formulario;
+  final int? evento_id;
+  final int? id_usuario;
   final String titulo;
   final String descripcion;
-  final DateTime fechaCreacion;
+  final DateTime fecha_creacion;
   final double? latitud;
   final double? longitud;
-  final String? pathImagen;
+  final String? path_imagen;
 
   static final DateFormat _formatter = DateFormat('dd-MM-yyyy HH:mm');
 
   FormModel({
-    this.idFormulario,
-    this.eventoId,
-    this.usuarioId,
+    this.id_formulario,
+    this.evento_id,
+    this.id_usuario,
     required this.titulo,
     required this.descripcion,
-    required this.fechaCreacion,
+    required this.fecha_creacion,
     this.latitud,
     this.longitud,
-    this.pathImagen,
+    this.path_imagen,
   });
 
   /// Convierte un Map en un objeto FormModel (para SQLite).
   factory FormModel.fromMap(Map<String, dynamic> map) => FormModel(
-        idFormulario: map['id_formulario'],
-        eventoId: map['evento_id'],
-        usuarioId: map['usuario_id'],
+        id_formulario: map['id_formulario'],
+        evento_id: map['evento_id'],
+        id_usuario: map['usuario_id'],
         titulo: map['titulo'],
         descripcion: map['descripcion'],
-        fechaCreacion: map['fecha_creacion'] != null
+        fecha_creacion: map['fecha_creacion'] != null
             ? _formatter.parse(map['fecha_creacion'])
             : DateTime.now(),
         latitud: map['latitud'] != null ? map['latitud'] * 1.0 : null,
         longitud: map['longitud'] != null ? map['longitud'] * 1.0 : null,
-        pathImagen: map['path_imagen'],
+        path_imagen: map['path_imagen'],
       );
 
   /// Convierte un FormModel en un Map (para SQLite).
   Map<String, dynamic> toMap() => {
-        if (idFormulario != null) 'id_formulario': idFormulario,
-        'evento_id': eventoId,
-        'usuario_id': usuarioId,
+        if (id_formulario != null) 'id_formulario': id_formulario,
+        'evento_id': evento_id,
+        'usuario_id': id_usuario,
         'titulo': titulo,
         'descripcion': descripcion,
-        'fecha_creacion': _formatter.format(fechaCreacion),
+        'fecha_creacion': _formatter.format(fecha_creacion),
         'latitud': latitud,
         'longitud': longitud,
-        'path_imagen': pathImagen,
+        'path_imagen': path_imagen,
       };
 
   /// Convierte un JSON (Map) en un objeto FormModel.
   factory FormModel.fromJson(Map<String, dynamic> json) => FormModel(
-        idFormulario: json['id_formulario'],
-        eventoId: json['evento_id'],
-        usuarioId: json['usuario_id'],
+        id_formulario: json['id_formulario'],
+        evento_id: json['evento_id'],
+        id_usuario: json['usuario_id'],
         titulo: json['titulo'],
         descripcion: json['descripcion'],
-        fechaCreacion: DateTime.parse(json['fecha_creacion']),
+        fecha_creacion: DateTime.parse(json['fecha_creacion']),
         latitud: (json['latitud'] != null) ? json['latitud'].toDouble() : null,
         longitud: (json['longitud'] != null) ? json['longitud'].toDouble() : null,
-        pathImagen: json['path_imagen'],
+        path_imagen: json['path_imagen'],
       );
 
   /// Convierte un FormModel en JSON (para envío por HTTP).
   Map<String, dynamic> toJson() => {
-        if (idFormulario != null) 'id_formulario': idFormulario,
-        'evento_id': eventoId,
-        'usuario_id': usuarioId,
+        if (id_formulario != null) 'id_formulario': id_formulario,
+        'evento_id': evento_id,
+        'usuario_id': id_usuario,
         'titulo': titulo,
         'descripcion': descripcion,
-        'fecha_creacion': fechaCreacion.toIso8601String(),
+        'fecha_creacion': fecha_creacion.toIso8601String(),
         'latitud': latitud,
         'longitud': longitud,
-        'path_imagen': pathImagen,
+        'path_imagen': path_imagen,
       };
 }

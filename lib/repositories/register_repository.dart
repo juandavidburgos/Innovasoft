@@ -5,6 +5,14 @@ import '../services/local_service.dart';
 class RegisterRepository {
   final LocalService _localService = LocalService();
 
+  ///
+  /// MÉTODOS DE GESTIÓN LOCAL
+  /// 
+
+  /// --------------------------------------------------------
+  /// Formularios:
+  /// 
+
   Future<void> guardarFormulario(FormModel formulario) async {
     await _localService.guardarFormularioLocal(formulario);
   }

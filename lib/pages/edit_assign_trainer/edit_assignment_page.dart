@@ -119,7 +119,7 @@ class _EditTrainerAssignmentPageState extends State<EditTrainerAssignmentPage> {
 
   List<UserModel> _monitoresDisponiblesPara(int index) {
     final idsSeleccionados = selectedTrainerIds.where((id) => id != null && selectedTrainerIds.indexOf(id) != index).toSet();
-    return _monitores.where((m) => !idsSeleccionados.contains(m.idUsuario.toString())).toList();
+    return _monitores.where((m) => !idsSeleccionados.contains(m.id_usuario.toString())).toList();
   }
 
   void _agregarEntrenador() {
@@ -242,7 +242,7 @@ class _EditTrainerAssignmentPageState extends State<EditTrainerAssignmentPage> {
       value: selectedTrainerIds[index] == "" ? null : selectedTrainerIds[index], // Cambiar a null si está vacío
       items: disponibles.map((monitor) {
         return DropdownMenuItem<String>(
-          value: monitor.idUsuario.toString(),
+          value: monitor.id_usuario.toString(),
           child: Text(monitor.nombre),
         );
       }).toList(),

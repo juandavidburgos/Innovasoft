@@ -36,7 +36,7 @@ class _ViewAssignmentPageState extends State<ViewAssignmentPage> {
         }
 
         // Si el estado es igual, ordenar por fecha de inicio
-        return eventoA.fechaHoraInicio.compareTo(eventoB.fechaHoraInicio);
+        return eventoA.fecha_hora_inicio.compareTo(eventoB.fecha_hora_inicio);
       });
 
       setState(() {
@@ -86,8 +86,8 @@ class _ViewAssignmentPageState extends State<ViewAssignmentPage> {
                         subtitle: Text(
                           'Ubicación: ${evento.ubicacion}\n'
                           'Descripción: ${evento.descripcion}\n'
-                          'Inicio: ${formatearFecha(evento.fechaHoraInicio)}\n'
-                          'Fin: ${formatearFecha(evento.fechaHoraFin)}\n'
+                          'Inicio: ${formatearFecha(evento.fecha_hora_inicio)}\n'
+                          'Fin: ${formatearFecha(evento.fecha_hora_fin)}\n'
                           'Entrenadores: $entrenadores',
                         ),
                         trailing: Text(

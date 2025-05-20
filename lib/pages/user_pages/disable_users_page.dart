@@ -121,7 +121,7 @@ class _DisableUsersPage extends State<DisableUsersPage> {
                           itemCount: entrenadores.length,
                           itemBuilder: (context, index) {
                             final user = entrenadores[index];
-                            final isChecked = seleccionados.contains(user.idUsuario);
+                            final isChecked = seleccionados.contains(user.id_usuario);
 
                             return Card(
                               margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
@@ -153,9 +153,9 @@ class _DisableUsersPage extends State<DisableUsersPage> {
                                       onChanged: (value) {
                                         setState(() {
                                           if (value == true) {
-                                            seleccionados.add(user.idUsuario!);
+                                            seleccionados.add(user.id_usuario!);
                                           } else {
-                                            seleccionados.remove(user.idUsuario);
+                                            seleccionados.remove(user.id_usuario);
                                           }
                                         });
                                       },

@@ -45,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
       if (usuarioLocal != null) {
         // Guardar sesión local
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('id_usuario', usuarioLocal.idUsuario!);
+        await prefs.setInt('id_usuario', usuarioLocal.id_usuario!);
         await prefs.setString('nombre_usuario', usuarioLocal.nombre);
         await prefs.setString('email_usuario', usuarioLocal.email);
         await prefs.setString('rol_usuario', usuarioLocal.rol);

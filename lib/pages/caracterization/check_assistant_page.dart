@@ -29,7 +29,7 @@ class _CheckAssistantPageState extends State<CheckAssistantPage> {
   }
 
   Future<void> _loadAsistentes() async {
-    final int? idEvento = evento.idEvento;
+    final int? idEvento = evento.id_evento;
 
     if (idEvento != null) {
       final result = await _registerRepository.obtenerAsistentesFormulario(idUsuario, idEvento);

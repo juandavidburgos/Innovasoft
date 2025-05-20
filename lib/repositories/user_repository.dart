@@ -9,11 +9,35 @@ class UserRepository {
   final RemoteService _remoteService = RemoteService();
   final AuthService _authService = AuthService();
 
+  ///
+  /// MÉTODOS DE GESTIÓN LOCAL
+  /// 
+
+  /// --------------------------------------------------------
+  /// Usuarios:
+  /// 
+
   /// Inserta un usuario en la base de datos local
   Future<int> agregarUsuario(UserModel usuario) {
     return _localService.guardarUsuario(usuario);
   }
 
+  Future<List<UserModel>> obtenerUsuarios(){
+    return _localService.obtenerUsuarios();
+  }
+
+  /// Actualiza un usuario en la base de datos local
+  Future<int> actualizarUsuario(UserModel usuario) {
+    return _localService.editarUusario(usuario);
+  }
+
+  Future<int> eliminarUsuario(int id) async{
+    return _localService.eliminarUsuario(id);
+  }
+
+  Future<UserModel?> autenticarUsuarioLocal(String email, password){
+    return _authService.localLogin(email, password);
+  }
   /// Retorna todos los usuarios almacenados localmente
   Future<List<UserModel>> obtenerUsuariosEntrenadoresActivos() {
     return _localService.obtenerEntrenadoresActivos();
@@ -23,31 +47,15 @@ class UserRepository {
     return _localService.obtenerEntrenadores();
   }
 
-  Future<List<UserModel>> obtenerUsuarios(){
-    return _localService.obtenerUsuarios();
-  }
-
-  Future<int> eliminarUsuario(int id) async{
-    return _localService.eliminarUsuario(id);
-  }
-
   Future<int> deshabilitarEntrenador(int id) async{
     return _localService.deshabilitarEntrenador(id);
   }
 
-  /// Actualiza un usuario en la base de datos local
-  Future<int> actualizarUsuario(UserModel usuario) {
-    return _localService.editarUusario(usuario);
-  }
+  /// --------------------------------------------------------
 
-  Future<UserModel?> autenticarUsuarioLocal(String email, password){
-    return _authService.localLogin(email, password);
-  }
-
-  /// Verifica remotamente si un correo ya está registrado
-  Future<bool> existeCorreoRemoto(String email) {
-    return _remoteService.existeCorreoRemoto(email);
-  }
+  ///
+  /// MÉTODOS DE GESTIÓN REMOTOS
+  /// 
 
   /// Envía un nuevo usuario al servidor remoto
   Future<bool> enviarUsuarioRemoto(UserModel usuario) {
@@ -63,11 +71,19 @@ class UserRepository {
   Future<bool> actualizarUsuarioRemoto(UserModel usuario) {
     return _remoteService.actualizarUsuarioRemoto(usuario);
   }
+  
 
   /// Elimina un usuario del servidor
   Future<bool> eliminarUsuarioRemoto(int idUsuario) {
     return _remoteService.eliminarUsuarioRemoto(idUsuario);
   }
+
+  /// Verifica remotamente si un correo ya está registrado
+  Future<bool> existeCorreoRemoto(String email) {
+    return _remoteService.existeCorreoRemoto(email);
+  }
+
+  /// --------------------------------------------------------
 
   /// --- MÉTODOS DE SINCRONIZACIÓN ---
 

@@ -1,9 +1,19 @@
 import '../models/event_model.dart';
 import '../models/user_model.dart';
+import '../models/form_model.dart';
+import '../models/answer_model.dart';
 import 'remote_data_service.dart';
 
 /// Servicio encargado de la comunicación con el back-end (API REST).
 class RemoteService {
+
+/// -------------------------------------------------
+  /// *MÉTODOS REMOTOS
+  /// -------------------------------------------------
+
+  /// -------------------------------------------------
+  /// *MÉTODOS ASOCIADOS A EVENTOS
+  /// -------------------------------------------------
 
   /// Envía un nuevo evento al servidor mediante HTTP POST.
   ///
@@ -36,7 +46,10 @@ class RemoteService {
   Future<bool> eliminarEventoRemoto(int idEvento) async {
     return await RemoteDataService.dbR.deleteEvento(idEvento);
   }
-  ///Metodos para usuario
+  
+  /// -------------------------------------------------
+  /// *MÉTODOS ASOCIADOS A USUARIOS
+  /// -------------------------------------------------
   
   // Insertar un nuevo usuario
   Future<bool> guardarUsuarioRemoto(UserModel usuario) async {
@@ -57,6 +70,26 @@ class RemoteService {
   Future<bool> eliminarUsuarioRemoto(int idUsuario) async {
     return await RemoteDataService.dbR.deleteUsuario(idUsuario);
   }
+
+  /// -------------------------------------------------
+  /// *MÉTODOS DE ASIGNACIONES
+  /// -------------------------------------------------
+
+  Future<List<EventModel>> obtenerEventosAsignadosRemoto(int idUsuario) async{
+    return await RemoteDataService.dbR.getEventosAsignados(idUsuario);
+  }
+
+  /// -------------------------------------------------
+  /// *MÉTODOS DE FORMULARIOS
+  /// -------------------------------------------------
+
+  Future<bool> enviarFormularioRespondido(FormModel formulario, List<AnswerModel> respuestas) async {
+    return await RemoteDataService.dbR.sendFormularioRespondido(formulario, respuestas);
+  }
+
+  /// -------------------------------------------------
+  /// *MÉTODOS DE AUTENTICACIÓN DE USUARIOS
+  /// -------------------------------------------------
 
   // Verificar si un correo ya existe
   Future<bool> existeCorreoRemoto(String email) async {

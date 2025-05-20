@@ -60,8 +60,8 @@ class _CreateEventPageState extends State<CreateEventPage> {
         ubicacion: _location!,
         descripcion: _descripcion,
         // Aquí se envían las fechas de inicio y fin
-        fechaHoraInicio: _startDateTime!,
-        fechaHoraFin: _endDateTime!,
+        fecha_hora_inicio: _startDateTime!,
+        fecha_hora_fin: _endDateTime!,
       );
 
       try {

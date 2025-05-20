@@ -1,5 +1,6 @@
 import 'package:basic_flutter/models/answer_model.dart';
 import 'package:basic_flutter/models/form_model.dart';
+import 'package:basic_flutter/services/remote_data_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/event_model.dart'; 
@@ -7,10 +8,18 @@ import 'dart:async';
 import '../models/user_model.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'dart:convert';
+import 'package:connectivity_plus/connectivity_plus.dart';
 class LocalDataService {
+
+  /// -------------------------------
+  /// *CREACIÓN DE LA BASE DE DATOS
+  /// -------------------------------
+
   static Database? _db;
   static final LocalDataService db = LocalDataService._();
+
+  //Creación de tablas
 
   static const String tableEventos = 'eventos';
   static const String tableUsuarios = 'usuarios';
@@ -19,27 +28,10 @@ class LocalDataService {
   static const String tablePreguntas = 'preguntas';
   static const String tableRespuestas = 'respuestas';
 
+  //Instancia del servicio
   LocalDataService._();
 
-  Future<void> deleteDB() async {
-    try {
-      // Obtén la ruta de la base de datos
-      final path = join(await getDatabasesPath(), 'app.db');
-      
-      // Elimina la base de datos
-      await deleteDatabase(path); //--->REALMENTER ESTA LINEA ELIMINA LA BASE DE DATOS
-
-      print("Base de datos eliminada con éxito.");
-    } catch (e) {
-      print("Error al eliminar la base de datos: $e");
-    }
-  }
-
-Future<Database> get database async {
-    _db ??= await _initDB();
-    return _db!;
-  }
-
+  //Inicializar base de datos
   Future<Database> _initDB() async {
     try {
       final path = join(await getDatabasesPath(), 'app.db');
@@ -78,50 +70,6 @@ Future<Database> get database async {
           );
           ''');
 
-          //Insertar usuarios iniciales
-          /*await db.insert(tableUsuarios, {
-            'nombre': 'Carlos Ramírez',
-            'email': 'carlos@uni.edu',
-            'contrasena': 'holis12wer33',
-            'rol': 'ENTRENADOR',
-          });
-          await db.insert(tableUsuarios, {
-            'nombre': 'Laura Pérez',
-            'email': 'laura@uni.edu',
-            'contrasena': 'holis1wrewe233',
-            'rol': 'ENTRENADOR',
-          });
-          await db.insert(tableUsuarios, {
-            'nombre': 'Matias Acosta',
-            'email': 'matias@uni.edu',
-            'contrasena': 'holis12wer33',
-            'rol': 'ENTRENADOR',
-          });
-          await db.insert(tableUsuarios, {
-            'nombre': 'Henry Zapata',
-            'email': 'henry@uni.edu',
-            'contrasena': 'holis1wrewe233',
-            'rol': 'ENTRENADOR',
-          });
-          await db.insert(tableUsuarios, {
-            'nombre': 'Lucas Araujo',
-            'email': 'lucas@uni.edu',
-            'contrasena': 'holis12wer33',
-            'rol': 'ENTRENADOR',
-          });
-          await db.insert(tableUsuarios, {
-            'nombre': 'Maria Dolores',
-            'email': 'maria@uni.edu',
-            'contrasena': 'holis1wrewe233',
-            'rol': 'ENTRENADOR',
-          });
-          await db.insert(tableUsuarios, {
-            'nombre': 'Admin General',
-            'email': 'admin@uni.edu',
-            'contrasena': 'holisewrwe1233',
-            'rol': 'ADMINISTRADOR',
-          });
-          */
           // Crear tabla asignaciones (relación muchos a muchos entre eventos y entrenadores)
           await db.execute('''
             CREATE TABLE $tableAsignaciones (
@@ -173,8 +121,17 @@ Future<Database> get database async {
               FOREIGN KEY (pregunta_id) REFERENCES preguntas(id_pregunta),
               FOREIGN KEY (formulario_id) REFERENCES formularios(id_formulario)
             );
-
           ''');
+
+          //Crear Tabla para la cola de peticiones
+          await db.execute('''
+            CREATE TABLE cola_peticiones (
+              id_local INTEGER PRIMARY KEY AUTOINCREMENT,
+              payload TEXT NOT NULL, -- JSON que contiene formulario + respuestas
+              fecha_guardado TEXT NOT NULL
+            );
+          ''');
+
         },
       );
     } catch (e) {
@@ -182,6 +139,34 @@ Future<Database> get database async {
     }
   }
 
+  /// -----------------------------------------
+  /// *MÉTODOS ASOCIADOS A LA BASE DE DATOS
+  /// -----------------------------------------
+
+
+  Future<void> deleteDB() async {
+    try {
+      // Obtén la ruta de la base de datos
+      final path = join(await getDatabasesPath(), 'app.db');
+      
+      // Elimina la base de datos
+      await deleteDatabase(path); //--->REALMENTER ESTA LINEA ELIMINA LA BASE DE DATOS
+
+      print("Base de datos eliminada con éxito.");
+    } catch (e) {
+      print("Error al eliminar la base de datos: $e");
+    }
+  }
+
+  Future<Database> get database async {
+      _db ??= await _initDB();
+      return _db!;
+    }
+
+  /// -----------------------------------------
+  /// *MÉTODOS ASOCIADOS A EVENTOS
+  /// -----------------------------------------
+  
   Future<int> insertEvento(EventModel evento) async {
   final db = await database;
 
@@ -189,8 +174,8 @@ Future<Database> get database async {
       tableEventos,
       {
         'nombre': evento.nombre,
-        'fecha_hora_inicio': evento.fechaHoraInicio.toIso8601String(),
-        'fecha_hora_fin': evento.fechaHoraFin.toIso8601String(),
+        'fecha_hora_inicio': evento.fecha_hora_inicio.toIso8601String(),
+        'fecha_hora_fin': evento.fecha_hora_fin.toIso8601String(),
         'ubicacion': evento.ubicacion,
         'descripcion': evento.descripcion,
         //'id_usuario': evento.idUsuario, // si no lo usas por ahora
@@ -199,6 +184,7 @@ Future<Database> get database async {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
+
 
   /// Obtiene todos los eventos desde la base de datos.
   /// 
@@ -236,13 +222,13 @@ Future<Database> get database async {
       }
 
       return EventModel(
-        idEvento: maps[i]['id_evento'],
+        id_evento: maps[i]['id_evento'],
         nombre: maps[i]['nombre'],
-        fechaHoraInicio: fechaHoraInicio,
-        fechaHoraFin: fechaHoraFin,
+        fecha_hora_inicio: fechaHoraInicio,
+        fecha_hora_fin: fechaHoraFin,
         ubicacion: maps[i]['ubicacion'],
         descripcion: maps[i]['descripcion'] ?? '',
-        idUsuario: maps[i]['id_usuario'],
+        id_usuario: maps[i]['id_usuario'],
         estado: maps[i]['estado'],
       );
     });
@@ -259,7 +245,7 @@ Future<Database> get database async {
       tableEventos,
       evento.toMap(),
       where: 'id_evento = ?',
-      whereArgs: [evento.idEvento],
+      whereArgs: [evento.id_evento],
     );
   }
 
@@ -293,7 +279,9 @@ Future<Database> get database async {
   await db.delete(tableEventos); // nombre de la tabla
   }
 
-  //Metodos para usuario
+  /// -----------------------------------------
+  /// *MÉTODOS ASOCIADOS A LOS USUARIOS
+  /// -----------------------------------------
 
   /// Inserta un nuevo usuario en la base de datos.
   /// 
@@ -315,48 +303,6 @@ Future<Database> get database async {
     );
   }
 
-  Future<List<UserModel>> getEntrenadoresActivos() async {
-    final db = await database;
-
-    final List<Map<String, dynamic>> maps = await db.query(
-      tableUsuarios,
-      where: 'rol = ? AND estado = ?',
-      whereArgs: ['ENTRENADOR', 'ACTIVO'],
-    );
-
-    return List.generate(maps.length, (i) {
-      return UserModel(
-        idUsuario: maps[i]['id_usuario'],
-        nombre: maps[i]['nombre'],
-        email: maps[i]['email'],
-        contrasena: maps[i]['contrasena'],
-        rol: maps[i]['rol'],
-        estado: maps[i]['estado'],
-      );
-    });
-  }
-
-  Future<List<UserModel>> getEntrenadores() async {
-    final db = await database;
-
-    final List<Map<String, dynamic>> maps = await db.query(
-      tableUsuarios,
-      where: 'rol = ?',
-      whereArgs: ['ENTRENADOR'],
-    );
-
-    return List.generate(maps.length, (i) {
-      return UserModel(
-        idUsuario: maps[i]['id_usuario'],
-        nombre: maps[i]['nombre'],
-        email: maps[i]['email'],
-        contrasena: maps[i]['contrasena'],
-        rol: maps[i]['rol'],
-        estado: maps[i]['estado'],
-      );
-    });
-  }
-
   /// Obtiene todos los usuarios desde la base de datos.
   /// 
   /// Retorna una lista de objetos `UserModel`.
@@ -366,7 +312,7 @@ Future<Database> get database async {
 
     return List.generate(maps.length, (i) {
       return UserModel(
-        idUsuario: maps[i]['id_usuario'],
+        id_usuario: maps[i]['id_usuario'],
         nombre: maps[i]['nombre'],
         email: maps[i]['email'],
         contrasena: maps[i]['contrasena'],
@@ -375,7 +321,6 @@ Future<Database> get database async {
       );
     });
   }
-
 
   /// Actualiza un usuario existente en la base de datos.
   /// 
@@ -388,7 +333,7 @@ Future<Database> get database async {
       tableUsuarios,
       usuario.toMap(),
       where: 'id_usuario = ?',
-      whereArgs: [usuario.idUsuario],
+      whereArgs: [usuario.id_usuario],
     );
   }
 
@@ -418,6 +363,52 @@ Future<Database> get database async {
       whereArgs: [id],
     );
   }
+
+  //Usuarios entrenadres:
+
+  Future<List<UserModel>> getEntrenadores() async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableUsuarios,
+      where: 'rol = ?',
+      whereArgs: ['ENTRENADOR'],
+    );
+
+    return List.generate(maps.length, (i) {
+      return UserModel(
+        id_usuario: maps[i]['id_usuario'],
+        nombre: maps[i]['nombre'],
+        email: maps[i]['email'],
+        contrasena: maps[i]['contrasena'],
+        rol: maps[i]['rol'],
+        estado: maps[i]['estado'],
+      );
+    });
+  }
+
+  Future<List<UserModel>> getEntrenadoresActivos() async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableUsuarios,
+      where: 'rol = ? AND estado = ?',
+      whereArgs: ['ENTRENADOR', 'ACTIVO'],
+    );
+
+    return List.generate(maps.length, (i) {
+      return UserModel(
+        id_usuario: maps[i]['id_usuario'],
+        nombre: maps[i]['nombre'],
+        email: maps[i]['email'],
+        contrasena: maps[i]['contrasena'],
+        rol: maps[i]['rol'],
+        estado: maps[i]['estado'],
+      );
+    });
+  }
+
+  //Autenticación de usuarios:
 
   /// Valida si un correo electrónico ya existe en la base de datos.
   /// 
@@ -449,7 +440,10 @@ Future<Database> get database async {
     return maps.isNotEmpty;
   }
 
-  ///Metodos para asignacion
+  /// -----------------------------------------
+  /// *MÉTODOS ASOCIADOS A LAS ASIGNACIONES
+  /// -----------------------------------------
+  
   /// Asigna uno o más entrenadores a un evento insertando registros en la tabla `asignaciones`.
   ///
   /// [eventoId] es el ID del evento.
@@ -480,6 +474,25 @@ Future<Database> get database async {
 
     return count;
   }
+
+/// Obtiene el evento asignado a un usuario (entrenador), usando relación muchos a muchos.
+/// Usa consulta SQL segura con parámetros para prevenir inyección.
+  Future<List<Map<String, dynamic>>> obtenerEventosAsignadosPorUsuario(int idUsuario) async {
+    final db = await database;
+
+    final result = await db.rawQuery(
+      '''
+      SELECT e.* 
+      FROM $tableEventos e
+      INNER JOIN $tableAsignaciones a ON e.id_evento = a.id_evento
+      WHERE a.id_usuario = ? AND e.estado = 'activo';
+      ''',
+      [idUsuario],
+    );
+
+    return result;
+  }
+
 
   /// Obtiene todos los eventos que tienen al menos un entrenador asignado.
   /// 
@@ -520,12 +533,12 @@ Future<Database> get database async {
 
       return {
         'evento': EventModel(
-          idEvento: int.tryParse(map['id_evento']?.toString() ?? ''), // Usamos tryParse para convertir
+          id_evento: int.tryParse(map['id_evento']?.toString() ?? ''), // Usamos tryParse para convertir
           nombre: map['nombre']?.toString() ?? '', // Convertimos a String
           descripcion: map['descripcion']?.toString() ?? '', // Convertimos a String
           ubicacion: map['ubicacion']?.toString() ?? '', // Convertimos a String
-          fechaHoraInicio: fechaHoraInicio,
-          fechaHoraFin: fechaHoraFin,
+          fecha_hora_inicio: fechaHoraInicio,
+          fecha_hora_fin: fechaHoraFin,
           estado: map['estado']?.toString() ?? '', // Convertimos a String
         ),
         'entrenadores': map['entrenadores'], // String con los nombres
@@ -608,64 +621,48 @@ Future<Database> get database async {
     return result;
   }
 
-  /// Métodos para formularios
+  /// -----------------------------------------
+  /// *MÉTODOS ASOCIADOS A LOS FORMULARIOS
+  /// -----------------------------------------
+
   //Insertar formulario
   Future<void> insertForm(FormModel formulario) async {
     final db = await database;
     await db.insert(
       tableFormularios,
       {
-        'id_formulario': formulario.idFormulario,
+        'id_formulario': formulario.id_formulario,
         'titulo': formulario.titulo,
         'descripcion': formulario.descripcion,
-        'fecha_creacion': formulario.fechaCreacion.toIso8601String(),
-        'evento_id': formulario.eventoId,
-        'id_usuario': formulario.usuarioId,
+        'fecha_creacion': formulario.fecha_creacion.toIso8601String(),
+        'evento_id': formulario.evento_id,
+        'id_usuario': formulario.id_usuario,
         'latitud': formulario.latitud,
         'longitud': formulario.longitud,
-        'path_imagen': formulario.pathImagen
+        'path_imagen': formulario.path_imagen
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
-
-  Future<void> insertAnswer(List<AnswerModel> respuestas) async {
-    final db = await database;
-    Batch batch = db.batch();
-    for (var respuesta in respuestas) {
-      batch.insert(
-        tableRespuestas,
-        {
-          'id_respuesta': respuesta.id,
-          'pregunta_id': respuesta.preguntaId,
-          'contenido': respuesta.contenido,
-          'formulario_id': respuesta.formularioId,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    }
-    await batch.commit(noResult: true);
-  }
-
 
   Future<List<FormModel>> getForms() async {
     final db = await database;
     final result = await db.query(tableFormularios);
 
     return result.map((json) => FormModel(
-      idFormulario: json['idFormulario'] as int,
+      id_formulario: json['idFormulario'] as int,
       titulo: json['titulo'] as String,
       descripcion: json['descripcion'] as String,
-      fechaCreacion: DateTime.parse(json['fechaCreacion'] as String),
-      eventoId: json['eventoId'] as int,
-      usuarioId: json['usuarioId'] as int,
+      fecha_creacion: DateTime.parse(json['fechaCreacion'] as String),
+      evento_id: json['eventoId'] as int,
+      id_usuario: json['usuarioId'] as int,
       latitud: json['latitud'] as double?,
       longitud: json['longitud'] as double?,
-      pathImagen: json['pathImagen'] as String?,
+      path_imagen: json['pathImagen'] as String?,
     )).toList();
   }
 
-  // NO SE A PROBADO
+// NO SE A PROBADO
   Future<List<FormModel>> getFormsByEvent(int eventoId) async {
     final db = await database;
     final result = await db.query(
@@ -675,19 +672,19 @@ Future<Database> get database async {
     );
 
     return result.map((json) => FormModel(
-      idFormulario: json['id_formulario'] as int,
+      id_formulario: json['id_formulario'] as int,
       titulo: json['titulo'] as String,
       descripcion: json['descripcion'] as String,
-      fechaCreacion: DateTime.parse(json['fecha_creacion'] as String),
-      eventoId: json['evento_id'] as int,
-      usuarioId: json['id_usuario'] as int,
+      fecha_creacion: DateTime.parse(json['fecha_creacion'] as String),
+      evento_id: json['evento_id'] as int,
+      id_usuario: json['id_usuario'] as int,
       latitud: json['latitud'] != null ? (json['latitud'] as num).toDouble() : null,
       longitud: json['longitud'] != null ? (json['longitud'] as num).toDouble() : null,
-      pathImagen: json['path_imagen'] as String?,
+      path_imagen: json['path_imagen'] as String?,
     )).toList();
   }
 
-  ///METODO SIN PROBAR
+///METODO SIN PROBAR
   Future<List<Map<String, dynamic>>> getAsistentesFormulario(
     int idUsuario, int idEvento) async {
     
@@ -764,19 +761,42 @@ Future<Database> get database async {
     return asistentes;
   }
 
+  /// -----------------------------------------
+  /// *MÉTODOS ASOCIADOS A RESPUESTAS
+  /// -----------------------------------------
+
+  Future<void> insertAnswer(List<AnswerModel> respuestas) async {
+    final db = await database;
+    Batch batch = db.batch();
+    for (var respuesta in respuestas) {
+      batch.insert(
+        tableRespuestas,
+        {
+          'id_respuesta': respuesta.id_respuesta,
+          'pregunta_id': respuesta.pregunta_id,
+          'contenido': respuesta.contenido,
+          'formulario_id': respuesta.formulario_id,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
   Future<List<AnswerModel>> getAnswers(int formularioId) async {
     final db = await database;
     final result = await db.query(
       tableRespuestas,
-      where: 'formularioId = ?',
+      where: 'formulario_id = ?',
       whereArgs: [formularioId],
     );
 
     return result.map((json) => AnswerModel(
-      id: json['id'] as int,
-      preguntaId: json['preguntaId'] as int,
+      id_respuesta: json['id'] as int,
+      pregunta_id: json['pregunta_id'] as int,
       contenido: json['contenido'] as String,
-      formularioId: json['formularioId'] as int,
+      formulario_id: json['formulario_id'] as int,
+      id_evento: json['id_evento'] as int,
     )).toList();
   }
 
@@ -795,23 +815,49 @@ Future<Database> get database async {
     );
   }
 
-/// Obtiene el evento asignado a un usuario (entrenador), usando relación muchos a muchos.
-/// Usa consulta SQL segura con parámetros para prevenir inyección.
-  Future<List<Map<String, dynamic>>> obtenerEventosAsignadosPorUsuario(int idUsuario) async {
+  /// -------------------------------------------------
+  /// *MÉTODOS ASOCIADOS A LA COLA DE PETICIONES
+  /// -------------------------------------------------
+
+  Future<void> guardarEnCola(FormModel formulario, List<AnswerModel> respuestas) async {
     final db = await database;
 
-    final result = await db.rawQuery(
-      '''
-      SELECT e.* 
-      FROM $tableEventos e
-      INNER JOIN $tableAsignaciones a ON e.id_evento = a.id_evento
-      WHERE a.id_usuario = ? AND e.estado = 'activo';
-      ''',
-      [idUsuario],
-    );
+    final payload = jsonEncode({
+      'formulario': formulario.toJson(),
+      'respuestas': respuestas.map((r) => r.toJson()).toList(),
+    });
 
-    return result;
+    await db.insert('cola_peticiones', {
+      'payload': payload,
+      'fecha_guardado': DateTime.now().toIso8601String(),
+    });
   }
+
+  Future<void> procesarCola() async {
+    final db = await database;
+
+    final registros = await db.query('cola_peticiones');
+
+    for (final reg in registros) {
+      final idLocal = reg['id_local'] as int;
+      final payload = jsonDecode(reg['payload'] as String);
+
+      final form = FormModel.fromJson(payload['formulario']);
+      final respuestas = (payload['respuestas'] as List)
+          .map((r) => AnswerModel.fromJson(r))
+          .toList();
+
+      final exito = await RemoteDataService.dbR.sendFormularioRespondido(form, respuestas);
+      if (exito) {
+        await db.delete('cola_peticiones', where: 'id_local = ?', whereArgs: [idLocal]);
+      }
+    }
+  }
+
+
+  /// -------------------------------------------------
+  /// *MÉTODOS ASOCIADOS A LA AUTENTICACIÓN DE USUARIOS
+  /// -------------------------------------------------
 
   Future<UserModel?> autenticarUsuario(String email, String password) async {
     final db = await database;
@@ -850,6 +896,18 @@ Future<Database> get database async {
         },
         conflictAlgorithm: ConflictAlgorithm.ignore, // evita duplicados si ya existe
       );
+  }
+
+  /// -------------------------------------------------
+  /// *MÉTODO PARA DETECTAR CONEXION
+  /// -------------------------------------------------
+  
+  void iniciarEscuchaDeConexion() {
+    Connectivity().onConnectivityChanged.listen((status) {
+      if (status != ConnectivityResult.none) {
+        procesarCola();
+      }
+    });
   }
 
 }

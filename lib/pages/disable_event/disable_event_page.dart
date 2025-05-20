@@ -135,16 +135,16 @@ class _DisableEventPageState extends State<DisableEventPage> {
                               ),
                               subtitle: Text(
                                 '${evento.ubicacion} - '
-                                '${dateFormat.format(evento.fechaHoraInicio)} a '
-                                '${dateFormat.format(evento.fechaHoraFin)}',
+                                '${dateFormat.format(evento.fecha_hora_inicio)} a '
+                                '${dateFormat.format(evento.fecha_hora_fin)}',
                               ),
-                              value: _selectedEventIds.contains(evento.idEvento),
+                              value: _selectedEventIds.contains(evento.id_evento),
                               onChanged: (value) {
                                 setState(() {
                                   if (value == true) {
-                                    _selectedEventIds.add(evento.idEvento!);
+                                    _selectedEventIds.add(evento.id_evento!);
                                   } else {
-                                    _selectedEventIds.remove(evento.idEvento);
+                                    _selectedEventIds.remove(evento.id_evento);
                                   }
                                 });
                               },

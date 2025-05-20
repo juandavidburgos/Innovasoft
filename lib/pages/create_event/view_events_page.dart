@@ -74,10 +74,10 @@ class _ViewEventsPageState extends State<ViewEventsPage> {
                         'Ubicación: ${evento.ubicacion}',
                       ),
                       Text(
-                        'Fecha inicio: ${evento.fechaHoraInicio.toLocal().toString().split(' ')[0]}',
+                        'Fecha inicio: ${evento.fecha_hora_inicio.toLocal().toString().split(' ')[0]}',
                       ),
                       Text(
-                        'Fecha fin: ${evento.fechaHoraFin.toLocal().toString().split(' ')[0]}',
+                        'Fecha fin: ${evento.fecha_hora_fin.toLocal().toString().split(' ')[0]}',
                       ),
                       Text(
                         'Estado: ${evento.estado}',

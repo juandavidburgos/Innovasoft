@@ -51,38 +51,6 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
     });
   }
 
-  /*Future<void> _asignarEntrenadores() async {
-    if (selectedEventId == null || selectedTrainerIds.contains(null)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor selecciona evento y todos los entrenadores')),
-      );
-      return;
-    }
-
-    final ids = selectedTrainerIds.map((id) => int.parse(id!)).toList();
-
-    final result = await _assignmentRepo.asignarEntrenadoresAEvento(
-      int.parse(selectedEventId!),
-      ids,
-    );
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(result == ids.length
-            ? 'Entrenadores asignados con éxito'
-            : 'Algunos entrenadores no se asignaron (ya podrían estar asignados)'),
-      ),
-    );
-
-    if (result == ids.length) {
-      setState(() {
-        selectedEventId = null;
-        trainerCount = 0;
-        selectedTrainerIds = [];
-      });
-    }
-  }*/
-
   Future<void> _asignarEntrenadores() async {
     if (selectedEventId == null || selectedTrainerIds.contains(null)) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -122,7 +90,7 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
 
   List<UserModel> _monitoresDisponiblesPara(int index) {
     final idsSeleccionados = selectedTrainerIds.where((id) => id != null && selectedTrainerIds.indexOf(id) != index).toSet();
-    return _monitores.where((m) => !idsSeleccionados.contains(m.idUsuario.toString())).toList();
+    return _monitores.where((m) => !idsSeleccionados.contains(m.id_usuario.toString())).toList();
   }
 
   @override
@@ -242,7 +210,7 @@ Widget _buildEventoDropdown() {
         validator: (value) => value == null ? 'Campo requerido' : null,
         items: _eventos.map((evento) {
           return DropdownMenuItem<String>(
-            value: evento.idEvento.toString(),
+            value: evento.id_evento.toString(),
             child: Text(
               evento.nombre,
               maxLines: 1, // 👈 Solo una línea visible
@@ -295,7 +263,7 @@ Widget _buildEventoDropdown() {
       value: selectedTrainerIds[index],
       items: disponibles.map((monitor) {
         return DropdownMenuItem<String>(
-          value: monitor.idUsuario.toString(),
+          value: monitor.id_usuario.toString(),
           child: Text(monitor.nombre),
         );
       }).toList(),

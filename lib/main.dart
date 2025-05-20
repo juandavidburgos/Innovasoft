@@ -7,6 +7,7 @@ import 'package:basic_flutter/pages/user_pages/disable_users_page.dart';
 import 'package:basic_flutter/pages/user_pages/register_user_page.dart';
 import 'package:basic_flutter/pages/user_pages/sucsess_reigster_page.dart';
 import 'package:basic_flutter/pages/user_pages/sure_logut_page.dart';
+import 'package:basic_flutter/services/local_data_service.dart';
 import 'package:basic_flutter/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'pages/user_pages/login_page.dart';
@@ -24,7 +25,10 @@ import 'pages/caracterization/trainer_select_permanent_event_page.dart';
 import 'pages/caracterization/check_assistant_page.dart';
 import 'models/event_model.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  // Inicializas tus servicios
+  LocalDataService.db.iniciarEscuchaDeConexion(); 
   runApp(const MyApp());
 }
 
@@ -38,25 +42,35 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
       //home: const LoginPage(),
-      // Aquí defines la ruta inicial
-      initialRoute: 'splash',
+      // ruta inicial
+      initialRoute: '/splash',
       
       // Aquí defines todas las rutas disponibles en tu app
       routes: {
+
+        // Rutas de inicio de sesión
         'splash': (context) => const SplashScreen(),
         '/': (context) => const LoginPage(),
         '/logout_page': (context) => const ConfirmLogoutPage(),
+
+        //Rutas home del administrador
         '/admin_home': (context) => const AdminHomePage(),
         '/home_admin_trainer' : (context) => const AdminTrainerHomePage(),
         '/home_events': (context) => const AdminEventHomePage(),
-        '/trainer_home': (context) => const TrainerHomePage(),
+
+        //Rutas de gestión de eventos
         '/crear_evento': (context) => const CreateEventPage(),
         '/view_event': (context) => const ViewEventsPage(),
         '/edit_event': (context) => const EditEventPage(),
         '/disable_event': (context) => const DisableEventPage(),
+
+        //Rutas de gestión de entrenadores
         '/assign_trainer': (context) => const TrainerAssignmentPage(),
         '/view_assign': (context) => const ViewAssignmentPage(),
         '/edit_assign': (context) => const EditTrainerAssignmentPage(),
+
+        //Rutas para el entrenador
+        '/trainer_home': (context) => const TrainerHomePage(),
         '/register_asistence': (context) {
             final evento = ModalRoute.of(context)!.settings.arguments as EventModel;
             return AssistenceRegisterPage(evento: evento);
@@ -77,6 +91,8 @@ class MyApp extends StatelessWidget {
           final evento = ModalRoute.of(context)!.settings.arguments as EventModel;
           return CheckAssistantPage(evento: evento);
         },
+
+        //Rutas para la autenticación de usuarios
         '/user_register': (context) => const RegisterUserPage(),
         '/success_register_page': (context) => SuccessRegisterPage(),
         '/view_users': (context) => ViewUsersPage(),

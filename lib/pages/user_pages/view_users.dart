@@ -1,8 +1,6 @@
 import 'package:basic_flutter/models/user_model.dart';
 import 'package:basic_flutter/repositories/user_repository.dart';
 import 'package:flutter/material.dart';
-import '../../models/event_model.dart';
-import '../../repositories/event_repository.dart';
 
 /// Vista que muestra la lista de eventos almacenados localmente.
 class ViewUsersPage extends StatefulWidget {
@@ -73,7 +71,7 @@ class _ViewUsersPage extends State<ViewUsersPage> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Id: ${user.idUsuario}',
+                        'Id: ${user.id_usuario}',
                       ),
                       Text(
                         'Rol: ${user.rol}',

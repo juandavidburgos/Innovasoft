@@ -4,6 +4,14 @@ import '../services/local_service.dart';
 class EventRepository {
   final LocalService _localService = LocalService();
 
+  ///
+  /// MÉTODOS DE GESTIÓN LOCAL
+  /// 
+
+  /// --------------------------------------------------------
+  /// Gestión de eventos:
+  /// 
+
   Future<int> agregarEvento(EventModel evento) {
     return _localService.guardarEvento(evento);
   }

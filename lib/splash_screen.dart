@@ -14,6 +14,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     verificarSesion();
+    
   }
 
   void verificarSesion() async {

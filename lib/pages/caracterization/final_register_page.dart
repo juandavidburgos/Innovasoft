@@ -144,23 +144,24 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
     final evento = widget.evento;
 
     final formulario = FormModel(
-      idFormulario: DateTime.now().millisecondsSinceEpoch,
+      id_formulario: DateTime.now().millisecondsSinceEpoch,
       titulo: 'Registro ${evento.nombre}',
       descripcion: 'Formulario de asistentes a ${evento.nombre}',
-      fechaCreacion: DateTime.now(),
-      eventoId: evento.idEvento,
-      usuarioId: usuarioId,
+      fecha_creacion: DateTime.now(),
+      evento_id: evento.id_evento,
+      id_usuario: usuarioId,
       latitud: latitud,
       longitud: longitud,
-      pathImagen: pathImagen,
+      path_imagen: pathImagen,
     );
 
     final respuestas = widget.asistentes.expand((asistente) {
       return asistente.entries.map((entry) => AnswerModel(
-        id: DateTime.now().millisecondsSinceEpoch + entry.key.hashCode,
-        preguntaId: entry.key.hashCode,
+        id_respuesta: DateTime.now().millisecondsSinceEpoch + entry.key.hashCode,
+        pregunta_id: entry.key.hashCode,
         contenido: entry.value.toString(),
-        formularioId: formulario.idFormulario!,
+        formulario_id: formulario.id_formulario!,
+        id_evento:evento.id_evento!,
       ));
     }).toList();
 
@@ -176,11 +177,11 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
         nombre: evento.nombre,
         descripcion: evento.descripcion ?? 'Sin descripción',
         ubicacion: evento.ubicacion,
-        fechaHoraInicio: evento.fechaHoraInicio,
-        fechaHoraFin: evento.fechaHoraFin,
+        fecha_hora_inicio: evento.fecha_hora_inicio,
+        fecha_hora_fin: evento.fecha_hora_fin,
       ),
       usuario: UserModel(
-        idUsuario: usuarioId,
+        id_usuario: usuarioId,
         nombre: nombreUsuario ?? 'Desconocido',
         rol: rol ?? 'Sin rol',
         email: email,
@@ -322,3 +323,95 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
 
 
 }
+
+
+/*
+class FinalRegisterPage extends StatefulWidget {
+  final EventModel evento;
+  final int usuarioId;
+
+  const FinalRegisterPage({required this.evento, required this.usuarioId, super.key});
+
+  @override
+  State<FinalRegisterPage> createState() => _FinalRegisterPageState();
+}
+
+class _FinalRegisterPageState extends State<FinalRegisterPage> {
+  LatLng? coordenadas;
+  String? pathImagen;
+  bool ubicacionRegistrada = false;
+
+  Future<void> _obtenerUbicacion() async {
+    // lógica con geolocator
+  }
+
+  Future<void> _cargarImagen() async {
+    // lógica con image_picker
+  }
+
+  Future<void> _enviarFormularioUbicacion() async {
+    if (coordenadas == null || pathImagen == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Faltan datos para el reporte final')),
+      );
+      return;
+    }
+
+    final formId = DateTime.now().millisecondsSinceEpoch;
+
+    final form = FormModel(
+      idFormulario: formId,
+      eventoId: widget.evento.idEvento,
+      idUsuario: widget.usuarioId,
+      titulo: 'Ubicación e imagen grupal',
+      descripcion: 'Formulario de cierre',
+      fechaCreacion: DateTime.now().toIso8601String(),
+      latitud: coordenadas!.latitude,
+      longitud: coordenadas!.longitude,
+      pathImagen: pathImagen,
+    );
+
+    final conectado = await hayInternet();
+
+    if (conectado) {
+      final enviado = await _repo.enviarFormularioConRespuestas(form, []);
+      if (!enviado) await _repo.guardarEnColaPeticiones(form, []);
+    } else {
+      await _repo.guardarEnColaPeticiones(form, []);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Reporte final enviado correctamente')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Registro de comprobación')),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            ElevatedButton(
+              onPressed: _obtenerUbicacion,
+              child: const Text('Registrar ubicación'),
+            ),
+            ElevatedButton(
+              onPressed: _cargarImagen,
+              child: const Text('Subir imagen grupal'),
+            ),
+            ElevatedButton(
+              onPressed: _enviarFormularioUbicacion,
+              child: const Text('Enviar reporte'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
+ */
