@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 /// Modelo de datos para representar un formulario asociado a un evento.
 class FormModel {
   final int? id_formulario;
-  final int? evento_id;
+  final int? id_evento;
   final int? id_usuario;
   final String titulo;
   final String descripcion;
@@ -16,7 +16,7 @@ class FormModel {
 
   FormModel({
     this.id_formulario,
-    this.evento_id,
+    this.id_evento,
     this.id_usuario,
     required this.titulo,
     required this.descripcion,
@@ -29,7 +29,7 @@ class FormModel {
   /// Convierte un Map en un objeto FormModel (para SQLite).
   factory FormModel.fromMap(Map<String, dynamic> map) => FormModel(
         id_formulario: map['id_formulario'],
-        evento_id: map['evento_id'],
+        id_evento: map['id_evento'],
         id_usuario: map['usuario_id'],
         titulo: map['titulo'],
         descripcion: map['descripcion'],
@@ -44,7 +44,7 @@ class FormModel {
   /// Convierte un FormModel en un Map (para SQLite).
   Map<String, dynamic> toMap() => {
         if (id_formulario != null) 'id_formulario': id_formulario,
-        'evento_id': evento_id,
+        'id_evento': id_evento,
         'usuario_id': id_usuario,
         'titulo': titulo,
         'descripcion': descripcion,
@@ -57,7 +57,7 @@ class FormModel {
   /// Convierte un JSON (Map) en un objeto FormModel.
   factory FormModel.fromJson(Map<String, dynamic> json) => FormModel(
         id_formulario: json['id_formulario'],
-        evento_id: json['evento_id'],
+        id_evento: json['id_evento'],
         id_usuario: json['usuario_id'],
         titulo: json['titulo'],
         descripcion: json['descripcion'],
@@ -70,7 +70,7 @@ class FormModel {
   /// Convierte un FormModel en JSON (para envío por HTTP).
   Map<String, dynamic> toJson() => {
         if (id_formulario != null) 'id_formulario': id_formulario,
-        'evento_id': evento_id,
+        'id_evento': id_evento,
         'usuario_id': id_usuario,
         'titulo': titulo,
         'descripcion': descripcion,

@@ -144,7 +144,7 @@ class _DisableUsersPage extends State<DisableUsersPage> {
                                           const SizedBox(height: 2),
                                           Text(user.email),
                                           Text('Rol: ${user.rol}'),
-                                          Text('Estado: ${user.estado}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                          Text('Estado: ${user.estado_monitor}', style: const TextStyle(fontWeight: FontWeight.bold)),
                                         ],
                                       ),
                                     ),

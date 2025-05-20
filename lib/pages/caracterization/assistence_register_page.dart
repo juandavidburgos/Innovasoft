@@ -17,7 +17,7 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
   final FormsRepository _repo = FormsRepository();
 
   final _formKey = GlobalKey<FormState>();
-  final Map<String, dynamic> _formData = {};
+  final Map<int, dynamic> _formData = {};
   final List<Map<String, dynamic>> _asistentes = [];
   DateTime? _fechaNacimiento;
   final TextEditingController _fechaController = TextEditingController();
@@ -27,7 +27,8 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
     final edad = DateTime.now().year - fecha.year;
     _edadController.text = edad.toString();
     setState(() {
-      _formData['edad'] = edad;
+      _formData[5] = DateFormat('dd-MM-yyyy').format(fecha); // ← fecha de nacimiento 
+      _formData[6] = edad;
     });
   }
 
@@ -45,7 +46,7 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
     }
   }
 
-  Widget _buildTextField(String label, String key,
+  Widget _buildTextField(String label, int pregunta_id,
       {bool obligatorio = false,
       TextEditingController? controller,
       TextInputType? tipo = TextInputType.text}) {
@@ -58,13 +59,14 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
           return 'Este campo es obligatorio';
         }
 
-        switch (key) {
-          case 'identificacion':
+        // Validaciones personalizadas según el id
+        switch (pregunta_id) {
+          case 3: // DOCUMENTO IDENTIDAD
             if (value != null && (value.length < 8 || value.length > 10)) {
               return 'Debe tener entre 8 y 10 dígitos';
             }
             break;
-          case 'contacto':
+          case 25: // TELÉFONO
             if (value == null || value.isEmpty) {
               return 'Este campo es obligatorio';
             }
@@ -75,7 +77,7 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
               return 'Ingrese un teléfono válido (mínimo 10 dígitos)';
             }
             break;
-          case 'correo_electronico':
+          case 26: // CORREO ELECTRÓNICO
             if (value != null && value.isNotEmpty) {
               if (value.contains(' ')) {
                 return 'El correo no debe contener espacios';
@@ -85,37 +87,28 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
               }
             }
             break;
-          case 'meses_embarazo':
-            if (value != null &&
-                value.isNotEmpty &&
-                !RegExp(r'^\d+$').hasMatch(value)) {
-              return 'Ingrese solo números';
-            }
-            break;
-          case 'experiencia':
+          case 9: // MESES EMBARAZO
+          case 21: // AÑOS DE EXPERIENCIA
+          case 6: // EDAD
             if (value != null && !RegExp(r'^\d+$').hasMatch(value)) {
               return 'Ingrese solo números';
-            }
-            break;
-          case 'edad':
-            if (value != null && !RegExp(r'^\d+$').hasMatch(value)) {
-              return 'Edad inválida';
             }
             break;
         }
 
         return null;
       },
-      onSaved: (value) => _formData[key] = value,
+      onSaved: (value) => _formData[pregunta_id] = value,
     );
   }
 
-  Widget _buildDropdown(String label, String key, List<String> opciones,
+
+  Widget _buildDropdown(String label, int pregunta_id, List<String> opciones,
       {bool obligatorio = false}) {
     return DropdownButtonFormField<String>(
       decoration: InputDecoration(labelText: label),
       items: opciones.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-      onChanged: (value) => _formData[key] = value,
+      onChanged: (value) => _formData[pregunta_id] = value,
       validator: (value) {
         if (obligatorio && (value == null || value.isEmpty)) {
           return 'Seleccione una opción';
@@ -124,6 +117,7 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
       },
     );
   }
+
 
   void _guardarAsistente() {
     if (_formKey.currentState!.validate()) {
@@ -205,44 +199,114 @@ void _mostrarResumenAsistente(Map<String, dynamic> asistente) {
 
 /* *VERIFICAR!!
 
-Future<bool> hayInternet() async {
-  final result = await Connectivity().checkConnectivity();
-  return result != ConnectivityResult.none;
+void _finalizarRegistro() async {
+  final isFormValid = _formKey.currentState!.validate();
+
+  if (isFormValid) {
+    _formKey.currentState!.save();
+    _asistentes.add(Map<int, dynamic>.from(_formData));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Asistente actual registrado.')),
+    );
+  }
+
+  final hayFormulariosGuardados = await _repo.hayFormulariosRegistrados();
+
+  if (!hayFormulariosGuardados) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Debe registrar al menos un asistente antes de continuar.'),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 5),
+      ),
+    );
+    return;
+  }
+
+  // Mostrar el cuadro de diálogo
+  final continuar = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('¿Desea registrar otro asistente?'),
+        content: const Text('Si selecciona "No", continuará al siguiente paso.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true), // Registrar otro
+            child: const Text('Sí'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(false), // Continuar
+            child: const Text('No'),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (continuar == false) {
+    // Ir a la vista final
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FinalRegisterPage(
+          evento: widget.evento,
+          usuarioId: usuarioId,
+          id_formulario: id_formulario,
+        ),
+      ),
+    );
+  } else {
+    // El usuario desea registrar otro asistente → limpiar formulario
+    _formKey.currentState!.reset();
+    _formData.clear();
+    _fechaController.clear();
+    _edadController.clear();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Formulario listo para otro asistente.')),
+    );
+  }
+  // Si continuar == true, simplemente se queda en la misma página
 }
 
-List<AnswerModel> _crearRespuestasDesdeFormulario(int formId) {
-  int preguntaId = 1;
+
+List<AnswerModel> _crearRespuestasDesdeFormulario(int id_formulario) {
   return _formData.entries.map((entry) {
     return AnswerModel(
-      preguntaId: preguntaId++, // puedes definir este orden como quieras
-      formularioId: formId,
+      pregunta_id: entry.key,              // 
+      id_formulario: id_formulario,
       contenido: entry.value?.toString() ?? '',
+      id_evento: widget.evento.idEvento,   // 
     );
   }).toList();
 }
+
 
 void _guardarAsistente() async {
   if (!_formKey.currentState!.validate()) return;
 
   _formKey.currentState!.save();
 
-  final formId = DateTime.now().millisecondsSinceEpoch;
+  final id_formulario = DateTime.now().millisecondsSinceEpoch;
 
   final form = FormModel(
-    idFormulario: formId,
-    eventoId: widget.evento.idEvento,
-    idUsuario: usuarioId,
+    id_formulario: id_formulario,
+    id_evento: widget.evento.id_evento,
+    id_usuario: id_usuario,
     titulo: 'Asistente',
     descripcion: 'Registro individual',
     fechaCreacion: DateTime.now().toIso8601String(),
     latitud: null,
     longitud: null,
-    pathImagen: null,
+    path_imagen: null,
   );
 
-  final respuestas = _crearRespuestasDesdeFormulario(formId);
+  final respuestas = _crearRespuestasDesdeFormulario(id_formulario);
 
-  final conectado = await hayInternet();
+  final conectado = await _repo.hayConexion();
 
   if (conectado) {
     final enviado = await _repo.enviarFormularioConRespuestas(form, respuestas);
@@ -310,11 +374,13 @@ void _guardarAsistente() async {
                 ),
               ),
               const SizedBox(height: 25),
-              _buildTextField('Nombres', 'nombres', obligatorio: true),
-              _buildTextField('Apellidos', 'apellidos', obligatorio: true),
-              _buildTextField('Número de identificación', 'identificacion', obligatorio: true, tipo: TextInputType.number),
-              _buildTextField('Ocupación', 'ocupacion', obligatorio: true),
+              _buildTextField('Nombres', 1, obligatorio: true),
+              _buildTextField('Apellidos', 2, obligatorio: true),
+              _buildTextField('Número de identificación', 3, obligatorio: true, tipo: TextInputType.number),
+              _buildTextField('Ocupación', 4, obligatorio: true),
               const SizedBox(height: 20),
+
+              // FECHA DE NACIMIENTO (id = 5) y EDAD (id = 6)
               TextFormField(
                 controller: _fechaController,
                 decoration: _inputDecoration('Fecha de nacimiento'),
@@ -332,31 +398,33 @@ void _guardarAsistente() async {
                 },
               ),
               const SizedBox(height: 8),
-              _buildTextField('Edad', 'edad', controller: _edadController, obligatorio: true, tipo: TextInputType.number),
+              _buildTextField('Edad', 6, controller: _edadController, obligatorio: true, tipo: TextInputType.number),
+
               const SizedBox(height: 10),
-              _buildDropdown('Rango de edad', 'rango_edad', ['1-6', '7-11', '12-17', '18-25', '26-35', '36-49', '+50'], obligatorio: true),
-              _buildDropdown('Género', 'genero', ['Masculino', 'Femenino', 'Prefiero no decirlo', 'Otro'], obligatorio: true),
-              _buildDropdown('¿Está en embarazo?', 'embarazo', ['Sí', 'No'], obligatorio: true),
-              _buildTextField('Meses de embarazo (si aplica)', 'meses_embarazo'),
-              _buildDropdown('¿Víctima del conflicto armado?', 'victima_conflicto', ['Sí', 'No'], obligatorio: true),
-              _buildDropdown('¿Inscrito en VIVANTO?', 'vivanto', ['Sí', 'No']),
-              _buildDropdown('Estrato socioeconómico', 'estrato', ['0-1', '2-3', '4+'], obligatorio: true),
-              _buildDropdown('¿Grupo social o étnico?', 'grupo_social', ['Sí', 'No'], obligatorio: true),
-              _buildDropdown('¿Posee alguna discapacidad?', 'discapacidad', ['Sí', 'No'], obligatorio: true),
-              _buildDropdown('¿Practica una disciplina deportiva?', 'deporte', ['Sí', 'No'], obligatorio: true),
-              _buildTextField('¿Cuál disciplina?', 'disciplina'),
-              _buildTextField('Categoría deportiva', 'categoria'),
-              _buildTextField('Institución educativa', 'institucion'),
-              _buildTextField('Club al que pertenece', 'club'),
-              _buildTextField('Liga a la que pertenece', 'liga'),
-              _buildDropdown('¿Ha tenido lesiones?', 'lesiones', ['Sí', 'No'], obligatorio: true),
-              _buildTextField('Años de experiencia deportiva', 'experiencia', obligatorio: true, tipo: TextInputType.number),
-              _buildTextField('Dirección', 'direccion', obligatorio: true),
-              _buildTextField('Municipio de origen', 'municipio', obligatorio: true),
-              _buildDropdown('Zona', 'zona', ['Urbano', 'Rural'], obligatorio: true),
-              _buildTextField('Teléfono', 'contacto', obligatorio: true),
-              _buildTextField('Correo electrónico', 'correo_electronico'),
+              _buildDropdown('Rango de edad', 7, ['1-6', '7-11', '12-17', '18-25', '26-35', '36-49', '+50'], obligatorio: true),
+              _buildDropdown('Género', 8, ['Masculino', 'Femenino', 'Prefiero no decirlo', 'Otro'], obligatorio: true),
+              _buildDropdown('¿Está en embarazo?', 9, ['Sí', 'No'], obligatorio: true),
+              _buildTextField('Meses de embarazo (si aplica)', 9), // mismo campo, solo se separa visualmente
+              _buildDropdown('¿Víctima del conflicto armado?', 10, ['Sí', 'No'], obligatorio: true),
+              _buildDropdown('¿Inscrito en VIVANTO?', 10, ['Sí', 'No']), // mismo ID como pregunta compuesta
+              _buildDropdown('Estrato socioeconómico', 11, ['0-1', '2-3', '4+'], obligatorio: true),
+              _buildDropdown('¿Grupo social o étnico?', 12, ['Sí', 'No'], obligatorio: true),
+              _buildDropdown('¿Posee alguna discapacidad?', 13, ['Sí', 'No'], obligatorio: true),
+              _buildDropdown('¿Practica una disciplina deportiva?', 14, ['Sí', 'No'], obligatorio: true),
+              _buildTextField('¿Cuál disciplina?', 14),
+              _buildTextField('Categoría deportiva', 15),
+              _buildTextField('Institución educativa', 16),
+              _buildTextField('Club al que pertenece', 17),
+              _buildTextField('Liga a la que pertenece', 18),
+              _buildDropdown('¿Ha tenido lesiones?', 19, ['Sí', 'No'], obligatorio: true),
+              _buildTextField('Años de experiencia deportiva', 21, obligatorio: true, tipo: TextInputType.number),
+              _buildTextField('Dirección', 22, obligatorio: true),
+              _buildTextField('Municipio de origen', 23, obligatorio: true),
+              _buildDropdown('Zona', 24, ['Urbano', 'Rural'], obligatorio: true),
+              _buildTextField('Teléfono', 25, obligatorio: true),
+              _buildTextField('Correo electrónico', 26),
               const SizedBox(height: 30),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [

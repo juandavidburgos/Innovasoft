@@ -65,8 +65,9 @@ class LocalDataService {
             nombre TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
             contrasena TEXT NOT NULL,
-            rol TEXT CHECK(rol IN ('ENTRENADOR', 'ADMINISTRADOR')) NOT NULL,
-            estado TEXT CHECK(estado IN ('ACTIVO', 'INACTIVO')) DEFAULT 'activo'
+            rol TEXT CHECK(rol IN ('Monitor', 'Administrador')) NOT NULL,
+            estado_monitor TEXT CHECK(estado_monitor IN ('activo', 'inactivo')) DEFAULT 'activo',
+            sincronizado INTEGER NOT NULL DEFAULT 0
           );
           ''');
 
@@ -89,12 +90,12 @@ class LocalDataService {
               titulo TEXT NOT NULL,
               descripcion TEXT,
               fecha_creacion TEXT NOT NULL,
-              evento_id INTEGER NOT NULL,
+              id_evento INTEGER NOT NULL,
               id_usuario INTEGER NOT NULL,
               latitud REAL,
               longitud REAL,
               path_imagen TEXT,
-              FOREIGN KEY (evento_id) REFERENCES eventos(id_evento),
+              FOREIGN KEY (id_evento) REFERENCES eventos(id_evento),
               FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
             );
           ''');
@@ -297,7 +298,7 @@ class LocalDataService {
         'email': user.email,
         'contrasena': user.contrasena,
         'rol': user.rol,
-        'estado':user.estado,
+        'estado_monitor':user.estado_monitor,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -317,7 +318,7 @@ class LocalDataService {
         email: maps[i]['email'],
         contrasena: maps[i]['contrasena'],
         rol: maps[i]['rol'],
-        estado: maps[i]['estado'],
+        estado_monitor: maps[i]['estado_monitor'],
       );
     });
   }
@@ -351,6 +352,24 @@ class LocalDataService {
     );
   }
 
+  Future<List<UserModel>> getNoSyncUsers() async {
+    final db = await database;
+    final maps = await db.query('usuarios', where: 'sincronizado = ?', whereArgs: [0]);
+
+    return maps.map((e) => UserModel.fromMap(e)).toList();
+  }
+
+  Future<void> markUserSync(int idUsuario) async {
+    final db = await database;
+    await db.update(
+      'usuarios', 
+      {'sincronizado': 1}, 
+      where: 'id_usuario = ?', 
+      whereArgs: [idUsuario],
+      );
+  }
+
+
   ///Deshabilitar entrenadores
   ///Cambia su estado a "INACTIVO" 
   
@@ -358,7 +377,7 @@ class LocalDataService {
     final db = await database;
     return await db.update(
       tableUsuarios,
-      {'estado': 'INACTIVO'},
+      {'estado_monitor': 'inactivo'},
       where: 'id_usuario = ?',
       whereArgs: [id],
     );
@@ -372,7 +391,7 @@ class LocalDataService {
     final List<Map<String, dynamic>> maps = await db.query(
       tableUsuarios,
       where: 'rol = ?',
-      whereArgs: ['ENTRENADOR'],
+      whereArgs: ['Monitor'],
     );
 
     return List.generate(maps.length, (i) {
@@ -382,7 +401,7 @@ class LocalDataService {
         email: maps[i]['email'],
         contrasena: maps[i]['contrasena'],
         rol: maps[i]['rol'],
-        estado: maps[i]['estado'],
+        estado_monitor: maps[i]['estado_monitor'],
       );
     });
   }
@@ -392,8 +411,8 @@ class LocalDataService {
 
     final List<Map<String, dynamic>> maps = await db.query(
       tableUsuarios,
-      where: 'rol = ? AND estado = ?',
-      whereArgs: ['ENTRENADOR', 'ACTIVO'],
+      where: 'rol = ? AND estado_monitor = ?',
+      whereArgs: ['Monitor', 'activo'],
     );
 
     return List.generate(maps.length, (i) {
@@ -403,7 +422,7 @@ class LocalDataService {
         email: maps[i]['email'],
         contrasena: maps[i]['contrasena'],
         rol: maps[i]['rol'],
-        estado: maps[i]['estado'],
+        estado_monitor: maps[i]['estado_monitor'],
       );
     });
   }
@@ -635,7 +654,7 @@ class LocalDataService {
         'titulo': formulario.titulo,
         'descripcion': formulario.descripcion,
         'fecha_creacion': formulario.fecha_creacion.toIso8601String(),
-        'evento_id': formulario.evento_id,
+        'id_evento': formulario.id_evento,
         'id_usuario': formulario.id_usuario,
         'latitud': formulario.latitud,
         'longitud': formulario.longitud,
@@ -654,7 +673,7 @@ class LocalDataService {
       titulo: json['titulo'] as String,
       descripcion: json['descripcion'] as String,
       fecha_creacion: DateTime.parse(json['fechaCreacion'] as String),
-      evento_id: json['eventoId'] as int,
+      id_evento: json['id_evento'] as int,
       id_usuario: json['usuarioId'] as int,
       latitud: json['latitud'] as double?,
       longitud: json['longitud'] as double?,
@@ -676,7 +695,7 @@ class LocalDataService {
       titulo: json['titulo'] as String,
       descripcion: json['descripcion'] as String,
       fecha_creacion: DateTime.parse(json['fecha_creacion'] as String),
-      evento_id: json['evento_id'] as int,
+      id_evento: json['id_evento'] as int,
       id_usuario: json['id_usuario'] as int,
       latitud: json['latitud'] != null ? (json['latitud'] as num).toDouble() : null,
       longitud: json['longitud'] != null ? (json['longitud'] as num).toDouble() : null,
@@ -854,6 +873,46 @@ class LocalDataService {
     }
   }
 
+  Future<void> guardarEvidenciaEnCola(FormModel formulario) async {
+    final db = await database;
+
+    final payload = jsonEncode({
+      'formulario': formulario.toJson(), // sólo FormModel
+    });
+
+    await db.insert('cola_evidencias', {
+      'payload': payload,
+      'fecha_guardado': DateTime.now().toIso8601String(),
+    });
+  }
+
+
+  Future<void> procesarColaEvidencias() async {
+    final db = await database;
+
+    final registros = await db.query('cola_evidencias');
+
+    for (final reg in registros) {
+      final idLocal = reg['id_local'] as int;
+      final payload = jsonDecode(reg['payload'] as String);
+
+      final form = FormModel.fromJson(payload['formulario']);
+
+      final exito = await RemoteDataService.dbR.sendEvidence(form); // 👈 Tu método PATCH
+      if (exito) {
+        await db.delete('cola_evidencias', where: 'id_local = ?', whereArgs: [idLocal]);
+      }
+    }
+  }
+
+  Future<bool> hayFormulariosRegistrados() async {
+    final db = await database;
+    final enCola = await db.query('cola_peticiones');
+    return enCola.isNotEmpty;
+  }
+
+
+
 
   /// -------------------------------------------------
   /// *MÉTODOS ASOCIADOS A LA AUTENTICACIÓN DE USUARIOS
@@ -891,8 +950,8 @@ class LocalDataService {
           'nombre': 'Juan Burgos',
           'email': 'admin@local.com',
           'contrasena': 'Admin123!', // contraseña temporal
-          'rol': 'ADMINISTRADOR',
-          'estado': 'ACTIVO',
+          'rol': 'Administrador',
+          'estado_monitor': 'ACTIVO',
         },
         conflictAlgorithm: ConflictAlgorithm.ignore, // evita duplicados si ya existe
       );
@@ -902,12 +961,31 @@ class LocalDataService {
   /// *MÉTODO PARA DETECTAR CONEXION
   /// -------------------------------------------------
   
+  bool _procesandoColas = false;
+
   void iniciarEscuchaDeConexion() {
-    Connectivity().onConnectivityChanged.listen((status) {
-      if (status != ConnectivityResult.none) {
-        procesarCola();
+    Connectivity().onConnectivityChanged.listen((status) async {
+      if (status != ConnectivityResult.none && !_procesandoColas) {
+        _procesandoColas = true;
+
+        try {
+          await procesarCola();
+          await procesarColaEvidencias();
+          await RemoteDataService.dbR.sincronizarHaciaServidor();
+        } catch (e, stackTrace) {
+          // Loguear el error si algo falla (útil para debug o reporting)
+          print('❌ Error durante sincronización: $e');
+          print('🧵 StackTrace: $stackTrace');
+        } finally {
+          _procesandoColas = false;
+        }
       }
     });
+  }
+
+  Future<bool> hayInternet() async {
+    final result = await Connectivity().checkConnectivity();
+    return result != ConnectivityResult.none;
   }
 
 }

@@ -87,6 +87,10 @@ class RemoteService {
     return await RemoteDataService.dbR.sendFormularioRespondido(formulario, respuestas);
   }
 
+  Future<bool> enviarEvidencia(FormModel formulario) async {
+    return await RemoteDataService.dbR.sendEvidence(formulario);
+  }
+
   /// -------------------------------------------------
   /// *MÉTODOS DE AUTENTICACIÓN DE USUARIOS
   /// -------------------------------------------------

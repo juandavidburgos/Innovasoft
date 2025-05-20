@@ -16,4 +16,19 @@ class FormsRepository {
     return await _localService.guardarEnColaPeticiones(formulario, respuestas);
   }
 
+  Future<bool> enviarEvidenciaEntrenador(FormModel formulario) async {
+    return await _remoteService.enviarEvidencia(formulario);
+  }
+
+  Future<void> guardarEvidenciaEnColaPeticiones(FormModel formulario) async {
+    return await _localService.guardarEvidenciaEnColaPeticiones(formulario);
+  }
+
+  Future<bool> hayConexion() async {
+    return await _localService.detectarConexion();
+  }
+
+  Future<bool> hayFormulariosRegistrados() async {
+    return await _localService.hayFormulariosRegistrados();
+  }
 }

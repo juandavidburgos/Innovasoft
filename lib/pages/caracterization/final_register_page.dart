@@ -36,7 +36,7 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
   int usuarioId = 0;
   String rol ='';
   String email = '';
-  String estado = '';
+  String estado_monitor = '';
   double? latitud;
   double? longitud;
   String? pathImagen;
@@ -148,7 +148,7 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
       titulo: 'Registro ${evento.nombre}',
       descripcion: 'Formulario de asistentes a ${evento.nombre}',
       fecha_creacion: DateTime.now(),
-      evento_id: evento.id_evento,
+      id_evento: evento.id_evento,
       id_usuario: usuarioId,
       latitud: latitud,
       longitud: longitud,
@@ -185,7 +185,7 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
         nombre: nombreUsuario ?? 'Desconocido',
         rol: rol ?? 'Sin rol',
         email: email,
-        estado: estado,
+        estado_monitor: estado_monitor,
       ),
       asistentes: widget.asistentes,
     );
@@ -329,59 +329,104 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
 class FinalRegisterPage extends StatefulWidget {
   final EventModel evento;
   final int usuarioId;
+  final int idFormulario;
 
-  const FinalRegisterPage({required this.evento, required this.usuarioId, super.key});
+  const FinalRegisterPage({
+    required this.evento,
+    required this.usuarioId,
+    required this.idFormulario,
+    super.key,
+  });
 
   @override
   State<FinalRegisterPage> createState() => _FinalRegisterPageState();
 }
 
 class _FinalRegisterPageState extends State<FinalRegisterPage> {
-  LatLng? coordenadas;
+  double? latitud;
+  double? longitud;
   String? pathImagen;
-  bool ubicacionRegistrada = false;
 
   Future<void> _obtenerUbicacion() async {
-    // lógica con geolocator
+    bool servicioActivo = await Geolocator.isLocationServiceEnabled();
+    if (!servicioActivo) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Activa el GPS.')),
+      );
+      return;
+    }
+
+    LocationPermission permiso = await Geolocator.checkPermission();
+    if (permiso == LocationPermission.denied) {
+      permiso = await Geolocator.requestPermission();
+      if (permiso == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Permiso denegado.')),
+        );
+        return;
+      }
+    }
+
+    if (permiso == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Permiso denegado permanentemente.')),
+      );
+      return;
+    }
+
+    Position posicion = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    setState(() {
+      latitud = posicion.latitude;
+      longitud = posicion.longitude;
+    });
   }
 
   Future<void> _cargarImagen() async {
-    // lógica con image_picker
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+
+    if (pickedFile != null) {
+      setState(() {
+        pathImagen = pickedFile.path;
+      });
+    }
   }
 
   Future<void> _enviarFormularioUbicacion() async {
-    if (coordenadas == null || pathImagen == null) {
+    if (latitud == null || longitud == null || pathImagen == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Faltan datos para el reporte final')),
       );
       return;
     }
 
-    final formId = DateTime.now().millisecondsSinceEpoch;
-
     final form = FormModel(
-      idFormulario: formId,
-      eventoId: widget.evento.idEvento,
-      idUsuario: widget.usuarioId,
-      titulo: 'Ubicación e imagen grupal',
-      descripcion: 'Formulario de cierre',
-      fechaCreacion: DateTime.now().toIso8601String(),
-      latitud: coordenadas!.latitude,
-      longitud: coordenadas!.longitude,
-      pathImagen: pathImagen,
+      id_formulario: widget.idFormulario,
+      evento_id: widget.evento.idEvento,
+      id_usuario: widget.usuarioId,
+      titulo: 'Evidencia final',
+      descripcion: 'Ubicación e imagen grupal',
+      fecha_creacion: DateTime.now().toIso8601String(),
+      latitud: latitud,
+      longitud: longitud,
+      path_imagen: pathImagen,
     );
 
-    final conectado = await hayInternet();
+    final conectado = await _repo.hayConexion();
 
     if (conectado) {
-      final enviado = await _repo.enviarFormularioConRespuestas(form, []);
-      if (!enviado) await _repo.guardarEnColaPeticiones(form, []);
+      final enviado = await _repo.enviarEvidenciaEntrenador(form);
+      if (!enviado) {
+        await _repo.guardarEvidenciaEnColaPeticiones(form); // 👈 guardar localmente si falla
+      }
     } else {
-      await _repo.guardarEnColaPeticiones(form, []);
+      await _repo.guardarEvidenciaEnColaPeticiones(form);
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Reporte final enviado correctamente')),
+      const SnackBar(content: Text('Reporte final procesado correctamente')),
     );
   }
 
@@ -411,7 +456,6 @@ class _FinalRegisterPageState extends State<FinalRegisterPage> {
     );
   }
 }
-
 
 
  */

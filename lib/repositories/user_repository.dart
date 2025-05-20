@@ -51,6 +51,13 @@ class UserRepository {
     return _localService.deshabilitarEntrenador(id);
   }
 
+  Future<List<UserModel>> obtenerUsuariosNoSincronizados() async {
+      return await _localService.obtenerUsuariosNoSincronizados();
+    }
+
+  Future<void> marcarUsuarioComoSincronizado(int idUsuario) async {
+      return await _localService.marcarUsuarioComoSincronizado(idUsuario);
+    }
   /// --------------------------------------------------------
 
   ///
@@ -103,16 +110,18 @@ class UserRepository {
   /// Sincroniza usuarios locales con el servidor (local → remoto)
   /// útil para cuando hay conexión intermitente y se insertan datos offline
   Future<void> sincronizarHaciaServidor() async {
-    final usuariosLocales = await obtenerUsuarios();
+    final usuariosLocales = await obtenerUsuariosNoSincronizados(); // ✅ Solo los no sincronizados
     for (var user in usuariosLocales) {
       final correoExiste = await existeCorreoRemoto(user.email);
       if (!correoExiste) {
-        await enviarUsuarioRemoto(user);
-      } else {
-        await actualizarUsuarioRemoto(user);
+        final ok = await enviarUsuarioRemoto(user);
+        if (ok) {
+          await marcarUsuarioComoSincronizado(user.id_usuario!);
+        }
       }
     }
   }
+
 
   /// Sincroniza en ambos sentidos: primero descarga y luego sube
   Future<void> sincronizarTodo() async {

@@ -35,23 +35,24 @@ class _RegisterUserPage extends State<RegisterUserPage> {
         nombre: nombre,
         email: email,
         contrasena: contrasena,
-        rol: 'ENTRENADOR',
-        estado: 'ACTIVO',
+        rol: 'Monitor',
+        estado_monitor: 'activo',
+        sincronizado: false, // ⚠️ Muy importante
       );
 
       try {
-        // Guardar en la base de datos y obtener el ID generado
+        // Guardar localmente (SQLite)
         int usuarioId = await _localService.guardarUsuario(nuevoUsuario);
 
-        // Guardar sesión en SharedPreferences
+        // Guardar sesión
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt('id_usuario', usuarioId);
         await prefs.setString('nombre', nuevoUsuario.nombre);
         await prefs.setString('email', nuevoUsuario.email);
         await prefs.setString('rol', nuevoUsuario.rol);
-        await prefs.setString('estado', nuevoUsuario.estado);
+        await prefs.setString('estado', nuevoUsuario.estado_monitor);
 
-        // Redirigir a página de éxito
+        // Redirigir a pantalla de éxito
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const SuccessRegisterPage()),
@@ -65,15 +66,15 @@ class _RegisterUserPage extends State<RegisterUserPage> {
         );
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor completa todos los campos correctamente'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 3),
-        ),
-      );
-    }
-}
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Por favor completa todos los campos correctamente'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+  }
 
 
   bool _isPasswordValid(String value) {

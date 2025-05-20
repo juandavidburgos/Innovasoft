@@ -162,7 +162,12 @@ class LocalService {
     return await LocalDataService.db.getAsistentesFormulario(userId, eventId);
   }
 
-    /// -------------------------------------------------
+  //Verificar los formularios registrados en la cola de peticiones
+  Future<bool> hayFormulariosRegistrados() async {
+    return await LocalDataService.db.hayFormulariosRegistrados();
+  }
+
+  /// -------------------------------------------------
   /// *MÉTODOS ASOCIADOS A AUTENTICACIÓN DE USUARIOS
   /// -------------------------------------------------
 
@@ -180,6 +185,14 @@ class LocalService {
     return await LocalDataService.db.crearAdminTemporal();
   }
 
+  Future<List<UserModel>> obtenerUsuariosNoSincronizados() async {
+    return await LocalDataService.db.getNoSyncUsers();
+  }
+
+  Future<void> marcarUsuarioComoSincronizado(int idUsuario) async {
+    return await LocalDataService.db.markUserSync(idUsuario);
+  }
+
   /// -------------------------------------------------
   /// *MÉTODOS ASOCIADOS A LA COLA DE PETICIONES
   /// -------------------------------------------------
@@ -188,5 +201,16 @@ class LocalService {
     return await LocalDataService.db.guardarEnCola(formulario, respuestas);
 
   }
+
+  Future<void> guardarEvidenciaEnColaPeticiones(FormModel formulario) async {
+    return await LocalDataService.db.guardarEvidenciaEnCola(formulario);
+  }
+
+  /// -------------------------------------------------
+  /// *MÉTODOS ASOCIADOS A LA CONEXIÓN A INTERNET
+  /// -------------------------------------------------
   
+  Future<bool> detectarConexion() async {
+    return await LocalDataService.db.hayInternet();
+  }
 }

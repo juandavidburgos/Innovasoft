@@ -8,6 +8,7 @@ import 'package:basic_flutter/pages/user_pages/register_user_page.dart';
 import 'package:basic_flutter/pages/user_pages/sucsess_reigster_page.dart';
 import 'package:basic_flutter/pages/user_pages/sure_logut_page.dart';
 import 'package:basic_flutter/services/local_data_service.dart';
+import 'package:basic_flutter/services/remote_data_service.dart';
 import 'package:basic_flutter/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'pages/user_pages/login_page.dart';
@@ -29,9 +30,15 @@ void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   // Inicializas tus servicios
   LocalDataService.db.iniciarEscuchaDeConexion(); 
+  _verificarYSincronizar();
   runApp(const MyApp());
 }
 
+Future<void> _verificarYSincronizar() async {
+  if (await LocalDataService.db.hayInternet()) {
+    await RemoteDataService.dbR.sincronizarHaciaServidor();
+  }
+}
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 

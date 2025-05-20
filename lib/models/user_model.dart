@@ -7,7 +7,8 @@ class UserModel {
   final String email;
   final String? contrasena;
   final String rol; // 'Monitor' equivale a 'Entrenador'
-  final String estado;
+  final String estado_monitor;
+  bool sincronizado;
 
   UserModel({
     this.id_usuario,
@@ -15,7 +16,8 @@ class UserModel {
     required this.email,
     this.contrasena,
     required this.rol,
-    required this.estado,
+    required this.estado_monitor,
+    this.sincronizado = false,
   });
 
   /// Convierte un Map (por ejemplo desde SQLite) a un objeto UserModel
@@ -25,7 +27,8 @@ class UserModel {
         email: map['email'],
         contrasena: map['contrasena'],
         rol: map['rol'],
-        estado: map['estado'],
+        estado_monitor: map['estado_monitor'],
+        sincronizado: map['sincronizado'] == 1,
       );
 
   /// Convierte el objeto a un Map (por ejemplo para SQLite)
@@ -34,7 +37,8 @@ class UserModel {
         'nombre': nombre,
         'email': email,
         'rol': rol,
-        'estado':estado,
+        'estado_monitor':estado_monitor,
+        'sincronizado': sincronizado ? 1 : 0,
       };
 
   /// Convierte un JSON a un objeto UserModel
@@ -44,16 +48,17 @@ class UserModel {
         email: json['email'],
         contrasena: json['contrasena'],
         rol: json['rol'],
-        estado: json['estado']
+        estado_monitor: json['estado_monitor']
       );
 
   /// Convierte un UserModel a JSON (por ejemplo para API)
   Map<String, dynamic> toJson() => {
-        if (id_usuario != null) 'id_usuario': id_usuario,
-        'nombre': nombre,
-        'email': email,
-        'contrasena':contrasena,
-        'rol': rol,
-        'estado':estado,
-      };
+    if (id_usuario != null) 'id_usuario': id_usuario,
+    'nombre': nombre,
+    'email': email,
+    'contrasena': contrasena,
+    'rol': rol,             // en mayúsculas para Enum del backend
+    'estado_monitor': estado_monitor.toLowerCase(), // usa el nombre exacto del modelo backend
+  };
+
 }

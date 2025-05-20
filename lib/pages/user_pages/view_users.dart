@@ -80,7 +80,7 @@ class _ViewUsersPage extends State<ViewUsersPage> {
                         'Contrasena: ${user.contrasena}',
                       ),
                       Text(
-                        'Estado: ${user.estado}', style: const TextStyle(fontWeight: FontWeight.bold),
+                        'Estado: ${user.estado_monitor}', style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),

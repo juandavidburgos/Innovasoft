@@ -207,3 +207,214 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
 }
 
 }
+
+
+/*
+
+class TrainerSelectEventPage extends StatefulWidget {
+  const TrainerSelectEventPage({super.key});
+
+  @override
+  State<TrainerSelectEventPage> createState() => _TrainerSelectEventPageState();
+}
+
+class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
+  final EventRepository _eventRepo = EventRepository();
+
+  int? usuarioId;
+  List<EventModel> eventosAsignados = [];
+  EventModel? eventoSeleccionado;
+  bool cargando = true;
+  String mensajeError = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _inicializar();
+  }
+
+  Future<void> _inicializar() async {
+    try {
+      // Obtener el ID del usuario desde alguna fuente segura (e.g., servicio de sesión)
+      usuarioId = await obtenerUsuarioIdDesdeSesion(); // Reemplaza con tu lógica real
+
+      if (usuarioId == null) {
+        throw Exception("No se pudo identificar el usuario.");
+      }
+
+      final eventos = await _eventRepo.obtenerEventosDelEntrenador(usuarioId!);
+      setState(() {
+        eventosAsignados = eventos;
+        cargando = false;
+      });
+    } catch (e) {
+      setState(() {
+        cargando = false;
+        mensajeError = 'Error al cargar eventos: ${e.toString()}';
+      });
+    }
+  }
+
+  void _iniciarRegistro() {
+    if (eventoSeleccionado == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor seleccione un evento antes de continuar.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    Navigator.pushNamed(
+      context,
+      '/register_asistence',
+      arguments: eventoSeleccionado,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: cargando
+            ? const Center(child: CircularProgressIndicator())
+            : Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildEncabezado(),
+                      const Divider(thickness: 1.5, color: Color(0xFFCCCCCC), height: 30),
+                      const SizedBox(height: 20),
+                      const Center(
+                        child: Text(
+                          'Seleccione el evento asignado',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      if (mensajeError.isNotEmpty)
+                        Text(
+                          mensajeError,
+                          style: const TextStyle(color: Colors.red),
+                        )
+                      else
+                        _buildDropdownEventos(),
+                      const SizedBox(height: 50),
+                      _buildBotones(),
+                    ],
+                  ),
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildEncabezado() {
+    return Center(
+      child: Column(
+        children: [
+          const SizedBox(height: 150),
+          Image.asset('assets/images/logo_indeportes.png', width: 250),
+          const SizedBox(height: 15),
+          const Text(
+            '“Indeportes somos todos”',
+            style: TextStyle(fontStyle: FontStyle.italic),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdownEventos() {
+    if (eventosAsignados.isEmpty) {
+      return const Text(
+        'No tienes eventos asignados.',
+        style: TextStyle(fontSize: 16),
+      );
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      child: DropdownButtonFormField<EventModel>(
+        isExpanded: true,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        value: eventoSeleccionado,
+        hint: const Text('Seleccionar evento'),
+        selectedItemBuilder: (context) {
+          return eventosAsignados.map((evento) {
+            return Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                evento.nombre,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            );
+          }).toList();
+        },
+        items: eventosAsignados.map((evento) {
+          final fecha = evento.fecha_hora_inicio.toLocal().toIso8601String().substring(0, 10);
+          return DropdownMenuItem<EventModel>(
+            value: evento,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(evento.nombre, style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text('Fecha: $fecha', style: const TextStyle(color: Colors.grey)),
+                const Divider(color: Colors.grey, thickness: 0.5),
+              ],
+            ),
+          );
+        }).toList(),
+        onChanged: (value) {
+          setState(() {
+            eventoSeleccionado = value;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildBotones() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildButton('Comenzar registro', const Color(0xFF00944C), _iniciarRegistro),
+        ActionButton(
+          text: 'Regresar',
+          color: const Color.fromARGB(255, 134, 134, 134),
+          icono: Icons.arrow_back,
+          ancho: 145,
+          alto: 48,
+          onPressed: () => Navigator.pushReplacementNamed(context, '/trainer_home'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildButton(String text, Color color, VoidCallback onPressed) {
+    return MainButton(
+      onPressed: onPressed,
+      color: color,
+      texto: text,
+    );
+  }
+
+  // Simulación de obtención de ID de sesión (reemplaza esto con tu lógica real)
+  Future<int?> obtenerUsuarioIdDesdeSesion() async {
+    // Por ejemplo, consultar SharedPreferences o un AuthProvider
+    return 5; // Simulación temporal
+  }
+}
+
+
+ */

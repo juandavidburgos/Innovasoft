@@ -1,4 +1,6 @@
 import 'package:basic_flutter/models/form_model.dart';
+import 'package:basic_flutter/services/local_data_service.dart';
+import 'package:basic_flutter/services/local_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/event_model.dart';
@@ -149,10 +151,10 @@ class RemoteDataService {
   }
 
   // Eliminar un usuario
-  Future<bool> deleteUsuario(int idUsuario) async {
+  Future<bool> deleteUsuario(int id_usuario) async {
     try {
       final response = await http.delete(
-        Uri.parse('$apiUrlUsuarios/$idUsuario'),
+        Uri.parse('$apiUrlUsuarios/$id_usuario'),
       );
       return response.statusCode == 200;
     } catch (_) {
@@ -160,13 +162,14 @@ class RemoteDataService {
     }
   }
 
+
   /// -------------------------------------------------
   /// *MÉTODOS DE ASIGNACIONES
   /// -------------------------------------------------
 
-  Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
+  Future<List<EventModel>> getEventosAsignados(int id_usuario) async {
     final response = await http.get(
-      Uri.parse('$apiUrl/usuarios/$idUsuario/eventos'),
+      Uri.parse('$apiUrl/usuarios/$id_usuario/eventos'),
     );
 
     if (response.statusCode == 200) {
@@ -218,7 +221,7 @@ class RemoteDataService {
         await prefs.setString('nombre', decoded['nombre']);
         await prefs.setString('rol', decoded['rol']);
         await prefs.setString('email', email);
-        await prefs.setString('estado', decoded['estado']);
+        await prefs.setString('estado_monitor', decoded['estado_monitor']);
 
         return UserModel(
           id_usuario: decoded['id_usuario'],
@@ -226,7 +229,7 @@ class RemoteDataService {
           email: email,
           contrasena: '', // no se guarda
           rol: decoded['rol'],
-          estado: decoded['estado'],
+          estado_monitor: decoded['estado_monitor'],
         );
       }
 
@@ -252,7 +255,9 @@ class RemoteDataService {
 
   Future<bool> sendFormularioRespondido(FormModel formulario, List<AnswerModel> respuestas) async {
     final body = {
-      'formulario': formulario.toJson(),
+      //'formulario': formulario.toJson(),
+      'id_formulario' : formulario.id_formulario,
+      'id_evento': formulario.id_evento,
       'respuestas': respuestas.map((r) => r.toJson()).toList(),
     };
 
@@ -267,5 +272,64 @@ class RemoteDataService {
       return false;
     }
   }  
+
+  Future<bool> sendEvidence(FormModel formulario) async {
+    final evidencia = {
+      'latitud': formulario.latitud,
+      'longitud': formulario.longitud,
+      'path_imagen': formulario.path_imagen,
+    };
+
+    try {
+      final response = await http.patch(
+        Uri.parse('$apiUrl/formularios/${formulario.id_formulario}/evidencia'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(evidencia),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+/// --------------------------------------------------------
+
+  /// --- MÉTODOS DE SINCRONIZACIÓN ---
+
+  /// Sincroniza usuarios remotos con la base de datos local (descarga remota → inserta local)
+  Future<void> sincronizarDesdeServidor() async {
+    final usuariosRemotos = await fetchUsuarios();
+    for (var user in usuariosRemotos) {
+      final existe = await LocalDataService.db.existeCorreo(user.email);
+      if (!existe) {
+        await LocalDataService.db.insertUser(user);
+      } else {
+        await LocalDataService.db.updateUsuario(user);
+      }
+    }
+  }
+
+  /// Sincroniza usuarios locales con el servidor (local → remoto)
+  /// útil para cuando hay conexión intermitente y se insertan datos offline
+  Future<void> sincronizarHaciaServidor() async {
+    final usuariosLocales = await LocalDataService.db.getNoSyncUsers(); // ✅ Solo los no sincronizados
+    for (var user in usuariosLocales) {
+      final correoExiste = await existeCorreo(user.email);
+      if (!correoExiste) {
+        final ok = await sendUsuario(user);
+        if (ok) {
+          await LocalDataService.db.markUserSync(user.id_usuario!);
+        }
+      }
+    }
+  }
+
+
+  /// Sincroniza en ambos sentidos: primero descarga y luego sube
+  Future<void> sincronizarTodo() async {
+    await sincronizarDesdeServidor();
+    await sincronizarHaciaServidor();
+  }
 
 }
