@@ -9,7 +9,7 @@ class EventModel {
   //final DateTime fecha;
   final DateTime fecha_hora_inicio;
   final DateTime fecha_hora_fin;
-  final int? id_usuario;
+  //final int? id_usuario;
   final String estado;
 
   // Formatter para fechas y horas
@@ -35,7 +35,7 @@ class EventModel {
     required this.ubicacion,
     required this.fecha_hora_inicio,
     required this.fecha_hora_fin,
-    this.id_usuario,
+    //this.id_usuario,
     this.estado = 'activo',
   });
 
@@ -87,7 +87,6 @@ class EventModel {
         'ubicacion': ubicacion,
         'fecha_hora_inicio': fecha_hora_inicio.toIso8601String(),
         'fecha_hora_fin': fecha_hora_fin.toIso8601String(),
-        'id_usuario': id_usuario,
         'estado': estado,
       };
 }

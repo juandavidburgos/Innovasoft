@@ -58,6 +58,11 @@ class LocalService {
   /// *MÉTODOS ASOCIADOS A ASIGNACIONES
   /// -------------------------------------------------
 
+  // Asignar un solo entrenador a un evento
+  Future<bool> asignarEntrenador(int eventId, int trainerId) async {
+    return await LocalDataService.db.assignTrainer(eventId, trainerId);
+  }
+
   // Asignar uno o más entrenadores a un evento
   Future<int> asignarEntrenadores(int eventId, List<int> trainerIds) async {
     return await LocalDataService.db.assignTrainers(eventId, trainerIds);
