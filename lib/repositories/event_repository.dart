@@ -36,16 +36,12 @@ class EventRepository {
     return await _localService.obtenerEventosAsignados(idEntrenador);
   }
 
-  /*Future<int> asignarEntrenadoresAEvento(int eventoId, List<int> trainerIds) {
-  return _localService.asignarEntrenadores(eventoId, trainerIds);
-  }
+  ///
+  /// MÉTODOS DE GESTIÓN ONLINE
+  /// 
+  /// --------------------------------------------------------
+  /// Gestión de eventos:
+  /// 
   
-  Future<List<EventModel>> obtenerEventosConEntrenadoresAsignados() {
-  return _localService.obtenerEventosConEntrenadoresAsignados();
-  }
-
-  Future<List<Map<String, dynamic>>> obtenerEntrenadoresPorEvento(int eventoId) {
-  return _localService.obtenerEntrenadoresPorEvento(eventoId);
-  }*/
-
+  
 }

@@ -229,7 +229,7 @@ class LocalDataService {
         fecha_hora_fin: fechaHoraFin,
         ubicacion: maps[i]['ubicacion'],
         descripcion: maps[i]['descripcion'] ?? '',
-        id_usuario: maps[i]['id_usuario'],
+        //id_usuario: maps[i]['id_usuario'],
         estado: maps[i]['estado'],
       );
     });
@@ -492,6 +492,31 @@ class LocalDataService {
     }
 
     return count;
+  }
+
+  /// Asigna un solo entrenador a un evento insertando un registro en la tabla `asignaciones`.
+  ///
+  /// [eventoId] es el ID del evento.
+  /// [trainerId] es el ID del entrenador a asignar.
+  /// 
+  /// Retorna `true` si se insertó correctamente, `false` si ya existía o falló.
+  Future<bool> assignTrainer(int eventoId, int monitorId) async {
+    final db = await database;
+
+    try {
+      await db.insert(
+        tableAsignaciones,
+        {
+          'id_evento': eventoId,
+          'id_usuario': monitorId,
+        },
+        conflictAlgorithm: ConflictAlgorithm.ignore, // Evita duplicados
+      );
+      return true;
+    } catch (e) {
+      print("Error al asignar monitor (ID: $monitorId) al evento (ID: $eventoId): $e");
+      return false;
+    }
   }
 
 /// Obtiene el evento asignado a un usuario (entrenador), usando relación muchos a muchos.

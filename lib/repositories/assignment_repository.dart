@@ -11,9 +11,11 @@ class AssignmentRepository {
   /// MÉTODOS DE GESTIÓN LOCAL
   /// -------------------------------------------------
 
-  
+  /// Asigna entrenador a un evento
+  Future<bool> asignarEntrenadorAEvento(int eventoId, int trainerId) {
+    return _localService.asignarEntrenador(eventoId, trainerId);
+  }
 
-  /// 
   /// Asigna múltiples entrenadores a un evento
   Future<int> asignarEntrenadoresAEvento(int eventoId, List<int> trainerIds) {
     return _localService.asignarEntrenadores(eventoId, trainerIds);

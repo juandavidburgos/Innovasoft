@@ -69,6 +69,44 @@ class RemoteDataService {
         Uri.parse('$apiUrl/${evento.id_evento}'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(evento.toJson()),
+        );
+        return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  //OTRA OPCION
+  /// Actualiza un evento existente en el servidor mediante HTTP PATCH.
+  ///
+  /// Requiere que el evento tenga un id_evento válido.
+  Future<bool> updateEventoAlternativo(EventModel evento) async {
+    try {
+      final response = await http.patch(
+        Uri.parse('$apiUrl/${evento.id_evento}'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          "nombre": evento.nombre,
+          "descripcion": evento.descripcion,
+          "ubicacion": evento.ubicacion,
+          "fecha_hora_inicio": evento.fecha_hora_inicio.toIso8601String(),
+          "fecha_hora_fin": evento.fecha_hora_fin.toIso8601String(),
+        }),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Error actualizando evento: $e');
+      return false;
+    }
+  }
+
+  /// Desactiva (deshabilita) un evento haciendo una solicitud DELETE.
+  Future<bool> deshabilitarEvento(int idEvento) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$apiUrl/$idEvento'),
+        headers: {'Content-Type': 'application/json'},
       );
       return response.statusCode == 200;
     } catch (_) {
@@ -77,7 +115,7 @@ class RemoteDataService {
   }
 
   /// Deshabilita un evento (cambia su estado a 'inactivo') mediante HTTP PATCH.
-  Future<bool> deshabilitarEvento(int idEvento) async {
+  /*Future<bool> deshabilitarEvento(int idEvento) async {
     try {
       final response = await http.patch(
         Uri.parse('$apiUrl/$idEvento'),
@@ -88,7 +126,7 @@ class RemoteDataService {
     } catch (_) {
       return false;
     }
-  }
+  }*/
 
   /// Elimina un evento del servidor mediante HTTP DELETE.
   Future<bool> deleteEvento(int idEvento) async {
@@ -166,7 +204,41 @@ class RemoteDataService {
   /// -------------------------------------------------
   /// *MÉTODOS DE ASIGNACIONES
   /// -------------------------------------------------
+  /// 
+  
+  /// Asigna un entrenador a un evento mediante una solicitud HTTP POST.
+  Future<bool> asignarEntrenadorAEvento(int idUsuario, int idEvento) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$apiUrl/$idUsuario/asignar-evento/$idEvento'),
+        headers: {'Content-Type': 'application/json'},
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Error asignando entrenador: $e');
+      return false;
+    }
+  }
 
+  /// Modifica la asignación de un entrenador de un evento a otro.
+  /// Retorna true si la operación fue exitosa (status 200).
+  Future<bool> modificarAsignacionEntrenador({
+    required int idUsuario,
+    required int idEvento,
+    required int nuevoIdEvento,
+  }) async {
+    try {
+      final response = await http.patch(
+        Uri.parse('$apiUrl/$idUsuario/modificar-asignacion/$idEvento/a/$nuevoIdEvento'),
+        headers: {'Content-Type': 'application/json'},
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Error modificando asignación: $e');
+      return false;
+    }
+  }
+  
   Future<List<EventModel>> getEventosAsignados(int id_usuario) async {
     final response = await http.get(
       Uri.parse('$apiUrl/usuarios/$id_usuario/eventos'),
