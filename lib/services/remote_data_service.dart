@@ -205,19 +205,31 @@ class RemoteDataService {
   /// -------------------------------------------------
   /// 
   
-  /// Asigna un entrenador a un evento mediante una solicitud HTTP POST.
+  /// Asigna un entrenador a un evento mediante una solicitud HTTP.
   Future<bool> asignarEntrenadorAEvento(int idUsuario, int idEvento) async {
+    final url = Uri.parse('http://<TU_BACKEND>/usuarios/$idUsuario/asignar-evento/$idEvento');
     try {
-      final response = await http.post(
-        Uri.parse('$apiUrl/$idUsuario/asignar-evento/$idEvento'),
-        headers: {'Content-Type': 'application/json'},
-      );
-      return response.statusCode == 200;
-    } catch (e) {
-      print('Error asignando entrenador: $e');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        // Si estás usando JWT u otro token:
+        // 'Authorization': 'Bearer <token>',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('✅ ${response.body}');
+      return true;
+    } else {
+      print('❌ Error al asignar entrenador: ${response.statusCode} - ${response.body}');
       return false;
     }
+  } catch (e) {
+    print('❌ Excepción: $e');
+    return false;
   }
+}
 
   /// Modifica la asignación de un entrenador de un evento a otro.
   /// Retorna true si la operación fue exitosa (status 200).

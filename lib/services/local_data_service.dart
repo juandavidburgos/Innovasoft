@@ -38,7 +38,6 @@ class LocalDataService {
 
       //Mostrar la ruta en consola
       //print('Ruta de la base de datos: $path');
-
       print('🟢 Creando la base de datos...');
       return await openDatabase(
         path,
@@ -610,6 +609,45 @@ class LocalDataService {
         'entrenadores': map['entrenadores'], // String con los nombres
       };
     }).toList();
+  }
+  /// Actualiza los eventos asignados a un monitor (entrenador).
+  /// Primero elimina todas las asignaciones existentes del monitor,
+  /// luego inserta las nuevas asignaciones con los eventos especificados.
+  /// 
+  /// [monitorId] es el ID del monitor.
+  /// [eventosIds] es la lista de nuevos IDs de eventos asignados al monitor.
+  /// 
+  /// Retorna `true` si la operación fue exitosa.
+  Future<bool> updateEventosDeMonitor(int monitorId, List<int> eventosIds) async {
+  final db = await database;
+
+  try {
+    await db.transaction((txn) async {
+      // Eliminar asignaciones existentes del monitor
+      await txn.delete(
+        tableAsignaciones,
+        where: 'id_usuario = ?',
+        whereArgs: [monitorId],
+      );
+
+      // Insertar nuevas asignaciones
+      for (int eventoId in eventosIds) {
+        await txn.insert(
+          tableAsignaciones,
+          {
+            'id_usuario': monitorId,
+            'id_evento': eventoId,
+          },
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+    });
+
+    return true;
+  } catch (e) {
+    print('Error al actualizar eventos del monitor $monitorId: $e');
+    return false;
+  }
   }
 
   /// Actualiza las asignaciones de entrenadores para un evento.

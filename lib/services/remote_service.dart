@@ -78,6 +78,10 @@ class RemoteService {
   /// -------------------------------------------------
   /// *MÉTODOS DE ASIGNACIONES
   /// -------------------------------------------------
+  // Asignar entrenador a evento
+  Future<bool> asignarEntrenadorAEventoRemoto(int idUsuario, int idEvento) async {
+    return await RemoteDataService.dbR.asignarEntrenadorAEvento(idUsuario, idEvento);
+  }
 
   Future<List<EventModel>> obtenerEventosAsignadosRemoto(int idUsuario) async{
     return await RemoteDataService.dbR.getEventosAsignados(idUsuario);
