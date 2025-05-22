@@ -231,7 +231,7 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
             }).toList();
           },
           items: eventosAsignados.map((evento) {
-            final fecha = evento.fecha_hora_inicio?.toLocal().toIso8601String().substring(0, 10) ?? 'Sin fecha';
+            final fecha = evento.fecha_hora_inicio.toLocal().toIso8601String().substring(0, 10) ?? 'Sin fecha';
             return DropdownMenuItem<EventModel>(
               value: evento,
               child: Column(

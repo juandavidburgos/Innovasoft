@@ -221,11 +221,11 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
   }
 
 
-List<AnswerModel> _crearRespuestasDesdeFormulario(int id_formulario) {
+List<AnswerModel> _crearRespuestasDesdeFormulario(int idFormulario) {
   return _formData.entries.map((entry) {
     return AnswerModel(
       pregunta_id: entry.key,              // 
-      formulario_id: id_formulario,
+      formulario_id: idFormulario,
       contenido: entry.value?.toString() ?? '',
       id_evento: widget.evento.id_evento!,   // 
     );
@@ -238,11 +238,11 @@ List<AnswerModel> _crearRespuestasDesdeFormulario(int id_formulario) {
 
     _formKey.currentState!.save();
 
-    final id_formulario = DateTime.now().millisecondsSinceEpoch;
-    formulario_id = id_formulario;
+    final idFormulario = DateTime.now().millisecondsSinceEpoch;
+    formulario_id = idFormulario;
 
     final form = FormModel(
-      id_formulario: id_formulario,
+      id_formulario: idFormulario,
       id_evento: widget.evento.id_evento,
       id_usuario: id_usuario,
       titulo: 'Asistente',
@@ -253,7 +253,7 @@ List<AnswerModel> _crearRespuestasDesdeFormulario(int id_formulario) {
       path_imagen: null,
     );
 
-    final respuestas = _crearRespuestasDesdeFormulario(id_formulario);
+    final respuestas = _crearRespuestasDesdeFormulario(idFormulario);
 
     final conectado = await _repo.hayConexion();
 

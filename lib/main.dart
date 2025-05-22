@@ -29,7 +29,7 @@ import 'models/event_model.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
 
-  //Inicializar la BD una sola vez
+  //Eliminar la BD
   await LocalDataService.db.deleteDB();
 
   //Inicializar la BD una sola vez

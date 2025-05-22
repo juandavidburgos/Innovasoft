@@ -76,8 +76,8 @@ Future<void> _guardarSesion(UserModel usuario, {String? token}) async {
   await prefs.setString('email_usuario', usuario.email);
   await prefs.setString('rol_usuario', usuario.rol);
 
-  if (usuario.rol == 'Monitor' && usuario.estado_monitor != null) {
-    await prefs.setString('estado_monitor', usuario.estado_monitor!);
+  if (usuario.rol == 'Monitor') {
+    await prefs.setString('estado_monitor', usuario.estado_monitor);
   }
 
   if (token != null) {
