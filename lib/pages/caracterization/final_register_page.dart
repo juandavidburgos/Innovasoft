@@ -9,7 +9,7 @@ import 'dart:io';
 
 
 
-
+/* CODIGO ANTIGUO: NO BORRAR AUN!!!! */
 
 /*class FinalRegisterPage extends StatefulWidget {
   final List<Map<String, dynamic>> asistentes;
@@ -381,7 +381,9 @@ class _FinalRegisterPageState extends State<FinalRegisterPage> {
 
   Future<void> _cargarImagen() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+    
+    // Esto abre la galería del dispositivo, que en muchos casos ofrece opción de tomar una foto
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
@@ -389,6 +391,7 @@ class _FinalRegisterPageState extends State<FinalRegisterPage> {
       });
     }
   }
+
 
   Future<void> _enviarFormularioUbicacion() async {
     if (latitud == null || longitud == null) {

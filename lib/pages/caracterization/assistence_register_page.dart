@@ -167,6 +167,7 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           title: const Text('¿Desea registrar otro asistente?'),
           content: const Text('Si selecciona "No", continuará al siguiente paso.'),
           actions: [
@@ -387,6 +388,8 @@ List<AnswerModel> _crearRespuestasDesdeFormulario(int idFormulario) {
   }
 }
 
+
+/* CODIGO ANTIGUO: ¡¡NO BORRAR !!*/
 /*
 
   void _guardarAsistente() {
@@ -467,4 +470,3 @@ void _mostrarResumenAsistente(Map<String, dynamic> asistente) {
   );
 }*/
 
-/* *VERIFICAR!!*/

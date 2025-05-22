@@ -54,4 +54,5 @@ class EventRepository {
     return await _remoteService.getEventosAsignadosRemotos(idUsuario);
   }
   
+  
 }

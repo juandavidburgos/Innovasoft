@@ -92,105 +92,7 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (_cargando) {
-      return const Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 30),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Logo y frase centrados
-              Center(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 150),
-                    Image.asset(
-                      'assets/images/logo_indeportes.png',
-                      width: 250,
-                    ),
-                    const SizedBox(height: 15),
-                    const Text(
-                      '“Indeportes somos todos”',
-                      style: TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  ],
-                ),
-              ),
-
-              const Divider(
-                thickness: 1.5,
-                color: Color(0xFFCCCCCC),
-                height: 30,
-              ),
-              const SizedBox(height: 20),
-
-              const Center(
-                child: Text(
-                  'Seleccione el evento asignado',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              _buildDropdownEventos(),
-
-              const SizedBox(height: 50),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildButton('Comenzar registro', const Color(0xFF1A3E58), _iniciarRegistro),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: ActionButton(
-                      text: 'Regresar',
-                      color: const Color.fromARGB(255, 134, 134, 134),
-                      icono: Icons.arrow_back,
-                      ancho: 145,
-                      alto: 48,
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/trainer_home');
-                      },
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              Align(
-                alignment: Alignment.center,
-                child: ActionButton(
-                  icono: Icons.sync,
-                  color: Colors.green,
-                  text: 'Actualizar eventos',
-                  alto: 50,
-                  onPressed: _sincronizarEventosConBackend,
-                ),
-              ),
-
-              const SizedBox(height: 40),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-
-
-
-  Widget _buildDropdownEventos() {
+Widget _buildDropdownEventos() {
     if (eventosAsignados.isEmpty) {
       return const Text(
         'No tienes eventos asignados.',
@@ -262,12 +164,105 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
     );
   }
 
+  @override
+  Widget build(BuildContext context) {
+    if (_cargando) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
-  Widget _buildButton(String text, Color color, VoidCallback onPressed) {
-    return MainButton(
-      onPressed: onPressed,
-      color: color,
-      texto:text,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Logo y frase centrados
+              Center(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 150),
+                    Image.asset(
+                      'assets/images/logo_indeportes.png',
+                      width: 250,
+                    ),
+                    const SizedBox(height: 15),
+                    const Text(
+                      '“Indeportes somos todos”',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Divider(
+                thickness: 1.5,
+                color: Color(0xFFCCCCCC),
+                height: 30,
+              ),
+              const SizedBox(height: 20),
+
+              const Center(
+                child: Text(
+                  'Seleccione el evento asignado',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              _buildDropdownEventos(),
+
+              const SizedBox(height: 50),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: MainButton(
+                      texto: 'Iniciar registro',
+                      color: const Color(0xFF1A3E58),
+                      onPressed: _iniciarRegistro,
+                    ),
+                  ),
+                  const SizedBox(width: 10), // espacio entre botones
+                  Expanded(
+                    child: ActionButton(
+                      text: 'Regresar',
+                      color: const Color.fromARGB(255, 134, 134, 134),
+                      icono: Icons.arrow_back,
+                      ancho: 160, // Este valor será ignorado si usas Expanded
+                      alto: 50,
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/trainer_home');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+
+
+              const SizedBox(height: 20),
+
+              Align(
+                alignment: Alignment.center,
+                child: ActionButton(
+                  icono: Icons.sync,
+                  color: Colors.green,
+                  text: 'Actualizar eventos',
+                  alto: 50,
+                  onPressed: _sincronizarEventosConBackend,
+                ),
+              ),
+
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

@@ -361,18 +361,23 @@ class RemoteDataService {
       return null;
     } */
 
-    Future<void> logOutRemoto() async {
-      final prefs = await SharedPreferences.getInstance();
-      // Opcional: llamar al backend para invalidar token
-      await http.post(Uri.parse('https://tu-api.com/logout'));
 
-      await prefs.remove('jwt_token');
-      await prefs.remove('id_usuario');
-      await prefs.remove('nombre_usuario');
-      await prefs.remove('email_usuario');
-      await prefs.remove('rol_usuario');
+  Future<void> logOutRemoto() async {
+    final prefs = await SharedPreferences.getInstance();
 
+    // Enviar POST al backend para invalidar la sesión (HttpSession)
+    await http.post(
+      Uri.parse('https://tu-api.com/logout'),
+      // IMPORTANTE: no se agregan headers personalizados
+    );
+
+    // Limpiar datos locales
+    await prefs.remove('id_usuario');
+    await prefs.remove('nombre_usuario');
+    await prefs.remove('email_usuario');
+    await prefs.remove('rol_usuario');
   }
+
 
   /// -------------------------------------------------
   /// *MÉTODOS ASOCIADOS A LOS FORMULARIOS

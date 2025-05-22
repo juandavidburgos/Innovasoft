@@ -104,9 +104,31 @@ class _EditTrainerAssignmentPageState extends State<EditTrainerAssignmentPage> {
                 const Text('Editar Asignación de Eventos a Monitores', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 20),
 
-                if (sinDatos)
-                  const Text('No hay monitores o eventos disponibles', style: TextStyle(color: Colors.red))
-                else
+                sinDatos
+                  ? Column(
+                      children: [
+                        const Text(
+                          'No hay monitores o eventos disponibles',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                        const SizedBox(height: 20),
+                        ActionButton(
+                          text: 'Regresar',
+                          color: const Color.fromARGB(255, 134, 134, 134),
+                          icono: Icons.arrow_back,
+                          ancho: 160,
+                          alto: 50,
+                          onPressed: () {
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(builder: (context) => AdminTrainerHomePage()),
+                              (Route<dynamic> route) => false,
+                            );
+                          },
+                        ),
+                      ],
+                    )
+                  : 
                   Column(
                     children: [
                       _buildMonitorDropdown(),
@@ -126,8 +148,8 @@ class _EditTrainerAssignmentPageState extends State<EditTrainerAssignmentPage> {
                             text: 'Regresar',
                             color: Color.fromARGB(255, 134, 134, 134),
                             icono: Icons.arrow_back,
-                            ancho: 145,
-                            alto: 48,
+                            ancho: 160,
+                            alto: 50,
                             //onPressed: () => Navigator.pop(context),
                             onPressed: () {
                               Navigator.pushAndRemoveUntil(
@@ -198,6 +220,8 @@ class _EditTrainerAssignmentPageState extends State<EditTrainerAssignmentPage> {
     );
   }
 }
+
+/* Codigo antiguoi: NO BORRAR!!! */
 
 /*class EditTrainerAssignmentPage extends StatefulWidget {
   const EditTrainerAssignmentPage({super.key});

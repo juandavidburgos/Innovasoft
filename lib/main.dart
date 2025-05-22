@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
       //home: const LoginPage(),
       // ruta inicial
-      initialRoute: '/splash',
+      initialRoute: 'splash',
       
       // Aquí defines todas las rutas disponibles en tu app
       routes: {

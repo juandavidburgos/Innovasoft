@@ -85,7 +85,7 @@ class _EditEventPageState extends State<EditEventPage> {
                       text: 'Actualizar',
                       color: Color(0xFF038C65),
                       ancho: 145,
-                      alto: 48,
+                      alto: 50,
                       onPressed: () async {
                         if (_formKey.currentState!.validate() &&
                             selectedEvent != null &&
@@ -128,8 +128,8 @@ class _EditEventPageState extends State<EditEventPage> {
                       text: 'Regresar',
                       color: Color.fromARGB(255, 134, 134, 134),
                       icono: Icons.arrow_back,
-                      ancho: 145,
-                      alto: 48,
+                      ancho: 160,
+                      alto: 50,
                       //onPressed: () => Navigator.pop(context),
                       onPressed: () {
                         Navigator.pushAndRemoveUntil(

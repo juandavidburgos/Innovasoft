@@ -177,6 +177,8 @@ class _DisableUsersPage extends State<DisableUsersPage> {
               children: [
                 ActionButton(
                   text: 'Regresar',
+                  ancho: 160,
+                  alto: 50,
                   color: Color.fromARGB(255, 134, 134, 134),
                   icono: Icons.arrow_back,
                   onPressed: () => Navigator.pushReplacement(

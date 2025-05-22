@@ -29,7 +29,7 @@ class AdminEventHomePage extends StatelessWidget {
                   texto: 'Crear evento',
                   color: Color(0xFF1A3E58),
                   icono: Icons.add_circle_outline,
-                  ancho: 280,
+                  ancho: 310,
                   onPressed: () {
                     Navigator.pushNamed(context,'/crear_evento');
                   
@@ -40,7 +40,7 @@ class AdminEventHomePage extends StatelessWidget {
                   texto: 'Editar evento',
                   color: Color(0xFF1A3E58),
                   icono: Icons.edit_outlined,
-                  ancho: 280,
+                  ancho: 310,
                   onPressed: () {
                     //Redigir a la pagina
                     Navigator.pushNamed(context, '/edit_event');
@@ -51,7 +51,7 @@ class AdminEventHomePage extends StatelessWidget {
                   texto: 'Visualizar eventos creados',
                   color: Color(0xFF1A3E58),
                   icono: Icons.visibility_outlined,
-                  ancho: 280,
+                  ancho: 310,
                   onPressed: () {
                     Navigator.pushNamed(context,'/view_event');
                   },
@@ -61,7 +61,7 @@ class AdminEventHomePage extends StatelessWidget {
                   texto: 'Deshabilitar evento',
                   color: Color(0xFF1A3E58),
                   icono: 	Icons.block,
-                  ancho: 280,
+                  ancho: 310,
                   onPressed: () {Navigator.pushNamed(context, '/disable_event');},
                 ),
                 const SizedBox(height: 20),
@@ -71,8 +71,8 @@ class AdminEventHomePage extends StatelessWidget {
                     text: 'Regresar',
                     color: Color.fromARGB(255, 134, 134, 134),
                     icono: Icons.arrow_back,
-                    ancho: 145,
-                    alto: 48,
+                    ancho: 160,
+                    alto: 50,
                     onPressed: () {
                       Navigator.pushReplacementNamed(context, '/admin_home');
                       },

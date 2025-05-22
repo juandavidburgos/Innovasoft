@@ -1,8 +1,10 @@
 import 'package:basic_flutter/models/user_model.dart';
+
 import 'package:basic_flutter/pages/widgets/main_button.dart';
+
 import 'package:basic_flutter/services/auth_service.dart';
-import 'package:basic_flutter/services/local_service.dart';
 import 'package:basic_flutter/services/remote_data_service.dart';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,7 +21,6 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final LocalService _localService = LocalService();
   bool _obscurePassword = true;
 
 
@@ -31,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   String email = '';
   String password = '';
-  final authService = AuthService(); // servicio que accede a SQLite
+  final authService = AuthService(); // Servicio de autenticación
 
   Future<void> _iniciarSesion() async {
   if (!_formKey.currentState!.validate()) return;

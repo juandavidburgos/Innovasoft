@@ -89,8 +89,8 @@ class AdminTrainerHomePage extends StatelessWidget {
                     text: 'Regresar',
                     color: const Color.fromARGB(255, 134, 134, 134),
                     icono: Icons.arrow_back,
-                    ancho: 145,
-                    alto: 48,
+                    ancho: 160,
+                    alto: 50,
                     onPressed: () {
                       Navigator.pushReplacementNamed(context, '/admin_home');
                     },

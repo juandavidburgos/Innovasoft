@@ -100,7 +100,7 @@ class _AdminHomePage extends State<AdminHomePage> {
                     MainButton(
                       texto: 'Gestión de eventos',
                       color: const Color.fromARGB(255, 232, 78, 17),
-                      ancho: 260,
+                      ancho: 290,
                       onPressed: () {
                         Navigator.pushNamed(context, '/home_events');
                       },
@@ -109,7 +109,7 @@ class _AdminHomePage extends State<AdminHomePage> {
                     MainButton(
                       texto: 'Asignación de entrenadores',
                       color: const Color.fromARGB(255, 16, 88, 146),
-                      ancho: 260,
+                      ancho: 290,
                       onPressed: () {
                         Navigator.pushNamed(context, '/home_admin_trainer');
                       },

@@ -5,7 +5,6 @@ import '../../repositories/event_repository.dart';
 import '../../repositories/assignment_repository.dart';
 import '../../models/event_model.dart';
 import '../widgets/action_button.dart';
-import 'assignment_error_page.dart';
 import 'assignment_success_page.dart';
 import '../home/admin_trainer_home_page.dart';
 
@@ -26,8 +25,8 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
   List<UserModel> _monitores = [];
   List<EventModel> _eventos = [];
 
-  List<int> _entrenadoresAsignados = [];
-  List<String> _nombresEntrenadoresAsignados = [];
+  final List<int> _entrenadoresAsignados = [];
+  final List<String> _nombresEntrenadoresAsignados = [];
 
   String? selectedEventId;
   String? selectedTrainerId;
@@ -169,8 +168,8 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
                         text: 'Regresar',
                         color: const Color.fromARGB(255, 134, 134, 134),
                         icono: Icons.arrow_back,
-                        ancho: 145,
-                        alto: 48,
+                        ancho: 160,
+                        alto: 50,
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
@@ -189,15 +188,15 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
                             text: 'Asignar',
                             color: const Color(0xFF038C65),
                             ancho: 140,
-                            alto: 48,
+                            alto: 50,
                             onPressed: _asignarEntrenador,
                           ),
                           ActionButton(
                             text: 'Regresar',
                             color: const Color.fromARGB(255, 134, 134, 134),
                             icono: Icons.arrow_back,
-                            ancho: 145,
-                            alto: 48,
+                            ancho: 160,
+                            alto: 50,
                             onPressed: () {
                               Navigator.pushAndRemoveUntil(
                                 context,
@@ -274,6 +273,7 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
   }
 }
 
+///Codigo antiguo: ¡¡¡NO BORRAR!!!
 /*class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
   final _formKey = GlobalKey<FormState>();
 
