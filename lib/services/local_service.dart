@@ -78,6 +78,11 @@ class LocalService {
     return await LocalDataService.db.updateEventAssignments(eventId, trainerIds);
   }
 
+  // Actualizar asignaciones de eventos para un monitor
+  Future<bool> actualizarAsignacionesDeMonitor(int monitorId, List<int> eventosIds) async {
+    return await LocalDataService.db.updateEventosDeMonitor(monitorId, eventosIds);
+  }
+
   // Obtener lista de eventos que tienen entrenadores asignados (para mostrar en un dropdown)
   Future<List<Map<String, dynamic>>> obtenerAsignacionesConNombreEvento() async {
     return await LocalDataService.db.getAsignacionesConNombreEvento();
