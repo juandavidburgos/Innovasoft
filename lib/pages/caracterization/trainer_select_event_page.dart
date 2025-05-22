@@ -1,8 +1,10 @@
 import 'package:basic_flutter/pages/widgets/main_button.dart';
 import 'package:basic_flutter/pages/widgets/action_button.dart';
+import 'package:basic_flutter/services/local_data_service.dart';
 import 'package:flutter/material.dart';
 import '../../repositories/event_repository.dart';
 import '../../models/event_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TrainerSelectEventPage extends StatefulWidget {
   const TrainerSelectEventPage({super.key});
@@ -14,18 +16,58 @@ class TrainerSelectEventPage extends StatefulWidget {
 class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
   final EventRepository _eventRepo = EventRepository();
 
-  String nombreUsuario = 'Adrian Delgado';
-  int usuarioId = 5; // Simulado
+  String nombreUsuario = '';
+  int usuarioId = -1;
   List<EventModel> eventosAsignados = [];
   EventModel? eventoSeleccionado;
+  bool _cargando = false;
 
   @override
   void initState() {
     super.initState();
-    _cargarEventosAsignados();
+    _sincronizarEventosConBackend();
+    _cargarDatosSesion();
   }
 
-  Future<void> _cargarEventosAsignados() async {
+  Future<void> _cargarDatosSesion() async {
+    final prefs = await SharedPreferences.getInstance();
+    usuarioId = prefs.getInt('id_usuario') ?? -1;
+  }
+
+
+  Future<void> _sincronizarEventosConBackend() async {
+    final contextRef = context; // evita usar context después de un await
+    final conectado = await LocalDataService.db.hayInternet();
+
+    if (conectado == false) {
+      // Si no hay internet, solo carga local
+      await _cargarEventosAsignadosLocales();
+      return;
+    }
+
+    _cargando = true;
+    try {
+      // Paso 1: Obtener eventos actualizados desde el backend
+      final eventosActualizados = await _eventRepo.obtenerEventosAsignadosRemotos(usuarioId);
+
+      // Paso 2: Guardar en base de datos local
+      await _eventRepo.agregarListaDeEventos(eventosActualizados);
+    } catch (e) {
+      // Mostrar mensaje si ya estás en pantalla
+      if (context.mounted) {
+        ScaffoldMessenger.of(contextRef).showSnackBar(
+          SnackBar(content: Text('Error al sincronizar eventos: $e')),
+        );
+      }
+    } finally {
+      _cargando = false;
+
+      // Paso 3: Siempre cargar lo local
+      await _cargarEventosAsignadosLocales();
+    }
+  }
+
+  Future<void> _cargarEventosAsignadosLocales() async {
     final eventos = await _eventRepo.obtenerEventosDelEntrenador(usuarioId);
     setState(() {
       eventosAsignados = eventos;
@@ -52,6 +94,13 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_cargando) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -77,14 +126,14 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
                   ],
                 ),
               ),
-              
+
               const Divider(
                 thickness: 1.5,
                 color: Color(0xFFCCCCCC),
                 height: 30,
               ),
               const SizedBox(height: 20),
-              // Texto centrado para selección de evento
+
               const Center(
                 child: Text(
                   'Seleccione el evento asignado',
@@ -100,28 +149,44 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildButton('Comenzar registro', const Color(0xFF00944C), _iniciarRegistro),
+                  _buildButton('Comenzar registro', const Color(0xFF1A3E58), _iniciarRegistro),
                   Align(
-                  alignment: Alignment.bottomCenter,
-                  child: ActionButton(
-                    text: 'Regresar',
-                    color: Color.fromARGB(255, 134, 134, 134),
-                    icono: Icons.arrow_back,
-                    ancho: 145,
-                    alto: 48,
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/trainer_home');
+                    alignment: Alignment.bottomCenter,
+                    child: ActionButton(
+                      text: 'Regresar',
+                      color: const Color.fromARGB(255, 134, 134, 134),
+                      icono: Icons.arrow_back,
+                      ancho: 145,
+                      alto: 48,
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/trainer_home');
                       },
+                    ),
                   ),
-                ),
                 ],
               ),
+
+              const SizedBox(height: 20),
+
+              Align(
+                alignment: Alignment.center,
+                child: ActionButton(
+                  icono: Icons.sync,
+                  color: Colors.green,
+                  text: 'Actualizar eventos',
+                  alto: 50,
+                  onPressed: _sincronizarEventosConBackend,
+                ),
+              ),
+
+              const SizedBox(height: 40),
             ],
           ),
         ),
       ),
     );
   }
+
 
 
 
@@ -150,15 +215,14 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
-          value: eventoSeleccionado,
+          value: eventosAsignados.contains(eventoSeleccionado) ? eventoSeleccionado : null,
           hint: const Text('Seleccionar evento'),
           selectedItemBuilder: (BuildContext context) {
-            // 👇 Esto personaliza lo que se ve cuando un evento está seleccionado
             return eventosAsignados.map((evento) {
               return Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  evento.nombre,
+                  evento.nombre ?? 'Sin nombre',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.bold),
@@ -167,14 +231,14 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
             }).toList();
           },
           items: eventosAsignados.map((evento) {
-            final fecha = evento.fecha_hora_inicio.toLocal().toIso8601String().substring(0, 10);
+            final fecha = evento.fecha_hora_inicio?.toLocal().toIso8601String().substring(0, 10) ?? 'Sin fecha';
             return DropdownMenuItem<EventModel>(
               value: evento,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    evento.nombre,
+                    evento.nombre ?? 'Sin nombre',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                     softWrap: true,
                   ),
@@ -198,223 +262,13 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
     );
   }
 
-  Widget _buildButton(String text, Color color, VoidCallback onPressed) {
-  return MainButton(
-    onPressed: onPressed,
-    color: color,
-    texto:text,
-  );
-}
-
-}
-
-
-/*
-
-class TrainerSelectEventPage extends StatefulWidget {
-  const TrainerSelectEventPage({super.key});
-
-  @override
-  State<TrainerSelectEventPage> createState() => _TrainerSelectEventPageState();
-}
-
-class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
-  final EventRepository _eventRepo = EventRepository();
-
-  int? usuarioId;
-  List<EventModel> eventosAsignados = [];
-  EventModel? eventoSeleccionado;
-  bool cargando = true;
-  String mensajeError = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _inicializar();
-  }
-
-  Future<void> _inicializar() async {
-    try {
-      // Obtener el ID del usuario desde alguna fuente segura (e.g., servicio de sesión)
-      usuarioId = await obtenerUsuarioIdDesdeSesion(); // Reemplaza con tu lógica real
-
-      if (usuarioId == null) {
-        throw Exception("No se pudo identificar el usuario.");
-      }
-
-      final eventos = await _eventRepo.obtenerEventosDelEntrenador(usuarioId!);
-      setState(() {
-        eventosAsignados = eventos;
-        cargando = false;
-      });
-    } catch (e) {
-      setState(() {
-        cargando = false;
-        mensajeError = 'Error al cargar eventos: ${e.toString()}';
-      });
-    }
-  }
-
-  void _iniciarRegistro() {
-    if (eventoSeleccionado == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor seleccione un evento antes de continuar.'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      return;
-    }
-
-    Navigator.pushNamed(
-      context,
-      '/register_asistence',
-      arguments: eventoSeleccionado,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: cargando
-            ? const Center(child: CircularProgressIndicator())
-            : Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildEncabezado(),
-                      const Divider(thickness: 1.5, color: Color(0xFFCCCCCC), height: 30),
-                      const SizedBox(height: 20),
-                      const Center(
-                        child: Text(
-                          'Seleccione el evento asignado',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      if (mensajeError.isNotEmpty)
-                        Text(
-                          mensajeError,
-                          style: const TextStyle(color: Colors.red),
-                        )
-                      else
-                        _buildDropdownEventos(),
-                      const SizedBox(height: 50),
-                      _buildBotones(),
-                    ],
-                  ),
-                ),
-              ),
-      ),
-    );
-  }
-
-  Widget _buildEncabezado() {
-    return Center(
-      child: Column(
-        children: [
-          const SizedBox(height: 150),
-          Image.asset('assets/images/logo_indeportes.png', width: 250),
-          const SizedBox(height: 15),
-          const Text(
-            '“Indeportes somos todos”',
-            style: TextStyle(fontStyle: FontStyle.italic),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDropdownEventos() {
-    if (eventosAsignados.isEmpty) {
-      return const Text(
-        'No tienes eventos asignados.',
-        style: TextStyle(fontSize: 16),
-      );
-    }
-
-    return SizedBox(
-      width: double.infinity,
-      child: DropdownButtonFormField<EventModel>(
-        isExpanded: true,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        ),
-        value: eventoSeleccionado,
-        hint: const Text('Seleccionar evento'),
-        selectedItemBuilder: (context) {
-          return eventosAsignados.map((evento) {
-            return Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                evento.nombre,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            );
-          }).toList();
-        },
-        items: eventosAsignados.map((evento) {
-          final fecha = evento.fecha_hora_inicio.toLocal().toIso8601String().substring(0, 10);
-          return DropdownMenuItem<EventModel>(
-            value: evento,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(evento.nombre, style: const TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text('Fecha: $fecha', style: const TextStyle(color: Colors.grey)),
-                const Divider(color: Colors.grey, thickness: 0.5),
-              ],
-            ),
-          );
-        }).toList(),
-        onChanged: (value) {
-          setState(() {
-            eventoSeleccionado = value;
-          });
-        },
-      ),
-    );
-  }
-
-  Widget _buildBotones() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildButton('Comenzar registro', const Color(0xFF00944C), _iniciarRegistro),
-        ActionButton(
-          text: 'Regresar',
-          color: const Color.fromARGB(255, 134, 134, 134),
-          icono: Icons.arrow_back,
-          ancho: 145,
-          alto: 48,
-          onPressed: () => Navigator.pushReplacementNamed(context, '/trainer_home'),
-        ),
-      ],
-    );
-  }
 
   Widget _buildButton(String text, Color color, VoidCallback onPressed) {
     return MainButton(
       onPressed: onPressed,
       color: color,
-      texto: text,
+      texto:text,
     );
   }
 
-  // Simulación de obtención de ID de sesión (reemplaza esto con tu lógica real)
-  Future<int?> obtenerUsuarioIdDesdeSesion() async {
-    // Por ejemplo, consultar SharedPreferences o un AuthProvider
-    return 5; // Simulación temporal
-  }
 }
-
-
- */

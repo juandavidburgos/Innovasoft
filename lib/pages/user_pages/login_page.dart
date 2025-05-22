@@ -1,6 +1,8 @@
+import 'package:basic_flutter/models/user_model.dart';
 import 'package:basic_flutter/pages/widgets/main_button.dart';
 import 'package:basic_flutter/services/auth_service.dart';
 import 'package:basic_flutter/services/local_service.dart';
+import 'package:basic_flutter/services/remote_data_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -24,7 +26,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    _localService.crearAdminTemporal();
   }
 
   final _formKey = GlobalKey<FormState>();
@@ -32,82 +33,72 @@ class _LoginPageState extends State<LoginPage> {
   String password = '';
   final authService = AuthService(); // servicio que accede a SQLite
 
-  Future <void> _iniciarSesion() async {
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> _iniciarSesion() async {
+  if (!_formKey.currentState!.validate()) return;
+  _formKey.currentState!.save();
 
-    _formKey.currentState!.save();
+  try {
+    // 1. Intentar login local
+    final usuarioLocal = await authService.localLogin(email, password);
 
-    
-
-    try {
-      // 1. Intentar login local
-      final usuarioLocal = await authService.localLogin(email, password);
-      if (usuarioLocal != null) {
-        // Guardar sesión local
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('id_usuario', usuarioLocal.id_usuario!);
-        await prefs.setString('nombre_usuario', usuarioLocal.nombre);
-        await prefs.setString('email_usuario', usuarioLocal.email);
-        await prefs.setString('rol_usuario', usuarioLocal.rol);
-
-        if (usuarioLocal.rol == 'ENTRENADOR') {
-          Navigator.pushReplacementNamed(context, '/trainer_home');
-        } else if (usuarioLocal.rol == 'ADMINISTRADOR') {
-          Navigator.pushReplacementNamed(context, '/admin_home');
-        }
-
-        return; // ✅ No continúa a login remoto
-      }
-
-      // Solo intenta login remoto si está habilitado
-      if (AppConfig.usarBackend) {
-        final usuarioRemoto = await authService.remoteLogin(email, password);
-
-        if (usuarioRemoto != null && usuarioRemoto.rol == 'ADMINISTRADOR') {
-          Navigator.pushReplacementNamed(context, '/admin_home');
-          return;
-        }
-      }
-
-
-      /*if (usuarioLocal != null && usuarioLocal.rol == 'ENTRENADOR') {
-        // Guardar sesión local
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('id_usuario', usuarioLocal.idUsuario!);
-        await prefs.setString('nombre_usuario', usuarioLocal.nombre);
-        await prefs.setString('email_usuario', usuarioLocal.email);
-        await prefs.setString('rol_usuario', usuarioLocal.rol);
-
-        Navigator.pushReplacementNamed(context, '/trainer_home');
-        return;
-      }
-
-      // 2. Si no es entrenador, intentar login remoto
-      final usuarioRemoto = await authService.remoteLogin(email, password);
-
-      if (usuarioRemoto != null && usuarioRemoto.rol == 'ADMINISTRADOR') {
-        Navigator.pushReplacementNamed(context, '/admin_home');
-        return;
-      }
-
-      // 3. Si ninguna autenticación fue válida
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Credenciales inválidas o rol no permitido'),
-          backgroundColor: Colors.red,
-        ),
-      );*/
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error de autenticación: Usuario o contraseña incorrectos!!!'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    if (usuarioLocal != null) {
+      await _guardarSesion(usuarioLocal);
+      _redirigirSegunRol(usuarioLocal.rol);
+      return;
     }
+
+    // 2. Si está habilitado, intentar login remoto
+    if (AppConfig.usarBackend)  {
+      final usuarioRemoto = await authService.remoteLogin(email, password);
+      if (usuarioRemoto != null && usuarioRemoto.rol == 'Administrador') {
+        final token = RemoteDataService().ultimoToken;
+        await _guardarSesion(usuarioRemoto, token: token);
+        _redirigirSegunRol(usuarioRemoto.rol);
+        return;
+      }
+
+      _mostrarError('Credenciales inválidas o usuario no autorizado.');
+      return;
+    }
+
+    // 3. Si ninguna autenticación fue válida
+    _mostrarError('Credenciales inválidas o rol no permitido');
+  } catch (e) {
+    _mostrarError('Error de autenticación: Usuario o contraseña incorrectos!!!');
+  }
+}
+
+Future<void> _guardarSesion(UserModel usuario, {String? token}) async {
+  final prefs = await SharedPreferences.getInstance();
+
+  await prefs.setInt('id_usuario', usuario.id_usuario!);
+  await prefs.setString('nombre_usuario', usuario.nombre);
+  await prefs.setString('email_usuario', usuario.email);
+  await prefs.setString('rol_usuario', usuario.rol);
+
+  if (usuario.rol == 'Monitor' && usuario.estado_monitor != null) {
+    await prefs.setString('estado_monitor', usuario.estado_monitor!);
   }
 
+  if (token != null) {
+    await prefs.setString('jwt_token', token);
+  }
+}
 
+
+void _redirigirSegunRol(String rol) {
+  if (rol == 'Monitor') {
+    Navigator.pushReplacementNamed(context, '/trainer_home');
+  } else if (rol == 'Administrador') {
+    Navigator.pushReplacementNamed(context, '/admin_home');
+  }
+}
+
+void _mostrarError(String mensaje) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(mensaje), backgroundColor: Colors.red),
+  );
+}
 
   @override
   Widget build(BuildContext context) {

@@ -50,7 +50,7 @@ class AnswerModel {
       };
 
   Map<String, dynamic> toJson() => {
-  'idPregunta': pregunta_id,
+  'pregunta_id': pregunta_id,
   'contenido': contenido,
 };
 

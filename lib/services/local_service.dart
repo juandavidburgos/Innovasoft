@@ -24,6 +24,11 @@ class LocalService {
     return await LocalDataService.db.insertEvento(evento);
   }
 
+  //Guardar lista de eventos
+  Future<void> guardarEventosLocalmente(List<EventModel> eventos) async {
+    return await LocalDataService.db.insertEventList(eventos);
+  }
+
   //Obtener eventos activos
   Future<List<EventModel>> obtenerEventosActivos({bool soloActivos = false}) async{
     return await LocalDataService.db.getEventos(soloActivos: soloActivos);
@@ -91,8 +96,13 @@ class LocalService {
   
   //Guardar usuario
   Future<int> guardarUsuario(UserModel usuario) async{
-
-    return await LocalDataService.db.insertUser(usuario);
+    final existe = await LocalDataService.db.existeCorreo(usuario.email);
+      if (!existe) {
+        return await LocalDataService.db.insertUser(usuario);
+      } else {
+        return -1;
+      }
+    
   } 
 
   // Obtener entrenadores asignados a un evento específico
@@ -186,7 +196,7 @@ class LocalService {
     return await LocalDataService.db.existeUsuarioPorCorreo(email);
   }
 
-  Future<int> crearAdminTemporal() async{
+  Future<void> crearAdminTemporal() async{
     return await LocalDataService.db.crearAdminTemporal();
   }
 

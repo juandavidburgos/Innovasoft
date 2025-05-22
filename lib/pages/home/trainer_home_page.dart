@@ -91,7 +91,7 @@ class _TrainerHomePage extends State<TrainerHomePage> {
                     const SizedBox(height: 20),
 
                     MainButton(
-                      texto: 'Evento nuevo',
+                      texto: 'Registrar Asistentes',
                       color: const Color.fromARGB(255, 232, 78, 17),
                       ancho: 260,
                       onPressed: () {
@@ -99,14 +99,6 @@ class _TrainerHomePage extends State<TrainerHomePage> {
                       },
                     ),
                     const SizedBox(height: 15),
-                    MainButton(
-                      texto: 'Evento fijo',
-                      color: const Color.fromARGB(255, 16, 88, 146),
-                      ancho: 260,
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/trainer_select_permanent_event');
-                      },
-                    ),
                   ],
                 ),
               ),

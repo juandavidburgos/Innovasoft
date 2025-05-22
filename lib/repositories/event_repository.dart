@@ -1,8 +1,11 @@
+import 'package:basic_flutter/services/remote_service.dart';
+
 import '../models/event_model.dart';
 import '../services/local_service.dart';
 
 class EventRepository {
   final LocalService _localService = LocalService();
+  final RemoteService _remoteService = RemoteService();
 
   ///
   /// MÉTODOS DE GESTIÓN LOCAL
@@ -14,6 +17,10 @@ class EventRepository {
 
   Future<int> agregarEvento(EventModel evento) {
     return _localService.guardarEvento(evento);
+  }
+
+  Future<void> agregarListaDeEventos(List<EventModel> eventos) async {
+    return _localService.guardarEventosLocalmente(eventos);
   }
 
   Future<List<EventModel>> obtenerEventos() {
@@ -43,5 +50,8 @@ class EventRepository {
   /// Gestión de eventos:
   /// 
   
+  Future<List<EventModel>> obtenerEventosAsignadosRemotos(int idUsuario) async {
+    return await _remoteService.getEventosAsignadosRemotos(idUsuario);
+  }
   
 }

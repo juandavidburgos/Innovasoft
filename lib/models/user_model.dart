@@ -10,6 +10,7 @@ class UserModel {
   final String estado_monitor;
   bool sincronizado;
 
+
   UserModel({
     this.id_usuario,
     required this.nombre,

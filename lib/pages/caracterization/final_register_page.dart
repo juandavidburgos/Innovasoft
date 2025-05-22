@@ -1,21 +1,17 @@
-import 'package:basic_flutter/models/answer_model.dart';
 import 'package:basic_flutter/models/form_model.dart';
 import 'package:basic_flutter/pages/widgets/main_button.dart';
-import 'package:basic_flutter/repositories/register_repository.dart';
+import 'package:basic_flutter/repositories/forms_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:basic_flutter/models/event_model.dart';
-import 'package:basic_flutter/models/user_model.dart';
-import 'package:basic_flutter/models/report_model.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+import 'dart:io';
 
 
 
 
 
-class FinalRegisterPage extends StatefulWidget {
+/*class FinalRegisterPage extends StatefulWidget {
   final List<Map<String, dynamic>> asistentes;
   final EventModel evento;
 
@@ -48,7 +44,7 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
     super.initState();
     _cargarSesion();
   }
-/*
+
   Future<void> _cargarSesion() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -68,7 +64,7 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
       // Puedes usar: Navigator.pushReplacementNamed(context, '/login');
     }
   }
-  */
+
   //Funcion de cargar sesion para simularicion
   Future<void> _cargarSesion() async {
     final prefs = await SharedPreferences.getInstance();
@@ -322,19 +318,17 @@ class FinalRegisterPageState extends State<FinalRegisterPage> {
   }
 
 
-}
+}*/
 
-
-/*
 class FinalRegisterPage extends StatefulWidget {
   final EventModel evento;
-  final int usuarioId;
-  final int idFormulario;
+  final int usuario_id;
+  final int formulario_id;
 
   const FinalRegisterPage({
     required this.evento,
-    required this.usuarioId,
-    required this.idFormulario,
+    required this.usuario_id,
+    required this.formulario_id,
     super.key,
   });
 
@@ -346,6 +340,8 @@ class _FinalRegisterPageState extends State<FinalRegisterPage> {
   double? latitud;
   double? longitud;
   String? pathImagen;
+
+  final FormsRepository _repo = FormsRepository();
 
   Future<void> _obtenerUbicacion() async {
     bool servicioActivo = await Geolocator.isLocationServiceEnabled();
@@ -395,20 +391,26 @@ class _FinalRegisterPageState extends State<FinalRegisterPage> {
   }
 
   Future<void> _enviarFormularioUbicacion() async {
-    if (latitud == null || longitud == null || pathImagen == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Faltan datos para el reporte final')),
-      );
+    if (latitud == null || longitud == null) {
+      _mostrarMensaje('Debe registrar la ubicación.');
       return;
     }
 
+    if (pathImagen == null) {
+      _mostrarMensaje('Debe subir una imagen grupal.');
+      return;
+    }
+
+    
+
+
     final form = FormModel(
-      id_formulario: widget.idFormulario,
-      evento_id: widget.evento.idEvento,
-      id_usuario: widget.usuarioId,
+      id_formulario: widget.formulario_id,
+      id_evento: widget.evento.id_evento,
+      id_usuario: widget.usuario_id,
       titulo: 'Evidencia final',
       descripcion: 'Ubicación e imagen grupal',
-      fecha_creacion: DateTime.now().toIso8601String(),
+      fecha_creacion: DateTime.now(),
       latitud: latitud,
       longitud: longitud,
       path_imagen: pathImagen,
@@ -428,34 +430,94 @@ class _FinalRegisterPageState extends State<FinalRegisterPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Reporte final procesado correctamente')),
     );
+
+    // Esperar un segundo antes de redirigir (opcional)
+    await Future.delayed(const Duration(seconds: 1));
+
+    // Redirigir a /trainer_home (elimina historial de navegación)
+    Navigator.pushNamedAndRemoveUntil(context, '/trainer_home', (route) => false);
+
   }
+
+  void _mostrarMensaje(String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensaje)),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Registro de comprobación')),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            ElevatedButton(
-              onPressed: _obtenerUbicacion,
-              child: const Text('Registrar ubicación'),
-            ),
-            ElevatedButton(
-              onPressed: _cargarImagen,
-              child: const Text('Subir imagen grupal'),
-            ),
-            ElevatedButton(
-              onPressed: _enviarFormularioUbicacion,
-              child: const Text('Enviar reporte'),
-            ),
-          ],
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text(
+          'Registro de comprobación',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFF1A3E58),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: Center( // Centra todo el contenido en la pantalla
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              MainButton(
+                texto: 'Registrar ubicación actual',
+                color: const Color(0xFF1A3E58),
+                icono: Icons.location_city_rounded,
+                onPressed: _obtenerUbicacion,
+              ),
+              const SizedBox(height: 20),
+              MainButton(
+                texto: 'Cargar imagen grupal',
+                color: const Color(0xFF1A3E58),
+                icono: Icons.upload,
+                onPressed: _cargarImagen,
+              ),
+              const SizedBox(height: 20),
+
+              if (latitud != null && longitud != null)
+                Text(
+                  'Ubicación registrada:\nLatitud: $latitud\nLongitud: $longitud',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 14, color: Colors.black87),
+                ),
+
+              const SizedBox(height: 12),
+
+              if (pathImagen != null)
+                Column(
+                  children: [
+                    const Text('Imagen grupal seleccionada:'),
+                    const SizedBox(height: 8),
+                    Image.file(
+                      File(pathImagen!),
+                      width: 200,
+                      height: 150,
+                      fit: BoxFit.cover,
+                    ),
+                  ],
+                ),
+
+              const SizedBox(height: 20),
+
+              MainButton(
+                texto: 'Enviar Reporte',
+                color: Colors.green,
+                icono: Icons.send,
+                onPressed: _enviarFormularioUbicacion,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
+
 }
 
-
- */

@@ -39,8 +39,7 @@ class LocalDataService {
       //Mostrar la ruta en consola
       //print('Ruta de la base de datos: $path');
 
-      //await deleteDB();
-
+      print('🟢 Creando la base de datos...');
       return await openDatabase(
         path,
         version: 2,
@@ -132,7 +131,6 @@ class LocalDataService {
               fecha_guardado TEXT NOT NULL
             );
           ''');
-
         },
       );
     } catch (e) {
@@ -169,21 +167,45 @@ class LocalDataService {
   /// -----------------------------------------
   
   Future<int> insertEvento(EventModel evento) async {
-  final db = await database;
+    final db = await database;
 
-    return await db.insert(
-      tableEventos,
-      {
-        'nombre': evento.nombre,
-        'fecha_hora_inicio': evento.fecha_hora_inicio.toIso8601String(),
-        'fecha_hora_fin': evento.fecha_hora_fin.toIso8601String(),
-        'ubicacion': evento.ubicacion,
-        'descripcion': evento.descripcion,
-        //'id_usuario': evento.idUsuario, // si no lo usas por ahora
-        'estado': 'activo', // por defecto
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+      return await db.insert(
+        tableEventos,
+        {
+          'nombre': evento.nombre,
+          'fecha_hora_inicio': evento.fecha_hora_inicio.toIso8601String(),
+          'fecha_hora_fin': evento.fecha_hora_fin.toIso8601String(),
+          'ubicacion': evento.ubicacion,
+          'descripcion': evento.descripcion,
+          //'id_usuario': evento.idUsuario, // si no lo usas por ahora
+          'estado': 'activo', // por defecto
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+  }
+
+  //Insertar Vrios eventos
+  Future<void> insertEventList(List<EventModel> eventos) async {
+    final db = await database;
+
+    final batch = db.batch();
+
+    for (var evento in eventos) {
+      batch.insert(
+        tableEventos,
+        {
+          'nombre': evento.nombre,
+          'fecha_hora_inicio': evento.fecha_hora_inicio.toIso8601String(),
+          'fecha_hora_fin': evento.fecha_hora_fin.toIso8601String(),
+          'ubicacion': evento.ubicacion,
+          'descripcion': evento.descripcion,
+          'estado': 'activo',
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+
+    await batch.commit(noResult: true);
   }
 
 
@@ -300,7 +322,7 @@ class LocalDataService {
         'rol': user.rol,
         'estado_monitor':user.estado_monitor,
       },
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.abort,
     );
   }
 
@@ -905,7 +927,7 @@ class LocalDataService {
       'formulario': formulario.toJson(), // sólo FormModel
     });
 
-    await db.insert('cola_evidencias', {
+    await db.insert('cola_peticiones', {
       'payload': payload,
       'fecha_guardado': DateTime.now().toIso8601String(),
     });
@@ -915,7 +937,7 @@ class LocalDataService {
   Future<void> procesarColaEvidencias() async {
     final db = await database;
 
-    final registros = await db.query('cola_evidencias');
+    final registros = await db.query('cola_peticiones');
 
     for (final reg in registros) {
       final idLocal = reg['id_local'] as int;
@@ -966,32 +988,49 @@ class LocalDataService {
     // Nota: No hay jwt_token en sesiones locales
   }
 
-    Future<int> crearAdminTemporal() async {
+  Future<void> crearAdminTemporal() async {
+    try {
       final db = await database;
 
-      return await db.insert(
+      final id = await db.insert(
         'usuarios',
         {
           'nombre': 'Juan Burgos',
           'email': 'admin@local.com',
           'contrasena': 'Admin123!', // contraseña temporal
           'rol': 'Administrador',
-          'estado_monitor': 'ACTIVO',
+          'estado_monitor': 'activo',
         },
-        conflictAlgorithm: ConflictAlgorithm.ignore, // evita duplicados si ya existe
+        conflictAlgorithm: ConflictAlgorithm.ignore,
       );
+
+      if (id != 0) {
+        print('✅ Admin creado correctamente con ID: $id');
+      } else {
+        print('ℹ️ Admin ya existe, no se creó uno nuevo');
+        final db = await database;
+        final usuarios = await db.query('usuarios');
+        print('Usuarios al iniciar: $usuarios');
+
+      }
+    } catch (e, stackTrace) {
+      print('❌ Error al crear admin temporal: $e');
+      print('📄 StackTrace: $stackTrace');
+    }
   }
+
+
 
   /// -------------------------------------------------
   /// *MÉTODO PARA DETECTAR CONEXION
   /// -------------------------------------------------
   
-  bool _procesandoColas = false;
+  bool _procesando = false;
 
   void iniciarEscuchaDeConexion() {
     Connectivity().onConnectivityChanged.listen((status) async {
-      if (status != ConnectivityResult.none && !_procesandoColas) {
-        _procesandoColas = true;
+      if (status != ConnectivityResult.none && !_procesando) {
+        _procesando = true;
 
         try {
           await procesarCola();
@@ -1002,7 +1041,7 @@ class LocalDataService {
           print('❌ Error durante sincronización: $e');
           print('🧵 StackTrace: $stackTrace');
         } finally {
-          _procesandoColas = false;
+          _procesando = false;
         }
       }
     });

@@ -1,3 +1,4 @@
+import 'package:basic_flutter/services/local_service.dart';
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,6 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void verificarSesion() async {
+
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
     final rolLocal = prefs.getString('rol_usuario');
@@ -29,17 +31,17 @@ class _SplashScreenState extends State<SplashScreen> {
       final decoded = JwtDecoder.decode(token);
       final rol = decoded['rol'];
 
-      if (rol == 'ADMINISTRADOR') {
+      if (rol == 'Administrador') {
         Navigator.pushReplacementNamed(context, '/admin_home');
         return;
-      } else if (rol == 'ENTRENADOR') {
+      } else if (rol == 'Monitor') {
         Navigator.pushReplacementNamed(context, '/trainer_home');
         return;
       }
     }
 
     // Si no hay token, pero hay sesión local como entrenador
-    if (rolLocal == 'ENTRENADOR') {
+    if (rolLocal == 'Monitor') {
       Navigator.pushReplacementNamed(context, '/trainer_home');
       return;
     }

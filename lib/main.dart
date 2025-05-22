@@ -28,9 +28,21 @@ import 'models/event_model.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+
+  //Inicializar la BD una sola vez
+  await LocalDataService.db.deleteDB();
+
+  //Inicializar la BD una sola vez
+  await LocalDataService.db.database;
+
+  // 👤 Crea el administrador temporal (si no existe)
+  await LocalDataService.db.crearAdminTemporal();
   // Inicializas tus servicios
   LocalDataService.db.iniciarEscuchaDeConexion(); 
-  _verificarYSincronizar();
+
+  //Sincronizar usuarios
+  await _verificarYSincronizar();
+
   runApp(const MyApp());
 }
 
@@ -50,7 +62,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
       //home: const LoginPage(),
       // ruta inicial
-      initialRoute: '/admin_home',
+      initialRoute: 'splash',
       
       // Aquí defines todas las rutas disponibles en tu app
       routes: {
@@ -86,12 +98,15 @@ class MyApp extends StatelessWidget {
         '/trainer_select_permanent_event': (context) => const TrainerSelectPermanentEventPage(),
         '/final_register': (context) {
             final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-            final asistentes = args['asistentes'] as List<Map<String, dynamic>>;
+
             final evento = args['evento'] as EventModel;
+            final int usuarioId = args['usuario_id'] as int;
+            final int formularioId = args['formulario_id'] as int;
 
             return FinalRegisterPage(
-              asistentes: asistentes,
               evento: evento,
+              usuario_id: usuarioId,
+              formulario_id: formularioId,
             );
           },
         '/check_assistant': (context) {

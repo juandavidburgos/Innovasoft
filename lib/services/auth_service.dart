@@ -23,8 +23,8 @@ class AuthService {
   /// ---------------------------------
 
   Future<UserModel?> remoteLogin(String email, String password) async {
-    //return await RemoteDataService.dbR.authUsuarioRemoto(email, password);
-    throw Exception('Simulación: login remoto deshabilitado'); //--> Simular back-end deshabilitado
+    return await RemoteDataService.dbR.authUsuarioRemoto(email, password);
+    //throw Exception('Simulación: login remoto deshabilitado'); //--> Simular back-end deshabilitado
   }
 
   Future<void> cerrarSesionRemoto() async {

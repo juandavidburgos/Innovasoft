@@ -42,7 +42,18 @@ class _RegisterUserPage extends State<RegisterUserPage> {
 
       try {
         // Guardar localmente (SQLite)
-        int usuarioId = await _localService.guardarUsuario(nuevoUsuario);
+        final usuarioId = await _localService.guardarUsuario(nuevoUsuario);
+
+        if (usuarioId == -1) {
+          // El correo ya está registrado
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('El correo ingresado ya está registrado.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          return; // No continuar con el flujo
+        }
 
         // Guardar sesión
         final prefs = await SharedPreferences.getInstance();
@@ -65,6 +76,7 @@ class _RegisterUserPage extends State<RegisterUserPage> {
           ),
         );
       }
+
     } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -144,7 +156,7 @@ class _RegisterUserPage extends State<RegisterUserPage> {
                       if (val == null || val.isEmpty) {
                         return 'Por favor ingresa tu correo';
                       }
-                      if (!val.contains('@') || !val.contains('.')) {
+                      if (!val.contains('@') || !val.contains('.') || val.length < 4) {
                         return 'Correo inválido';
                       }
                       return null;

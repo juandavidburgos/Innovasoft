@@ -46,6 +46,10 @@ class RemoteService {
   Future<bool> eliminarEventoRemoto(int idEvento) async {
     return await RemoteDataService.dbR.deleteEvento(idEvento);
   }
+
+  Future<List<EventModel>> getEventosAsignadosRemotos(int idUsuario) async {
+    return await RemoteDataService.dbR.getEventosAsignados(idUsuario);
+  }
   
   /// -------------------------------------------------
   /// *MÉTODOS ASOCIADOS A USUARIOS

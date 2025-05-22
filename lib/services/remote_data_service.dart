@@ -189,10 +189,10 @@ class RemoteDataService {
   }
 
   // Eliminar un usuario
-  Future<bool> deleteUsuario(int id_usuario) async {
+  Future<bool> deleteUsuario(int idUsuario) async {
     try {
       final response = await http.delete(
-        Uri.parse('$apiUrlUsuarios/$id_usuario'),
+        Uri.parse('$apiUrlUsuarios/$idUsuario'),
       );
       return response.statusCode == 200;
     } catch (_) {
@@ -239,16 +239,27 @@ class RemoteDataService {
     }
   }
   
-  Future<List<EventModel>> getEventosAsignados(int id_usuario) async {
-    final response = await http.get(
-      Uri.parse('$apiUrl/usuarios/$id_usuario/eventos'),
-    );
+  Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiUrl/usuarios/$idUsuario/eventos'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          // Si usas autenticación con token:
+          // 'Authorization': 'Bearer $token',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body) as List;
-      return data.map((e) => EventModel.fromJson(e)).toList();
-    } else {
-      return [];
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((e) => EventModel.fromJson(e)).toList();
+      } else {
+        throw Exception('Error ${response.statusCode}: No se pudieron obtener los eventos del servidor');
+      }
+    } catch (e) {
+      // Aquí puedes loguear el error o reportarlo
+      throw Exception('Fallo la conexión con el servidor: $e');
     }
   }
 
@@ -265,15 +276,46 @@ class RemoteDataService {
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
         return jsonData.isNotEmpty;
-      } else {
-        throw Exception('Error al verificar el correo: ${response.statusCode}');
       }
-    } catch (e) {
-      throw Exception('Error de conexión: $e');
+    } catch (_) {
+      return false; // ← más seguro para no bloquear
     }
+    return false; // ← más seguro para no bloquear
   }
 
+  String? ultimoToken;
+
   Future<UserModel?> authUsuarioRemoto(String email, String password) async {
+    final url = Uri.parse('https://tu-backend.com/api/login');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final token = data['token'];
+      final decoded = json.decode(token);
+
+      // Guarda el token en una propiedad accesible
+      ultimoToken = token;
+
+      return UserModel(
+        id_usuario: decoded['id_usuario'],
+        nombre: decoded['nombre'],
+        email: email,
+        contrasena: '',
+        rol: decoded['rol'],
+        estado_monitor: decoded['estado_monitor'],
+      );
+    }
+
+    return null;
+  }
+
+
+  /*Future<UserModel?> authUsuarioRemoto(String email, String password) async {
       final url = Uri.parse('https://tu-backend.com/api/login');
       final response = await http.post(
         url,
@@ -306,7 +348,7 @@ class RemoteDataService {
       }
 
       return null;
-    }
+    } */
 
     Future<void> logOutRemoto() async {
       final prefs = await SharedPreferences.getInstance();
@@ -397,11 +439,11 @@ class RemoteDataService {
     }
   }
 
-
   /// Sincroniza en ambos sentidos: primero descarga y luego sube
   Future<void> sincronizarTodo() async {
     await sincronizarDesdeServidor();
     await sincronizarHaciaServidor();
   }
+
 
 }

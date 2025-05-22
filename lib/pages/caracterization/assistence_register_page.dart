@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'final_register_page.dart';
 import 'package:basic_flutter/models/event_model.dart'; // importa tu modelo
+import 'package:basic_flutter/models/answer_model.dart';
+import 'package:basic_flutter/models/form_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AssistenceRegisterPage extends StatefulWidget {
   final EventModel evento;
@@ -16,12 +19,28 @@ class AssistenceRegisterPage extends StatefulWidget {
 class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
   final FormsRepository _repo = FormsRepository();
 
+  int? id_usuario;
+  int? formulario_id;
+
   final _formKey = GlobalKey<FormState>();
   final Map<int, dynamic> _formData = {};
-  final List<Map<String, dynamic>> _asistentes = [];
+  final List<Map<int, dynamic>> _asistentes = [];
   DateTime? _fechaNacimiento;
   final TextEditingController _fechaController = TextEditingController();
   final TextEditingController _edadController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarSesion();
+  }
+
+
+  Future<void> _cargarSesion() async {
+    final prefs = await SharedPreferences.getInstance();
+    id_usuario = prefs.getInt('id_usuario');
+  }
+
 
   void _actualizarEdad(DateTime fecha) {
     final edad = DateTime.now().year - fecha.year;
@@ -46,7 +65,7 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
     }
   }
 
-  Widget _buildTextField(String label, int pregunta_id,
+  Widget _buildTextField(String label, int preguntaId,
       {bool obligatorio = false,
       TextEditingController? controller,
       TextInputType? tipo = TextInputType.text}) {
@@ -60,30 +79,29 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
         }
 
         // Validaciones personalizadas según el id
-        switch (pregunta_id) {
+        switch (preguntaId) {
           case 3: // DOCUMENTO IDENTIDAD
             if (value != null && (value.length < 8 || value.length > 10)) {
               return 'Debe tener entre 8 y 10 dígitos';
             }
             break;
-          case 25: // TELÉFONO
+          case 25: // TELÉFONO o CORREO
             if (value == null || value.isEmpty) {
               return 'Este campo es obligatorio';
             }
-            if (!RegExp(r'^\d+$').hasMatch(value)) {
-              return 'Ingrese solo números';
-            }
-            if (value.length < 10) {
-              return 'Ingrese un teléfono válido (mínimo 10 dígitos)';
-            }
-            break;
-          case 26: // CORREO ELECTRÓNICO
-            if (value != null && value.isNotEmpty) {
+
+            // Validar si es numérico (teléfono)
+            if (RegExp(r'^\d+$').hasMatch(value)) {
+              if (value.length < 10) {
+                return 'Ingrese un teléfono válido (mínimo 10 dígitos)';
+              }
+            } else {
+              // Validar si es correo electrónico
               if (value.contains(' ')) {
                 return 'El correo no debe contener espacios';
               }
-              if (!value.contains('@') || !value.contains('.')) {
-                return 'Correo inválido';
+              if (!RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$').hasMatch(value)) {
+                return 'Ingrese un correo válido';
               }
             }
             break;
@@ -98,17 +116,17 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
 
         return null;
       },
-      onSaved: (value) => _formData[pregunta_id] = value,
+      onSaved: (value) => _formData[preguntaId] = value,
     );
   }
 
 
-  Widget _buildDropdown(String label, int pregunta_id, List<String> opciones,
+  Widget _buildDropdown(String label, int preguntaId, List<String> opciones,
       {bool obligatorio = false}) {
     return DropdownButtonFormField<String>(
       decoration: InputDecoration(labelText: label),
       items: opciones.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-      onChanged: (value) => _formData[pregunta_id] = value,
+      onChanged: (value) => _formData[preguntaId] = value,
       validator: (value) {
         if (obligatorio && (value == null || value.isEmpty)) {
           return 'Seleccione una opción';
@@ -118,214 +136,143 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
     );
   }
 
+  void _finalizarRegistro() async {
+    final isFormValid = _formKey.currentState!.validate();
 
-  void _guardarAsistente() {
-    if (_formKey.currentState!.validate()) {
+    if (isFormValid) {
       _formKey.currentState!.save();
-      _asistentes.add(Map<String, dynamic>.from(_formData));
-      _formKey.currentState!.reset();
-      _fechaController.clear();
-      _edadController.clear();
-      _formData.clear();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Asistente registrado.')));
-    }
-    _mostrarResumenAsistente(_asistentes.last);
+      _asistentes.add(Map<int, dynamic>.from(_formData));
 
-  }
-
-void _finalizarRegistro() {
-  final isFormValid = _formKey.currentState!.validate();
-
-  if (_asistentes.isEmpty) {
-    // No hay asistentes aún: el formulario debe estar completamente válido
-    if (!isFormValid) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: 
-          Text('Debe registrar al menos un asistente con todos los campos obligatorios.'),
+        const SnackBar(content: Text('Asistente actual registrado.')),
+      );
+    }
+
+    final hayFormulariosGuardados = await _repo.hayFormulariosRegistrados();
+
+    if (!hayFormulariosGuardados) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Debe registrar al menos un asistente antes de continuar.'),
           backgroundColor: Colors.red,
           duration: Duration(seconds: 5),
         ),
-        
       );
       return;
-    } else {
-      _formKey.currentState!.save();
-      _asistentes.add(Map<String, dynamic>.from(_formData));
     }
-  } else {
-    // Ya hay al menos un asistente: guardar actual si es válido
-    if (isFormValid) {
-      _formKey.currentState!.save();
-      _asistentes.add(Map<String, dynamic>.from(_formData));
-    }
-    // Si no es válido, simplemente ignora el actual y continúa
-  }
 
-  // Ir a la página final
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => FinalRegisterPage(
-        asistentes: _asistentes,
-        evento: widget.evento,
-      ),
-    ),
-  );
-}
-
-void _mostrarResumenAsistente(Map<String, dynamic> asistente) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Asistente registrado'),
-      content: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: asistente.entries.map((entry) {
-            return Text('${entry.key}: ${entry.value}');
-          }).toList(),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cerrar'),
-        ),
-      ],
-    ),
-  );
-}
-
-/* *VERIFICAR!!
-
-void _finalizarRegistro() async {
-  final isFormValid = _formKey.currentState!.validate();
-
-  if (isFormValid) {
-    _formKey.currentState!.save();
-    _asistentes.add(Map<int, dynamic>.from(_formData));
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Asistente actual registrado.')),
+    // Mostrar el cuadro de diálogo
+    final continuar = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('¿Desea registrar otro asistente?'),
+          content: const Text('Si selecciona "No", continuará al siguiente paso.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true), // Registrar otro
+              child: const Text('Sí'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(false), // Continuar
+              child: const Text('No'),
+            ),
+          ],
+        );
+      },
     );
-  }
 
-  final hayFormulariosGuardados = await _repo.hayFormulariosRegistrados();
-
-  if (!hayFormulariosGuardados) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Debe registrar al menos un asistente antes de continuar.'),
-        backgroundColor: Colors.red,
-        duration: Duration(seconds: 5),
-      ),
-    );
-    return;
-  }
-
-  // Mostrar el cuadro de diálogo
-  final continuar = await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text('¿Desea registrar otro asistente?'),
-        content: const Text('Si selecciona "No", continuará al siguiente paso.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true), // Registrar otro
-            child: const Text('Sí'),
+    if (continuar == false) {
+      // Validación de seguridad
+      if (id_usuario == null || formulario_id == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error interno: datos incompletos.'),
+            backgroundColor: Colors.red,
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(false), // Continuar
-            child: const Text('No'),
+        );
+        return;
+      }
+
+      // Ir a la vista final
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => FinalRegisterPage(
+            evento: widget.evento,
+            usuario_id: id_usuario!,
+            formulario_id: formulario_id!,
           ),
-        ],
+        ),
       );
-    },
-  );
+    } else {
+      // El usuario desea registrar otro asistente → limpiar formulario
+      _formKey.currentState!.reset();
+      _formData.clear();
+      _fechaController.clear();
+      _edadController.clear();
 
-  if (continuar == false) {
-    // Ir a la vista final
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => FinalRegisterPage(
-          evento: widget.evento,
-          usuarioId: usuarioId,
-          id_formulario: id_formulario,
-        ),
-      ),
-    );
-  } else {
-    // El usuario desea registrar otro asistente → limpiar formulario
-    _formKey.currentState!.reset();
-    _formData.clear();
-    _fechaController.clear();
-    _edadController.clear();
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Formulario listo para otro asistente.')),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Formulario listo para otro asistente.')),
+      );
+    }
+    // Si continuar == true, simplemente se queda en la misma página
   }
-  // Si continuar == true, simplemente se queda en la misma página
-}
 
 
 List<AnswerModel> _crearRespuestasDesdeFormulario(int id_formulario) {
   return _formData.entries.map((entry) {
     return AnswerModel(
       pregunta_id: entry.key,              // 
-      id_formulario: id_formulario,
+      formulario_id: id_formulario,
       contenido: entry.value?.toString() ?? '',
-      id_evento: widget.evento.idEvento,   // 
+      id_evento: widget.evento.id_evento!,   // 
     );
   }).toList();
 }
 
 
-void _guardarAsistente() async {
-  if (!_formKey.currentState!.validate()) return;
+  void _guardarAsistente() async {
+    if (!_formKey.currentState!.validate()) return;
 
-  _formKey.currentState!.save();
+    _formKey.currentState!.save();
 
-  final id_formulario = DateTime.now().millisecondsSinceEpoch;
+    final id_formulario = DateTime.now().millisecondsSinceEpoch;
+    formulario_id = id_formulario;
 
-  final form = FormModel(
-    id_formulario: id_formulario,
-    id_evento: widget.evento.id_evento,
-    id_usuario: id_usuario,
-    titulo: 'Asistente',
-    descripcion: 'Registro individual',
-    fechaCreacion: DateTime.now().toIso8601String(),
-    latitud: null,
-    longitud: null,
-    path_imagen: null,
-  );
+    final form = FormModel(
+      id_formulario: id_formulario,
+      id_evento: widget.evento.id_evento,
+      id_usuario: id_usuario,
+      titulo: 'Asistente',
+      descripcion: 'Registro individual',
+      fecha_creacion: DateTime.now(),
+      latitud: null,
+      longitud: null,
+      path_imagen: null,
+    );
 
-  final respuestas = _crearRespuestasDesdeFormulario(id_formulario);
+    final respuestas = _crearRespuestasDesdeFormulario(id_formulario);
 
-  final conectado = await _repo.hayConexion();
+    final conectado = await _repo.hayConexion();
 
-  if (conectado) {
-    final enviado = await _repo.enviarFormularioConRespuestas(form, respuestas);
-    if (!enviado) await _repo.guardarEnColaPeticiones(form, respuestas);
-  } else {
-    await _repo.guardarEnColaPeticiones(form, respuestas);
+    if (conectado) {
+      final enviado = await _repo.enviarFormularioConRespuestas(form, respuestas);
+      if (!enviado) await _repo.guardarEnColaPeticiones(form, respuestas);
+    } else {
+      await _repo.guardarEnColaPeticiones(form, respuestas);
+    }
+
+    _formKey.currentState!.reset();
+    _formData.clear();
+    _fechaController.clear();
+    _edadController.clear();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Asistente registrado.')),
+    );
   }
-
-  _formKey.currentState!.reset();
-  _formData.clear();
-  _fechaController.clear();
-  _edadController.clear();
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('Asistente registrado.')),
-  );
-}
-
- */
 
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
@@ -421,14 +368,13 @@ void _guardarAsistente() async {
               _buildTextField('Dirección', 22, obligatorio: true),
               _buildTextField('Municipio de origen', 23, obligatorio: true),
               _buildDropdown('Zona', 24, ['Urbano', 'Rural'], obligatorio: true),
-              _buildTextField('Teléfono', 25, obligatorio: true),
-              _buildTextField('Correo electrónico', 26),
+              _buildTextField('Teléfono/Correo', 25, obligatorio: true),
               const SizedBox(height: 30),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildStyledButton('Registrar otro asistente', const Color(0xFF00944C), _guardarAsistente),
+                  _buildStyledButton('Registrar asistente', const Color(0xFF00944C), _guardarAsistente),
                   _buildStyledButton('Terminar registro', const Color(0xFF004A7F), _finalizarRegistro),
                 ],
               ),
@@ -441,3 +387,84 @@ void _guardarAsistente() async {
   }
 }
 
+/*
+
+  void _guardarAsistente() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      _asistentes.add(Map<String, dynamic>.from(_formData));
+      _formKey.currentState!.reset();
+      _fechaController.clear();
+      _edadController.clear();
+      _formData.clear();
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Asistente registrado.')));
+    }
+    _mostrarResumenAsistente(_asistentes.last);
+
+  }
+
+void _finalizarRegistro() {
+  final isFormValid = _formKey.currentState!.validate();
+
+  if (_asistentes.isEmpty) {
+    // No hay asistentes aún: el formulario debe estar completamente válido
+    if (!isFormValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: 
+          Text('Debe registrar al menos un asistente con todos los campos obligatorios.'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 5),
+        ),
+        
+      );
+      return;
+    } else {
+      _formKey.currentState!.save();
+      _asistentes.add(Map<String, dynamic>.from(_formData));
+    }
+  } else {
+    // Ya hay al menos un asistente: guardar actual si es válido
+    if (isFormValid) {
+      _formKey.currentState!.save();
+      _asistentes.add(Map<String, dynamic>.from(_formData));
+    }
+    // Si no es válido, simplemente ignora el actual y continúa
+  }
+
+  // Ir a la página final
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => FinalRegisterPage(
+        asistentes: _asistentes,
+        evento: widget.evento,
+      ),
+    ),
+  );
+}
+
+void _mostrarResumenAsistente(Map<String, dynamic> asistente) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Asistente registrado'),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: asistente.entries.map((entry) {
+            return Text('${entry.key}: ${entry.value}');
+          }).toList(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cerrar'),
+        ),
+      ],
+    ),
+  );
+}*/
+
+/* *VERIFICAR!!*/
