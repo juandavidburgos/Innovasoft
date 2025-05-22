@@ -32,6 +32,11 @@ class AssignmentRepository {
     return _localService.actualizarAsignacionesDeEvento(eventoId, trainerIds);
   }
 
+  /// Actualiza la lista de eventos asignados a un monitor
+  Future<bool> actualizarEventosDeMonitor(int monitorId, List<int> eventosIds) {
+    return _localService.actualizarAsignacionesDeMonitor(monitorId, eventosIds);
+  }
+
   /// Obtiene las asignaciones con el nombre del evento (para dropdown)
   Future<List<Map<String, dynamic>>> obtenerAsignacionesConNombreEvento() {
     return _localService.obtenerAsignacionesConNombreEvento();
@@ -42,6 +47,11 @@ class AssignmentRepository {
     return _localService.obtenerEntrenadoresPorEvento(eventoId);
   }
 
+  Future<List<EventModel>> obtenerEventosDelMonitor(int idEntrenador) async {
+    return await _localService.obtenerEventosAsignados(idEntrenador);
+  }
+
+
   /// (Opcional) Método para eliminar una asignación
   /*Future<int> eliminarAsignacion(int idAsignacion) {
     return _localService.eliminarAsignacion(idAsignacion);
@@ -50,6 +60,10 @@ class AssignmentRepository {
   /// -------------------------------------------------
   /// MÉTODOS DE GESTIÓN REMOTA
   /// -------------------------------------------------
+
+  Future<bool> asignarEntrenadorAEventoRemoto(int idUsuario, int idEvento) async {
+    return await _remoteService.asignarEntrenadorAEventoRemoto(idUsuario, idEvento);
+  }
 
   Future<List<EventModel>> getEventosAsignados(int idUsuario) async{
     return _remoteService.obtenerEventosAsignadosRemoto(idUsuario);
