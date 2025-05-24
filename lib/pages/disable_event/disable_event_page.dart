@@ -28,12 +28,30 @@ class _DisableEventPageState extends State<DisableEventPage> {
   }
 
   /// Carga los eventos con estado "activo" desde el repositorio.
+  /// Carga los eventos activos desde el backend
   void _loadActiveEvents() async {
+    try {
+      final eventos = await _repo.obtenerEventosRemotos();
+      setState(() {
+        _activeEvents = eventos.where((e) => e.estado == 'activo').toList();
+      });
+    } catch (e) {
+      // Manejo de error opcional
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error al obtener eventos desde el servidor'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+  //carga de forma local
+  /*void _loadActiveEvents() async {
     final eventos = await _repo.obtenerEventos();
     setState(() {
       _activeEvents = eventos.where((e) => e.estado == 'activo').toList();
     });
-  }
+  }*/
 
   /// Redirige a la página de confirmación con los IDs seleccionados.
   void _goToConfirmPage() {

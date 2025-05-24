@@ -50,6 +50,25 @@ class EventRepository {
   /// Gestión de eventos:
   /// 
   
+  /// Envía un evento remoto a través del servicio remoto.
+  /// Devuelve `true` si se creó correctamente.
+  Future<bool> guardarEventoRemoto(EventModel evento) async {
+    return await _remoteService.guardarEventoRemoto(evento);
+  }
+
+  /// Actualiza parcialmente un evento a través del servicio remoto.
+  Future<bool> actualizarEventoParcialRemoto(int idEvento, EventModel eventoParcial) async {
+    return await _remoteService.actualizarEventoParcialRemoto(idEvento, eventoParcial);
+  }
+
+  Future<List<EventModel>> obtenerEventosRemotos() async {
+    return await _remoteService.obtenerEventosRemotos();
+  }
+
+  Future<bool> desactivarEventoRemoto(int idEvento) async {
+    return await _remoteService.desactivarEventoRemoto(idEvento);
+  }
+
   Future<List<EventModel>> obtenerEventosAsignadosRemotos(int idUsuario) async {
     return await _remoteService.getEventosAsignadosRemotos(idUsuario);
   }

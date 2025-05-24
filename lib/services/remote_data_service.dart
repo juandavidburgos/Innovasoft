@@ -24,9 +24,34 @@ class RemoteDataService {
   /// *MÉTODOS ASOCIADOS A EVENTOS
   /// -------------------------------------------------
 
-  /// Envía un nuevo evento al servidor mediante HTTP POST.
-  /// Retorna `true` si el servidor responde con éxito (200 o 201).
+  /// Envía un evento al backend mediante una solicitud POST al endpoint `/eventos`.
+  /// Retorna `true` si el evento fue creado exitosamente (códigos 201 o 200),
+  /// de lo contrario retorna `false`.
   Future<bool> sendEvent(EventModel event) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$apiUrl/eventos'), // Asegúrate que apiUrl no termine con "/"
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(event.toJson()),
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        print('Evento creado exitosamente.');
+        return true;
+      } else {
+        print('Error al crear evento: ${response.statusCode}');
+        print('Cuerpo: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Excepción al enviar evento: $e');
+      return false;
+    }
+  }
+
+  /*Future<bool> sendEvent(EventModel event) async {
     try {
       final response = await http.post(
         Uri.parse(apiUrl),
@@ -37,15 +62,14 @@ class RemoteDataService {
     } catch (_) {
       return false;
     }
-  }
+  }*/
 
   /// Obtiene todos los eventos desde el servidor mediante HTTP GET.
   ///
-  /// Si [soloActivos] es `true`, agrega un parámetro a la URL para filtrar.
-  /// Retorna una lista de objetos `EventModel`.
-  Future<List<EventModel>> fetchEventos({bool soloActivos = true}) async {
+  
+  Future<List<EventModel>> fetchEventos() async {
     try {
-      final uri = Uri.parse(soloActivos ? '$apiUrl?estado=activo' : apiUrl);
+      final uri = Uri.parse('$apiUrl/eventos'); // asegurarse de la URl
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {
@@ -59,10 +83,33 @@ class RemoteDataService {
     }
   }
 
-  /// Actualiza un evento existente en el servidor mediante HTTP PUT.
-  ///
-  /// Requiere que el evento tenga un `idEvento` válido.
-  Future<bool> updateEvento(EventModel evento) async {
+  /// Actualiza parcialmente un evento en el backend mediante una solicitud PATCH al endpoint `/eventos/{id}`.
+  /// Retorna `true` si la actualización fue exitosa (código 200), de lo contrario `false`.
+  Future<bool> updateEventoParcial(int idEvento, EventModel eventoParcial) async {
+    try {
+      final response = await http.patch(
+        Uri.parse('$apiUrl/eventos/$idEvento'), // URL con el id del evento
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(eventoParcial.toJson()), // El JSON con los campos a actualizar
+      );
+
+      if (response.statusCode == 200) {
+        print('Evento actualizado exitosamente.');
+        return true;
+      } else {
+        print('Error al actualizar evento: ${response.statusCode}');
+        print('Cuerpo: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Excepción al actualizar evento: $e');
+      return false;
+    }
+  }
+
+  /*Future<bool> updateEvento(EventModel evento) async {
     try {
       final response = await http.put(
         Uri.parse('$apiUrl/${evento.id_evento}'),
@@ -73,35 +120,36 @@ class RemoteDataService {
     } catch (_) {
       return false;
     }
-  }
+  }*/
 
-  //OTRA OPCION
-  /// Actualiza un evento existente en el servidor mediante HTTP PATCH.
+  /// Desactiva (deshabilita) un evento haciendo una solicitud DELETE.
   ///
-  /// Requiere que el evento tenga un id_evento válido.
-  Future<bool> updateEventoAlternativo(EventModel evento) async {
+  Future<bool> desactivarEvento(int idEvento) async {
+    final url = Uri.parse('$apiUrl/eventos/$idEvento');
+
     try {
-      final response = await http.patch(
-        Uri.parse('$apiUrl/${evento.id_evento}'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          "nombre": evento.nombre,
-          "descripcion": evento.descripcion,
-          "ubicacion": evento.ubicacion,
-          "fecha_hora_inicio": evento.fecha_hora_inicio.toIso8601String(),
-          "fecha_hora_fin": evento.fecha_hora_fin.toIso8601String(),
-        }),
+      final response = await http.delete(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          // Si necesitas token:
+          // 'Authorization': 'Bearer tu_token',
+        },
       );
 
-      return response.statusCode == 200;
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        return result == true; // Retorna true si el backend lo devuelve así
+      } else {
+        print('Error al desactivar el evento: ${response.statusCode}');
+        return false;
+      }
     } catch (e) {
-      print('Error actualizando evento: $e');
+      print('Excepción al desactivar el evento: $e');
       return false;
     }
   }
-
-  /// Desactiva (deshabilita) un evento haciendo una solicitud DELETE.
-  Future<bool> deshabilitarEvento(int idEvento) async {
+  /*Future<bool> deshabilitarEvento(int idEvento) async {
     try {
       final response = await http.delete(
         Uri.parse('$apiUrl/$idEvento'),
@@ -111,21 +159,8 @@ class RemoteDataService {
     } catch (_) {
       return false;
     }
-  }
-
-  /// Deshabilita un evento (cambia su estado a 'inactivo') mediante HTTP PATCH.
-  /*Future<bool> deshabilitarEvento(int idEvento) async {
-    try {
-      final response = await http.patch(
-        Uri.parse('$apiUrl/$idEvento'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'estado': 'inactivo'}),
-      );
-      return response.statusCode == 200;
-    } catch (_) {
-      return false;
-    }
   }*/
+
 
   /// Elimina un evento del servidor mediante HTTP DELETE.
   Future<bool> deleteEvento(int idEvento) async {

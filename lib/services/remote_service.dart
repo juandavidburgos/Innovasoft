@@ -15,31 +15,26 @@ class RemoteService {
   /// *MÉTODOS ASOCIADOS A EVENTOS
   /// -------------------------------------------------
 
-  /// Envía un nuevo evento al servidor mediante HTTP POST.
-  ///
-  /// Retorna `true` si el servidor responde con éxito (200 o 201).
-  Future<bool> guardarEventoRemoto(EventModel event) async {
-    return await RemoteDataService.dbR.sendEvent(event);
+  /// Envía un evento al servidor utilizando el RemoteDataService.
+  /// Retorna `true` si el evento fue creado correctamente.
+  Future<bool> guardarEventoRemoto(EventModel evento) async {
+    return await RemoteDataService.dbR.sendEvent(evento);
   }
 
   /// Obtiene todos los eventos desde el servidor mediante HTTP GET.
   ///
-  /// Si [soloActivos] es `true`, agrega un parámetro a la URL para filtrar.
-  /// Retorna una lista de objetos `EventModel`.
-  Future<List<EventModel>> buscarEventosRemoto({bool soloActivos = true}) async {
+  Future<List<EventModel>> obtenerEventosRemotos() async {
     return await RemoteDataService.dbR.fetchEventos();
   }
 
-  /// Actualiza un evento existente en el servidor mediante HTTP PUT.
-  ///
-  /// Requiere que el evento tenga un `idEvento` válido.
-  Future<bool> actualizarEventoRemoto (EventModel evento) async {
-    return await RemoteDataService.dbR.updateEvento(evento);
+  /// Actualiza parcialmente un evento utilizando RemoteDataService.
+  Future<bool> actualizarEventoParcialRemoto(int idEvento, EventModel eventoParcial) async {
+    return await RemoteDataService.dbR.updateEventoParcial(idEvento, eventoParcial);
   }
 
-  /// Deshabilita un evento (cambia su estado a 'inactivo') mediante HTTP PATCH.
-  Future<bool> deshabilitarEventoRemoto(int idEvento) async {
-    return await RemoteDataService.dbR.deshabilitarEvento(idEvento);
+  /// Deshabilita un evento (cambia su estado a 'inactivo')
+  Future<bool> desactivarEventoRemoto(int idEvento) async {
+    return await RemoteDataService.dbR.desactivarEvento(idEvento);
   }
 
   /// Elimina un evento del servidor mediante HTTP DELETE.
