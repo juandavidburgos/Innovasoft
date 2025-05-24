@@ -70,12 +70,27 @@ class RemoteService {
     return await RemoteDataService.dbR.deleteUsuario(idUsuario);
   }
 
+  // Deshabilitar un entrenador en el servidor
+  Future<bool> deshabilitarEntrenadorRemoto(int idUsuario) async {
+    return await RemoteDataService.dbR.deshabilitarEntrenador(idUsuario);
+  }
+
+
   /// -------------------------------------------------
   /// *MÉTODOS DE ASIGNACIONES
   /// -------------------------------------------------
   // Asignar entrenador a evento
   Future<bool> asignarEntrenadorAEventoRemoto(int idUsuario, int idEvento) async {
     return await RemoteDataService.dbR.asignarEntrenadorAEvento(idUsuario, idEvento);
+  }
+
+  // Modificar asignación de entrenador de un evento a otro
+  Future<bool> modificarAsignacionEntrenadorRemoto(int idUsuario, int idEvento, int nuevoIdEvento) async {
+    return await RemoteDataService.dbR.modificarAsignacionEntrenador(
+      idUsuario: idUsuario,
+      idEvento: idEvento,
+      nuevoIdEvento: nuevoIdEvento,
+    );
   }
 
   Future<List<EventModel>> obtenerEventosAsignadosRemoto(int idUsuario) async{

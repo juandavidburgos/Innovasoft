@@ -74,6 +74,12 @@ class UserRepository {
     return _remoteService.buscarUsuariosRemoto();
   }
 
+  /// Deshabilita un entrenador a través del servicio remoto
+  Future<bool> deshabilitarEntrenadorRemoto(int idUsuario) {
+    return _remoteService.deshabilitarEntrenadorRemoto(idUsuario);
+  }
+
+
   /// Actualiza un usuario existente en el servidor
   Future<bool> actualizarUsuarioRemoto(UserModel usuario) {
     return _remoteService.actualizarUsuarioRemoto(usuario);

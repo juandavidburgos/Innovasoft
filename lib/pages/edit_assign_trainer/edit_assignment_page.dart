@@ -37,27 +37,132 @@ class _EditTrainerAssignmentPageState extends State<EditTrainerAssignmentPage> {
   }
 
   Future<void> _cargarMonitores() async {
+    try {
+      final usuarios = await _userRepo.obtenerUsuariosRemotos();
+      setState(() {
+        _monitores = usuarios
+            .where((u) => u.rol == 'Monitor' && u.estado_monitor == 'activo')
+            .toList();
+      });
+    } catch (e) {
+      print('Error al cargar monitores: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error al cargar los monitores'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+  //local
+  /*Future<void> _cargarMonitores() async {
     final usuarios = await _userRepo.obtenerUsuarios();
     setState(() {
       _monitores = usuarios.where((u) => u.rol == 'Monitor').toList();
     });
-  }
+  }*/
 
   Future<void> _cargarTodosLosEventos() async {
-    final eventos = await _eventRepo.obtenerEventos();
-    setState(() {
-      _todosEventos = eventos;
-    });
+    try {
+      final eventos = await _eventRepo.obtenerEventosRemotos();
+      final eventosActivos = eventos.where((evento) => evento.estado == 'activo').toList();
+      setState(() {
+        _todosEventos = eventosActivos;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error al obtener eventos desde el servidor'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
+  //local
+  /*Future<void> _cargarTodosLosEventos() async {
+    final eventos = await _eventRepo.obtenerEventos();
+    final eventosActivos = eventos.where((evento) => evento.estado == 'activo').toList();
+    setState(() {
+      _todosEventos = eventosActivos;
+    });
+  }*/
 
   Future<void> _cargarEventosAsignados(String monitorId) async {
+    //local
     final eventosAsignados = await _assignmentRepo.obtenerEventosDelMonitor(int.parse(monitorId));
+    //desde el backend
+    //final eventosAsignados = await _assignmentRepo.getEventosAsignados(int.parse(monitorId));
     setState(() {
       eventosAsignadosIds = eventosAsignados.map<String?>((e) => e.id_evento.toString()).toList();
     });
   }
 
   Future<void> _actualizarAsignacion() async {
+    if (selectedMonitorId == null || eventosAsignadosIds.contains(null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor selecciona un monitor y todos los eventos')),
+      );
+      return;
+    }
+
+    final idUsuario = int.parse(selectedMonitorId!);
+
+    List<EventModel> eventosAsignadosAnteriores;
+    try {
+      eventosAsignadosAnteriores = await _assignmentRepo.getEventosAsignados(idUsuario);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error de conexión con el servidor.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final nuevosEventos = eventosAsignadosIds.map((id) => int.parse(id!)).toList();
+
+    bool exitoGlobal = true;
+
+    for (int i = 0; i < eventosAsignadosAnteriores.length; i++) {
+      final int? anteriorNullable = eventosAsignadosAnteriores[i].id_evento;
+      if (anteriorNullable == null) {
+        // Opcional: puedes mostrar un SnackBar o simplemente saltar esta iteración
+        continue;
+      }
+      final int anterior = anteriorNullable;
+      final int nuevo = nuevosEventos[i];
+
+      if (anterior != nuevo) {
+        final result = await _assignmentRepo.modificarAsignacionEntrenadorRemoto(
+          idUsuario,
+          anterior,
+          nuevo,
+        );
+
+        if (!result) {
+          exitoGlobal = false;
+          break;
+        }
+      }
+    }
+
+    if (exitoGlobal) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const EditAssignmentSuccessPage()),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const EditAssignmentErrorPage()),
+      );
+    }
+  }
+
+  //proceso local
+  /*Future<void> _actualizarAsignacion() async {
     if (selectedMonitorId == null || eventosAsignadosIds.contains(null)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor selecciona un monitor y todos los eventos')),
@@ -81,7 +186,7 @@ class _EditTrainerAssignmentPageState extends State<EditTrainerAssignmentPage> {
         MaterialPageRoute(builder: (context) => const EditAssignmentErrorPage()),
       );
     }
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {

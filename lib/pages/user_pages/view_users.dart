@@ -20,13 +20,30 @@ class _ViewUsersPage extends State<ViewUsersPage> {
     _cargarUsuarios();
   }
 
-  /// Carga todos los eventos.
   Future<void> _cargarUsuarios() async {
+    try {
+      final users = await _repo.obtenerUsuariosRemotos(); // <- ahora del servidor
+      setState(() {
+        _users = users;
+      });
+    } catch (e) {
+      print('Error al cargar usuarios: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error al obtener los usuarios del servidor'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+  /// Carga los entrenadores de forma local.
+  /*Future<void> _cargarUsuarios() async {
     final users = await _repo.obtenerTodosEntrenadores();
     setState(() {
       _users = users;
     });
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
