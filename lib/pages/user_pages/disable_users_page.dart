@@ -23,14 +23,101 @@ class _DisableUsersPage extends State<DisableUsersPage> {
   }
 
   Future<void> cargarEntrenadores() async {
+    try {
+      final lista = await _repo.obtenerUsuariosRemotos();
+      setState(() {
+        entrenadores = lista
+            .where((e) => e.rol == 'Monitor' && e.estado_monitor == 'activo')
+            .toList();
+        seleccionados.clear();
+      });
+    } catch (e) {
+      print('Error al cargar entrenadores: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error al cargar los entrenadores'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+  //De manera local
+  /*Future<void> cargarEntrenadores() async {
     final lista = await _repo.obtenerUsuariosEntrenadoresActivos(); // Método filtrado por rol
     setState(() {
       entrenadores = lista;
       seleccionados.clear();
     });
-  }
+  }*/
 
   Future<void> eliminarSeleccionados() async {
+    if (seleccionados.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Debe seleccionar un entrenador para continuar'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return;
+    }
+
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: const Text('Confirmar eliminación', textAlign: TextAlign.center),
+        content: Text(
+          '¿Eliminar ${seleccionados.length} entrenador(es)?',
+          style: const TextStyle(fontSize: 16),
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          ActionButton(
+            text: 'Cancelar',
+            color: const Color.fromARGB(255, 134, 134, 134),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          ActionButton(
+            text: 'Eliminar',
+            color: Colors.red,
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmado == true) {
+      int fallidos = 0;
+
+      for (final id in seleccionados) {
+        final exito = await _repo.deshabilitarEntrenadorRemoto(id);
+        if (!exito) fallidos++;
+      }
+
+      await cargarEntrenadores();
+
+      if (fallidos == 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${seleccionados.length} entrenador(es) deshabilitado(s)'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Error al deshabilitar $fallidos de ${seleccionados.length} entrenador(es)'),
+            backgroundColor: Color(0xFF1D5273),
+          ),
+        );
+      }
+    }
+  }
+  //metodo para hacer el proceso local de eliminacion
+  /*Future<void> eliminarSeleccionados() async {
     if (seleccionados.isEmpty)  {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -67,6 +154,7 @@ class _DisableUsersPage extends State<DisableUsersPage> {
 
     if (confirmado == true) {
       for (final id in seleccionados) {
+        //local
         await _repo.deshabilitarEntrenador(id);
       }
       cargarEntrenadores();
@@ -74,7 +162,7 @@ class _DisableUsersPage extends State<DisableUsersPage> {
         SnackBar(content: Text('${seleccionados.length} entrenador(es) deshabilitados(s)')),
       );
     }
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {

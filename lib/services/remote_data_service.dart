@@ -234,6 +234,30 @@ class RemoteDataService {
     }
   }
 
+  /// Deshabilita un entrenador dado su ID.
+  Future<bool> deshabilitarEntrenador(int idUsuario) async {
+    final url = Uri.parse('$apiUrlUsuarios/$idUsuario/deshabilitar');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          // 'Authorization': 'Bearer TU_TOKEN', // si se esta usando
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        print('Error al deshabilitar entrenador: ${response.statusCode} - ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Excepción al deshabilitar entrenador: $e');
+      return false;
+    }
+  }
 
   /// -------------------------------------------------
   /// *MÉTODOS DE ASIGNACIONES
@@ -266,24 +290,24 @@ class RemoteDataService {
   }
 }
 
-  /// Modifica la asignación de un entrenador de un evento a otro.
-  /// Retorna true si la operación fue exitosa (status 200).
-  Future<bool> modificarAsignacionEntrenador({
-    required int idUsuario,
-    required int idEvento,
-    required int nuevoIdEvento,
-  }) async {
-    try {
-      final response = await http.patch(
-        Uri.parse('$apiUrl/$idUsuario/modificar-asignacion/$idEvento/a/$nuevoIdEvento'),
-        headers: {'Content-Type': 'application/json'},
-      );
-      return response.statusCode == 200;
-    } catch (e) {
-      print('Error modificando asignación: $e');
-      return false;
-    }
+/// Modifica la asignación de un entrenador de un evento a otro.
+/// Retorna true si la operación fue exitosa (status 200).
+Future<bool> modificarAsignacionEntrenador({
+  required int idUsuario,
+  required int idEvento,
+  required int nuevoIdEvento,
+}) async {
+  try {
+    final response = await http.patch(
+      Uri.parse('$apiUrl/$idUsuario/modificar-asignacion/$idEvento/a/$nuevoIdEvento'),
+      headers: {'Content-Type': 'application/json'},
+    );
+    return response.statusCode == 200;
+  } catch (e) {
+    print('Error modificando asignación: $e');
+    return false;
   }
+}
   
   Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
     try {

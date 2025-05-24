@@ -65,6 +65,11 @@ class AssignmentRepository {
     return await _remoteService.asignarEntrenadorAEventoRemoto(idUsuario, idEvento);
   }
 
+  // Modificar asignación de entrenador de un evento a otro
+  Future<bool> modificarAsignacionEntrenadorRemoto(int idUsuario, int idEvento, int nuevoIdEvento) async {
+    return await _remoteService.modificarAsignacionEntrenadorRemoto(idUsuario, idEvento, nuevoIdEvento);
+  }
+
   Future<List<EventModel>> getEventosAsignados(int idUsuario) async{
     return _remoteService.obtenerEventosAsignadosRemoto(idUsuario);
   }
