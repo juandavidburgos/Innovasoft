@@ -59,6 +59,51 @@ class _CreateEventPageState extends State<CreateEventPage> {
         nombre: _name,
         ubicacion: _location!,
         descripcion: _descripcion,
+        fecha_hora_inicio: _startDateTime!,
+        fecha_hora_fin: _endDateTime!,
+      );
+
+      try {
+        final success = await _repo.guardarEventoRemoto(nuevoEvento);
+
+        if (success) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const EventSuccessPage()),
+          );
+
+          _formKey.currentState!.reset();
+          _startDateTimeController.clear();
+          _endDateTimeController.clear();
+          setState(() {
+            _startDateTime = null;
+            _endDateTime = null;
+          });
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const EventErrorPage()),
+          );
+        }
+      } catch (e) {
+        // Esto capturaría errores imprevistos
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const EventErrorPage()),
+        );
+      }
+    }
+  }
+
+  //guarda local
+  /*void _guardarEvento() async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      final nuevoEvento = EventModel(
+        nombre: _name,
+        ubicacion: _location!,
+        descripcion: _descripcion,
         // Aquí se envían las fechas de inicio y fin
         fecha_hora_inicio: _startDateTime!,
         fecha_hora_fin: _endDateTime!,
@@ -85,7 +130,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
         );
       }
     }
-  }
+  }*/
 
   Future<DateTime?> _pickDateTime(BuildContext context, {required DateTime firstDate}) async {
     final date = await showDatePicker(

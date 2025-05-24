@@ -20,13 +20,29 @@ class _ViewEventsPageState extends State<ViewEventsPage> {
     _cargarEventos();
   }
 
-  /// Carga todos los eventos.
+  /// Carga todos los eventos desde el backend
   Future<void> _cargarEventos() async {
+    try {
+      final eventos = await _repo.obtenerEventosRemotos();
+      setState(() {
+        _eventos = eventos;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error al obtener eventos desde el servidor'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+  /// Carga todos los eventos de forma local.
+  /*Future<void> _cargarEventos() async {
     final eventos = await _repo.obtenerEventos();
     setState(() {
       _eventos = eventos;
     });
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {

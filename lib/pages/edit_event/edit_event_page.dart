@@ -38,11 +38,30 @@ class _EditEventPageState extends State<EditEventPage> {
     _cargarMunicipios();
   }
 
-  Future<void> _cargarEventos() async {
-    final eventos = await _repo.obtenerEventos();
+  /*Future<void> _cargarEventos() async {
+    //obtener local
+    //final eventos = await _repo.obtenerEventos();
+    //obtener remoto
+    final eventos = await _repo.obtenerEventosRemotos();
     setState(() {
-      _eventos = eventos.where((evento) => evento.estado == 'activo').toList();
+      _eventos = eventos.where((e) => e.estado == 'activo').toList();
     });
+  }*/
+
+  Future<void> _cargarEventos() async {
+    try {
+      final eventos = await _repo.obtenerEventosRemotos();
+      setState(() {
+        _eventos = eventos.where((e) => e.estado == 'activo').toList();
+      });
+    } catch (e) {
+      // Mostrar error al usuario (puede ser SnackBar, AlertDialog, etc.)
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al cargar eventos !')),
+        );
+      }
+    }
   }
 
   Future<void> _cargarMunicipios() async {
@@ -101,9 +120,10 @@ class _EditEventPageState extends State<EditEventPage> {
                             estado: 'activo',
                           );
 
-                          final result = await _repo.actualizarEvento(eventoActualizado);
+                          //final result = await _repo.actualizarEvento(eventoActualizado);
+                          final result = await _repo.actualizarEventoParcialRemoto(idEvento,eventoActualizado);
 
-                          if (result > 0) {
+                          if (result) {
                             // Ir a página de éxito
                             Navigator.push(
                               context,
