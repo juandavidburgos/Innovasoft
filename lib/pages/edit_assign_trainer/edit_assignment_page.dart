@@ -41,7 +41,8 @@ class _EditTrainerAssignmentPageState extends State<EditTrainerAssignmentPage> {
       final usuarios = await _userRepo.obtenerUsuariosRemotos();
       setState(() {
         _monitores = usuarios
-            .where((u) => u.rol == 'Monitor' && u.estado_monitor == 'activo')
+            //.where((u) => u.rol == 'Monitor' && u.estado_monitor == 'activo')
+            .where((u) => u.estado_monitor == 'activo')
             .toList();
       });
     } catch (e) {

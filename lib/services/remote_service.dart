@@ -1,5 +1,6 @@
 import '../models/event_model.dart';
 import '../models/user_model.dart';
+import '../models/event_assignment_model.dart';
 import '../models/form_model.dart';
 import '../models/answer_model.dart';
 import 'remote_data_service.dart';
@@ -91,6 +92,11 @@ class RemoteService {
       idEvento: idEvento,
       nuevoIdEvento: nuevoIdEvento,
     );
+  }
+
+  // Obtener las asignaciones de entrenadores a eventos desde el backend
+  Future<List<EventoAsignacionModel>> fetchAsignacionesPorEventoRemoto() async {
+    return await RemoteDataService.dbR.fetchAsignacionesPorEvento();
   }
 
   Future<List<EventModel>> obtenerEventosAsignadosRemoto(int idUsuario) async{
