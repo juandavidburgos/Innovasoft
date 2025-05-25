@@ -5,6 +5,7 @@ import 'dart:convert';
 import '../models/event_model.dart';
 import '../models/user_model.dart';
 import '../models/answer_model.dart';
+import '../models/event_assignment_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
@@ -192,8 +193,22 @@ class RemoteDataService {
     }
   }
 
-  // Obtener todos los usuarios desde el servidor
+  // Obtener todos los Monitores desde el servidor
   Future<List<UserModel>> fetchUsuarios() async {
+    try {
+      final response = await http.get(Uri.parse('$apiUrl/monitores'));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.map((e) => UserModel.fromJson(e)).toList();
+      } else {
+        throw Exception('Error al obtener los monitores: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
+  /*Future<List<UserModel>> fetchUsuarios() async {
     try {
       final response = await http.get(Uri.parse(apiUrlUsuarios));
 
@@ -206,7 +221,7 @@ class RemoteDataService {
     } catch (e) {
       throw Exception('Error de conexión: $e');
     }
-  }
+  }*/
 
   // Actualizar un usuario existente
   Future<bool> updateUsuario(UserModel usuario) async {
@@ -308,30 +323,50 @@ Future<bool> modificarAsignacionEntrenador({
     return false;
   }
 }
-  
-  Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$apiUrl/usuarios/$idUsuario/eventos'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          // Si usas autenticación con token:
-          // 'Authorization': 'Bearer $token',
-        },
-      );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.map((e) => EventModel.fromJson(e)).toList();
-      } else {
-        throw Exception('Error ${response.statusCode}: No se pudieron obtener los eventos del servidor');
-      }
-    } catch (e) {
-      // Aquí puedes loguear el error o reportarlo
-      throw Exception('Fallo la conexión con el servidor: $e');
+//obtener las asignaciones de los eventos
+Future<List<EventoAsignacionModel>> fetchAsignacionesPorEvento() async {
+  final url = Uri.parse('http://<TU_BACKEND>/asignaciones');
+  
+  try {
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data
+          .map((json) => EventoAsignacionModel.fromJson(json))
+          .toList();
+    } else {
+      throw Exception('Error al obtener las asignaciones: ${response.statusCode}');
     }
+  } catch (e) {
+    throw Exception('Error de conexión: $e');
   }
+}
+  
+Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$apiUrl/usuarios/$idUsuario/eventos'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        // Si usas autenticación con token:
+        // 'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => EventModel.fromJson(e)).toList();
+    } else {
+      throw Exception('Error ${response.statusCode}: No se pudieron obtener los eventos del servidor');
+    }
+  } catch (e) {
+    // Aquí puedes loguear el error o reportarlo
+    throw Exception('Fallo la conexión con el servidor: $e');
+  }
+}
 
 
   /// -------------------------------------------------

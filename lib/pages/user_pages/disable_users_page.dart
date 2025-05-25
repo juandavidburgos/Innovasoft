@@ -25,14 +25,20 @@ class _DisableUsersPage extends State<DisableUsersPage> {
   Future<void> cargarEntrenadores() async {
     try {
       final lista = await _repo.obtenerUsuariosRemotos();
+      if (!mounted) return; // ← Verificamos si el widget aún está montado
+
       setState(() {
         entrenadores = lista
-            .where((e) => e.rol == 'Monitor' && e.estado_monitor == 'activo')
+            //.where((e) => e.rol == 'Monitor' && e.estado_monitor == 'activo')
+            .where((e) => e.estado_monitor == 'activo')
             .toList();
         seleccionados.clear();
       });
     } catch (e) {
       print('Error al cargar entrenadores: $e');
+
+      if (!mounted) return; // ← También lo verificamos aquí
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Error al cargar los entrenadores'),

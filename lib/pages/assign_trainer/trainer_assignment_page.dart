@@ -38,18 +38,62 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
     _cargarEventos();
   }
 
-  Future<void> _cargarMonitores() async {
+  /*Future<void> _cargarMonitores() async {
     final usuarios = await _userRepo.obtenerUsuariosRemotos();
     setState(() {
       _monitores = usuarios.where((u) => u.rol == 'Monitor').toList();
     });
+  }*/
+  Future<void> _cargarMonitores() async {
+    try {
+      final usuarios = await _userRepo.obtenerUsuariosRemotos();
+      if (!mounted) return;
+
+      setState(() {
+        _monitores = usuarios.where((u) => u.estado_monitor == 'activo').toList();
+      });
+    } catch (e) {
+      print('Error al cargar monitores: $e');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al cargar los monitores !!!'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
-  Future<void> _cargarEventos() async {
+  /*Future<void> _cargarEventos() async {
     final eventos = await _eventRepo.obtenerEventosRemotos();
     setState(() {
       _eventos = eventos.where((e) => e.estado == 'activo').toList();
     });
+  }*/
+  Future<void> _cargarEventos() async {
+    try {
+      final eventos = await _eventRepo.obtenerEventosRemotos();
+      if (!mounted) return;
+
+      setState(() {
+        _eventos = eventos.where((e) => e.estado == 'activo').toList();
+      });
+    } catch (e) {
+      print('Error al cargar eventos: $e');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al cargar los eventos !!!'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   Future<void> _asignarEntrenador() async {

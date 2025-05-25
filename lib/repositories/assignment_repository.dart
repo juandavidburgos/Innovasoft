@@ -1,6 +1,7 @@
 import '../services/remote_service.dart';
 import '../services/local_service.dart';
 import '../models/event_model.dart';
+import '../models/event_assignment_model.dart';
 
 class AssignmentRepository {
   
@@ -68,6 +69,11 @@ class AssignmentRepository {
   // Modificar asignación de entrenador de un evento a otro
   Future<bool> modificarAsignacionEntrenadorRemoto(int idUsuario, int idEvento, int nuevoIdEvento) async {
     return await _remoteService.modificarAsignacionEntrenadorRemoto(idUsuario, idEvento, nuevoIdEvento);
+  }
+
+  // Obtener las asignaciones desde el backend
+  Future<List<EventoAsignacionModel>> fetchAsignacionesPorEventoRemoto() async {
+    return await _remoteService.fetchAsignacionesPorEventoRemoto();
   }
 
   Future<List<EventModel>> getEventosAsignados(int idUsuario) async{
