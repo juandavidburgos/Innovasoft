@@ -65,7 +65,7 @@ class _AdminHomePage extends State<AdminHomePage> {
                 mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 120),
+                    const SizedBox(height: 80),
                     const Divider(thickness: 1.5, color: Color(0xFFCCCCCC), height: 20),
                     Text(
                       'Bienvenido, $nombreUsuario!\nRol: $rolUsuario',
@@ -112,6 +112,15 @@ class _AdminHomePage extends State<AdminHomePage> {
                       ancho: 290,
                       onPressed: () {
                         Navigator.pushNamed(context, '/home_admin_trainer');
+                      },
+                    ),
+                    const SizedBox(height: 15),
+                    MainButton(
+                      texto: 'Generar reporte',
+                      color: const Color(0xFF038C65),
+                      ancho: 290,
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/report');
                       },
                     ),
                   ],

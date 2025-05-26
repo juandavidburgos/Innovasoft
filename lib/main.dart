@@ -24,6 +24,7 @@ import 'pages/home/trainer_home_page.dart';
 import 'pages/caracterization/assistence_register_page.dart';
 import 'pages/caracterization/trainer_select_permanent_event_page.dart';
 import 'pages/caracterization/check_assistant_page.dart';
+import 'pages/report/report_page.dart';
 import 'models/event_model.dart';
 
 void main() async{
@@ -119,6 +120,8 @@ class MyApp extends StatelessWidget {
         '/success_register_page': (context) => SuccessRegisterPage(),
         '/view_users': (context) => ViewUsersPage(),
         '/disable_users': (context) => DisableUsersPage(),
+        //Ruta para descargar el reporte
+        '/report': (context) => GenerateReportePage(),
       },
     );
   }

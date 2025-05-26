@@ -4,6 +4,7 @@ import '../models/event_assignment_model.dart';
 import '../models/form_model.dart';
 import '../models/answer_model.dart';
 import 'remote_data_service.dart';
+import 'dart:io';
 
 /// Servicio encargado de la comunicación con el back-end (API REST).
 class RemoteService {
@@ -127,4 +128,13 @@ class RemoteService {
   Future<UserModel?> autenticarUsuarioRemoto(String email, String password) async {
     return await RemoteDataService.dbR.authUsuarioRemoto(email, password);
   }
+
+  /// -------------------------------------------------
+  /// *MÉTODO PARA EL REPORTE
+  /// -------------------------------------------------
+  
+  Future<File?> obtenerReporteExcel(int idEvento) async {
+    return await RemoteDataService.dbR.descargarReporteExcel(idEvento);
+  }
+
 }
