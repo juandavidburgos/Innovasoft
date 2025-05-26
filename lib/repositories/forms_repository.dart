@@ -2,6 +2,7 @@ import '../models/form_model.dart';
 import '../models/answer_model.dart';
 import '../services/local_service.dart';
 import '../services/remote_service.dart';
+import 'dart:io';
 
 class FormsRepository {
   
@@ -31,4 +32,13 @@ class FormsRepository {
   Future<bool> hayFormulariosRegistrados() async {
     return await _localService.hayFormulariosRegistrados();
   }
+
+  /// -------------------------------------------------
+  /// *MÉTODO PARA EL REPORTE
+  /// -------------------------------------------------
+  
+  Future<File?> descargarReporteExcel(int idEvento) async {
+    return await _remoteService.obtenerReporteExcel(idEvento);
+  }
+
 }

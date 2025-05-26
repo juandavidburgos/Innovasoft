@@ -8,6 +8,13 @@ import '../models/answer_model.dart';
 import '../models/event_assignment_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+//Para descargar el reporte
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:open_file/open_file.dart';
 
 class RemoteDataService {
 
@@ -517,7 +524,7 @@ Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
     }
   }
 
-/// --------------------------------------------------------
+  /// --------------------------------------------------------
 
   /// --- MÉTODOS DE SINCRONIZACIÓN ---
 
@@ -555,5 +562,39 @@ Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
     await sincronizarHaciaServidor();
   }
 
+  /// -------------------------------------------------
+  /// *MÉTODO ASOCIADOS A LA GENERACION DEL REPORTE
+  /// -------------------------------------------------
+  
+Future<File?> descargarReporteExcel(int idEvento) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiUrl/excel/$idEvento'),
+        headers: {
+          'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          // Si manejas autenticación, agrega también el token aquí
+          //'Authorization': 'Bearer tu_token'
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final bytes = response.bodyBytes;
+
+        final directory = await getApplicationDocumentsDirectory();
+        final filePath = '${directory.path}/Reporte_Evento_$idEvento.xlsx';
+        final file = File(filePath);
+
+        await file.writeAsBytes(bytes);
+
+        return file; // Lo puedes abrir o mostrar en el UI
+      } else {
+        print('Error al descargar el reporte: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error en la descarga del reporte: $e');
+      return null;
+    }
+  }
 
 }
