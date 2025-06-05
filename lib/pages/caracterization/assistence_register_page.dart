@@ -1,10 +1,13 @@
 import 'package:basic_flutter/repositories/forms_repository.dart';
+import 'package:basic_flutter/repositories/register_repository.dart';
+import 'package:basic_flutter/services/local_data_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'final_register_page.dart';
 import 'package:basic_flutter/models/event_model.dart'; // importa tu modelo
 import 'package:basic_flutter/models/answer_model.dart';
 import 'package:basic_flutter/models/form_model.dart';
+import 'package:basic_flutter/models/question_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AssistenceRegisterPage extends StatefulWidget {
@@ -21,6 +24,7 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
 
   int? id_usuario;
   int? formulario_id;
+  List<QuestionModel> _preguntas = [];
 
   final _formKey = GlobalKey<FormState>();
   final Map<int, dynamic> _formData = {};
@@ -28,11 +32,13 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
   DateTime? _fechaNacimiento;
   final TextEditingController _fechaController = TextEditingController();
   final TextEditingController _edadController = TextEditingController();
+  final RegisterRepository _registerRepo = RegisterRepository();
 
   @override
   void initState() {
     super.initState();
     _cargarSesion();
+    _cargarPreguntas();
   }
 
 
@@ -41,6 +47,47 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
     id_usuario = prefs.getInt('id_usuario');
   }
 
+  Future<void> _cargarPreguntas() async {
+    final prefs = await SharedPreferences.getInstance();
+    id_usuario = prefs.getInt('id_usuario');
+
+    if (id_usuario == null || widget.evento.id_evento == null) return;
+
+    // 🔍 Log de depuración para ver todos los formularios locales
+    final formulariosLocales = await LocalDataService.db.getForms();
+    for (var f in formulariosLocales) {
+      print("📋 Formulario → ID: ${f.id_formulario}, evento: ${f.id_evento}, usuario: ${f.id_usuario}");
+    }
+
+    // Y para saber cuál es la combinación actual
+    print("🔎 Buscando formulario con usuario: $id_usuario y evento: ${widget.evento.id_evento}");
+
+
+    final formularioId = await _registerRepo.obtenerFormularioId(
+      id_usuario!,
+      widget.evento.id_evento!,
+    );
+
+    if (formularioId == null) {
+      print('❌ No se encontró formulario para usuario: $id_usuario y evento: ${widget.evento.id_evento}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⚠️ No se encontró el formulario asignado a este evento.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    formulario_id = formularioId;
+    print('🔎 Buscando preguntas del formulario ID: $formularioId');
+
+    final preguntas = await _registerRepo.obtenerPreguntasPorFormulario(formularioId);
+
+    setState(() {
+      _preguntas = preguntas;
+    });
+  }
 
   void _actualizarEdad(DateTime fecha) {
     final edad = DateTime.now().year - fecha.year;
@@ -186,15 +233,16 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
 
     if (continuar == false) {
       // Validación de seguridad
-      if (id_usuario == null || formulario_id == null) {
+      if (_asistentes.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Error interno: datos incompletos.'),
+            content: Text('Debe registrar al menos un asistente antes de continuar.'),
             backgroundColor: Colors.red,
           ),
         );
         return;
       }
+
 
       // Ir a la vista final
       Navigator.push(
@@ -225,55 +273,55 @@ class _AssistenceRegisterPageState extends State<AssistenceRegisterPage> {
 List<AnswerModel> _crearRespuestasDesdeFormulario(int idFormulario) {
   return _formData.entries.map((entry) {
     return AnswerModel(
-      pregunta_id: entry.key,              // 
+      pregunta_id: entry.key,
       formulario_id: idFormulario,
       contenido: entry.value?.toString() ?? '',
-      id_evento: widget.evento.id_evento!,   // 
+      id_evento: widget.evento.id_evento!,
     );
   }).toList();
 }
 
-
   void _guardarAsistente() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (formulario_id == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error: No se encontró el formulario asignado.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     _formKey.currentState!.save();
 
-    final idFormulario = DateTime.now().millisecondsSinceEpoch;
-    formulario_id = idFormulario;
-
-    final form = FormModel(
-      id_formulario: idFormulario,
-      id_evento: widget.evento.id_evento,
-      id_usuario: id_usuario,
-      titulo: 'Asistente',
-      descripcion: 'Registro individual',
-      fecha_creacion: DateTime.now(),
-      latitud: null,
-      longitud: null,
-      path_imagen: null,
-    );
-
-    final respuestas = _crearRespuestasDesdeFormulario(idFormulario);
-
+    final respuestas = _crearRespuestasDesdeFormulario(formulario_id!);
     final conectado = await _repo.hayConexion();
 
-    if (conectado) {
-      final enviado = await _repo.enviarFormularioConRespuestas(form, respuestas);
-      if (!enviado) await _repo.guardarEnColaPeticiones(form, respuestas);
+    final enviado = conectado
+      ? await _repo.enviarRespuestasFormulario(formulario_id!, widget.evento.id_evento!, respuestas)
+      : await LocalDataService.db.guardarEnColaPeticionesSoloRespuestas(formulario_id!, widget.evento.id_evento!, respuestas);
+
+    if (!enviado) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⚠️ Asistente guardado localmente. Se enviará cuando haya conexión.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
     } else {
-      await _repo.guardarEnColaPeticiones(form, respuestas);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✅ Asistente registrado exitosamente.')),
+      );
     }
 
     _formKey.currentState!.reset();
     _formData.clear();
     _fechaController.clear();
     _edadController.clear();
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Asistente registrado.')),
-    );
   }
+
 
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
@@ -282,6 +330,7 @@ List<AnswerModel> _crearRespuestasDesdeFormulario(int idFormulario) {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     );
   }
+
 
   Widget _buildStyledButton(String text, Color color, VoidCallback onPressed) {
     return ElevatedButton(
@@ -298,175 +347,123 @@ List<AnswerModel> _crearRespuestasDesdeFormulario(int idFormulario) {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text(
-          'Registro de asistencia',
-          style: TextStyle(color: Colors.white)),
-        backgroundColor: Color(0xFF1A3E58),
-        iconTheme: const IconThemeData(color: Colors.white), 
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.white,
+    appBar: AppBar(
+      title: const Text(
+        'Registro de asistencia',
+        style: TextStyle(color: Colors.white),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Center(
-                child: Text(
-                  'Formulario de asistencia',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 25),
-              _buildTextField('Nombres', 1, obligatorio: true),
-              _buildTextField('Apellidos', 2, obligatorio: true),
-              _buildTextField('Número de identificación', 3, obligatorio: true, tipo: TextInputType.number),
-              _buildTextField('Ocupación', 4, obligatorio: true),
-              const SizedBox(height: 20),
-
-              // FECHA DE NACIMIENTO (id = 5) y EDAD (id = 6)
-              TextFormField(
-                controller: _fechaController,
-                decoration: _inputDecoration('Fecha de nacimiento'),
-                readOnly: true,
-                onTap: () => _seleccionarFechaNacimiento(context),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Seleccione una fecha';
-                  }
-                  final date = _fechaNacimiento;
-                  if (date != null && date.year == DateTime.now().year) {
-                    return 'El año de nacimiento no puede ser el actual';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 8),
-              _buildTextField('Edad', 6, controller: _edadController, obligatorio: true, tipo: TextInputType.number),
-
-              const SizedBox(height: 10),
-              _buildDropdown('Rango de edad', 7, ['1-6', '7-11', '12-17', '18-25', '26-35', '36-49', '+50'], obligatorio: true),
-              _buildDropdown('Género', 8, ['Masculino', 'Femenino', 'Prefiero no decirlo', 'Otro'], obligatorio: true),
-              _buildDropdown('¿Está en embarazo?', 9, ['Sí', 'No'], obligatorio: true),
-              _buildTextField('Meses de embarazo (si aplica)', 9), // mismo campo, solo se separa visualmente
-              _buildDropdown('¿Víctima del conflicto armado?', 10, ['Sí', 'No'], obligatorio: true),
-              _buildDropdown('¿Inscrito en VIVANTO?', 10, ['Sí', 'No']), // mismo ID como pregunta compuesta
-              _buildDropdown('Estrato socioeconómico', 11, ['0-1', '2-3', '4+'], obligatorio: true),
-              _buildDropdown('¿Grupo social o étnico?', 12, ['Sí', 'No'], obligatorio: true),
-              _buildDropdown('¿Posee alguna discapacidad?', 13, ['Sí', 'No'], obligatorio: true),
-              _buildDropdown('¿Practica una disciplina deportiva?', 14, ['Sí', 'No'], obligatorio: true),
-              _buildTextField('¿Cuál disciplina?', 14),
-              _buildTextField('Categoría deportiva', 15),
-              _buildTextField('Institución educativa', 16),
-              _buildTextField('Club al que pertenece', 17),
-              _buildTextField('Liga a la que pertenece', 18),
-              _buildDropdown('¿Ha tenido lesiones?', 19, ['Sí', 'No'], obligatorio: true),
-              _buildTextField('Años de experiencia deportiva', 21, obligatorio: true, tipo: TextInputType.number),
-              _buildTextField('Dirección', 22, obligatorio: true),
-              _buildTextField('Municipio de origen', 23, obligatorio: true),
-              _buildDropdown('Zona', 24, ['Urbano', 'Rural'], obligatorio: true),
-              _buildTextField('Teléfono/Correo', 25, obligatorio: true),
-              const SizedBox(height: 30),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildStyledButton('Registrar asistente', const Color(0xFF00944C), _guardarAsistente),
-                  _buildStyledButton('Terminar registro', const Color(0xFF004A7F), _finalizarRegistro),
-                ],
-              ),
-              const SizedBox(height: 30),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-
-/* CODIGO ANTIGUO: ¡¡NO BORRAR !!*/
-/*
-
-  void _guardarAsistente() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      _asistentes.add(Map<String, dynamic>.from(_formData));
-      _formKey.currentState!.reset();
-      _fechaController.clear();
-      _edadController.clear();
-      _formData.clear();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Asistente registrado.')));
-    }
-    _mostrarResumenAsistente(_asistentes.last);
-
-  }
-
-void _finalizarRegistro() {
-  final isFormValid = _formKey.currentState!.validate();
-
-  if (_asistentes.isEmpty) {
-    // No hay asistentes aún: el formulario debe estar completamente válido
-    if (!isFormValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: 
-          Text('Debe registrar al menos un asistente con todos los campos obligatorios.'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 5),
-        ),
-        
-      );
-      return;
-    } else {
-      _formKey.currentState!.save();
-      _asistentes.add(Map<String, dynamic>.from(_formData));
-    }
-  } else {
-    // Ya hay al menos un asistente: guardar actual si es válido
-    if (isFormValid) {
-      _formKey.currentState!.save();
-      _asistentes.add(Map<String, dynamic>.from(_formData));
-    }
-    // Si no es válido, simplemente ignora el actual y continúa
-  }
-
-  // Ir a la página final
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => FinalRegisterPage(
-        asistentes: _asistentes,
-        evento: widget.evento,
-      ),
+      backgroundColor: const Color(0xFF1A3E58),
+      iconTheme: const IconThemeData(color: Colors.white),
     ),
-  );
-}
-
-void _mostrarResumenAsistente(Map<String, dynamic> asistente) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Asistente registrado'),
-      content: SingleChildScrollView(
+    body: SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Form(
+        key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: asistente.entries.map((entry) {
-            return Text('${entry.key}: ${entry.value}');
-          }).toList(),
+          children: [
+            const Center(
+              child: Text(
+                'Formulario de asistencia',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: 25),
+          ..._preguntas.isEmpty
+              ? [Text("⚠️ No hay preguntas disponibles")]
+              : _preguntas.map((p) => Text(p.contenido)).toList(),
+
+            // 🔁 Generar dinámicamente preguntas sincronizadas
+            ..._preguntas.map((p) {
+              // Tratamiento especial para fecha de nacimiento y edad
+              if (p.contenido.toLowerCase().contains("fecha de nacimiento")) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 15),
+                    TextFormField(
+                      controller: _fechaController,
+                      decoration: _inputDecoration(p.contenido),
+                      readOnly: true,
+                      onTap: () => _seleccionarFechaNacimiento(context),
+                      validator: (value) {
+                        if (p.obligatoria && (value == null || value.isEmpty)) {
+                          return 'Seleccione una fecha';
+                        }
+                        final date = _fechaNacimiento;
+                        if (date != null && date.year == DateTime.now().year) {
+                          return 'El año de nacimiento no puede ser el actual';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 8),
+
+                    // 🧮 Mostrar edad calculada automáticamente
+                    if (_fechaNacimiento != null)
+                      Text(
+                        'Edad: ${DateTime.now().year - _fechaNacimiento!.year} años',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
+
+                    const SizedBox(height: 16),
+                  ],
+                );
+              }
+
+
+              // 🔡 Tipo: Texto / Número
+              if (p.tipo.toLowerCase() == 'texto' || p.tipo.toLowerCase() == 'numero' || p.tipo.toLowerCase() == 'fecha') {
+                return _buildTextField(p.contenido, p.id_pregunta!, obligatorio: p.obligatoria);
+              }
+
+              // ✔️ Tipo: Si_No
+              if (p.tipo.toLowerCase() == 'si_no') {
+                return _buildDropdown(p.contenido, p.id_pregunta!, ['Sí', 'No'], obligatorio: p.obligatoria);
+              }
+
+              // 📊 Tipo: Opción (puedes definir las opciones si las tienes)
+      
+              if (p.tipo.toLowerCase() == 'opcion') {
+                final contenido = p.contenido.toLowerCase();
+                List<String> opciones = ['Opción 1', 'Opción 2', 'Opción 3']; // default
+
+                if (contenido.contains('RANGOS DE EDAD')) {
+                  opciones = ['1-6', '7-11', '12-17', '18-25', '26-35', '36-49', '+50'];
+                } else if (contenido.contains('GÉNERO')) {
+                  opciones = ['Masculino', 'Femenino', 'Prefiero no decirlo', 'Otro'];
+                } else if (contenido.contains('Estrato Socio-Economico?')) {
+                  opciones = ['0-1', '2-3', '4+'];
+                } else if (contenido.contains('URBANO O RURAL')) {
+                  opciones = ['Urbano', 'Rural'];
+                }
+
+                return _buildDropdown(p.contenido, p.id_pregunta!, opciones, obligatorio: p.obligatoria);
+              }
+
+
+              return const SizedBox(); // fallback
+            }),
+
+            const SizedBox(height: 30),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildStyledButton('Registrar asistente', const Color(0xFF00944C), _guardarAsistente),
+                _buildStyledButton('Terminar registro', const Color(0xFF004A7F), _finalizarRegistro),
+              ],
+            ),
+            const SizedBox(height: 30),
+          ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cerrar'),
-        ),
-      ],
     ),
   );
-}*/
+}
+
+}
+
 

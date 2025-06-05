@@ -40,14 +40,14 @@ class AnswerModel {
         contenido: json['contenido'],
       );
 
-  /// Convierte un AnswerModel a JSON
   Map<String, dynamic> toJsonCompleto() => {
-        if (id_respuesta != null) 'id_respuesta': id_respuesta,
-        'pregunta_id': pregunta_id,
-        'formulario_id': formulario_id,
-        'id_evento':id_evento,
-        'contenido': contenido,
-      };
+    if (id_respuesta != null) 'idRespuesta': id_respuesta,
+    'preguntaId': pregunta_id,             // ✅ Exacto al DTO del backend
+    'contenido': contenido,
+    'formularioId': formulario_id,         // ✅ Exacto al DTO del backend
+    'idEvento': id_evento                  // ✅ Exacto al DTO del backend
+  };
+
 
   Map<String, dynamic> toJson() => {
   'pregunta_id': pregunta_id,

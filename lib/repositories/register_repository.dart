@@ -1,5 +1,6 @@
 import 'package:basic_flutter/models/answer_model.dart';
 import 'package:basic_flutter/models/form_model.dart';
+import 'package:basic_flutter/models/question_model.dart';
 import '../services/local_service.dart';
 
 class RegisterRepository {
@@ -13,8 +14,8 @@ class RegisterRepository {
   /// Formularios:
   /// 
 
-  Future<void> guardarFormulario(FormModel formulario) async {
-    await _localService.guardarFormularioLocal(formulario);
+  Future<int> guardarFormulario(FormModel formulario) async {
+    return await _localService.guardarFormularioLocal(formulario);
   }
 
   Future<void> guardarRespuestas(List<AnswerModel> respuestas) async {
@@ -31,6 +32,14 @@ class RegisterRepository {
 
   Future<List<FormModel>> obtenerFormulariosGuardados() {
     return _localService.obtenerFormularios();
+  }
+
+  Future<int?> obtenerFormularioId(int idUsuario, int idEvento) async {
+    return await _localService.obtenerFormularioId(idUsuario, idEvento);
+  }
+
+  Future<List<QuestionModel>> obtenerPreguntasPorFormulario(int formularioId) async {
+    return await _localService.obtenerPreguntasPorFormulario(formularioId);
   }
 
   Future<List<AnswerModel>> obtenerRespuestasGuardadas(int formularioId) {

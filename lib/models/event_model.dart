@@ -39,21 +39,20 @@ class EventModel {
     this.estado = 'activo',
   });
 
-  /// Convierte un Map en un objeto EventModel(para SQLite).
   factory EventModel.fromMap(Map<String, dynamic> map) => EventModel(
-        id_evento: map['id_evento'],
-        nombre: map['nombre'],
-        descripcion: map['descripcion'],
-        ubicacion: map['ubicacion'],
-        fecha_hora_inicio: map['fecha_hora_inicio'] != null
-            ? _parseFechaDinamica(map['fecha_hora_inicio'])
-            : DateTime.now(),
-        fecha_hora_fin: map['fecha_hora_fin'] != null
-          ? _parseFechaDinamica(map['fecha_hora_fin']) // ✔️ Correcto para '2025-05-31T14:21:00.000'
+      id_evento: map['id_evento'],
+      nombre: map['nombre'] ?? '',
+      descripcion: map['descripcion'] ?? '',
+      ubicacion: map['ubicacion'] ?? '',
+      fecha_hora_inicio: map['fecha_hora_inicio'] != null
+          ? _parseFechaDinamica(map['fecha_hora_inicio'])
+          : DateTime.now(),
+      fecha_hora_fin: map['fecha_hora_fin'] != null
+          ? _parseFechaDinamica(map['fecha_hora_fin'])
           : DateTime.now().add(Duration(hours: 1)),
-       // id_usuario: map['id_usuario'],
-        estado: map['estado'],
-      );
+      estado: map['estado'] ?? '', // Protección contra null
+    );
+
 
   /// Convierte un EventModel en un Map para SQLite.
   Map<String, dynamic> toMap() => {

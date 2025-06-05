@@ -43,6 +43,10 @@ class EventRepository {
     return await _localService.obtenerEventosAsignados(idEntrenador);
   }
 
+  Future<void> agregarAsignaciones(List<EventModel> eventos,int idUsuario) async {
+    return await _localService.guardarAsignacionesLocalmente(eventos, idUsuario);
+  }
+
   ///
   /// MÉTODOS DE GESTIÓN ONLINE
   /// 

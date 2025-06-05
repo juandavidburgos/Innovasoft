@@ -1,4 +1,7 @@
-import 'package:basic_flutter/models/form_model.dart';
+import 'package:basic_flutter/models/question_model.dart';
+
+import '../models/form_model.dart';
+import '../models/DTO/FormularioDTOPeticion.dart';
 import 'package:basic_flutter/services/local_data_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -10,11 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 //Para descargar el reporte
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:open_file/open_file.dart';
 
 class RemoteDataService {
 
@@ -23,8 +22,8 @@ class RemoteDataService {
   /// -------------------------------------------------
 
   // Url del api
-  final String apiUrl = 'http://localhost:8080/api/eventos';
-  final String apiUrlUsuarios = 'http://localhost:8080/api/usuarios';
+  final String apiUrl = 'http://10.0.2.2:8080/api';
+  final String apiUrlUsuarios = 'http://10.0.2.2:8080/api';
 
   static final RemoteDataService dbR = RemoteDataService();
 
@@ -36,11 +35,14 @@ class RemoteDataService {
   /// Retorna `true` si el evento fue creado exitosamente (códigos 201 o 200),
   /// de lo contrario retorna `false`.
   Future<bool> sendEvent(EventModel event) async {
+    final token = RemoteDataService.dbR.ultimoToken; // Asegúrate de que esté guardado
+
     try {
       final response = await http.post(
-        Uri.parse('$apiUrl/eventos'), // Asegúrate que apiUrl no termine con "/"
+        Uri.parse('$apiUrl/eventos'),
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // ← AQUI VA EL TOKEN
         },
         body: json.encode(event.toJson()),
       );
@@ -58,19 +60,6 @@ class RemoteDataService {
       return false;
     }
   }
-
-  /*Future<bool> sendEvent(EventModel event) async {
-    try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(event.toJson()),
-      );
-      return response.statusCode == 200 || response.statusCode == 201;
-    } catch (_) {
-      return false;
-    }
-  }*/
 
   /// Obtiene todos los eventos desde el servidor mediante HTTP GET.
   ///
@@ -94,11 +83,13 @@ class RemoteDataService {
   /// Actualiza parcialmente un evento en el backend mediante una solicitud PATCH al endpoint `/eventos/{id}`.
   /// Retorna `true` si la actualización fue exitosa (código 200), de lo contrario `false`.
   Future<bool> updateEventoParcial(int idEvento, EventModel eventoParcial) async {
+    final token = RemoteDataService.dbR.ultimoToken; // Asegúrate de que esté guardado
     try {
       final response = await http.patch(
         Uri.parse('$apiUrl/eventos/$idEvento'), // URL con el id del evento
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // ← AQUI VA EL TOKEN
         },
         body: json.encode(eventoParcial.toJson()), // El JSON con los campos a actualizar
       );
@@ -117,31 +108,18 @@ class RemoteDataService {
     }
   }
 
-  /*Future<bool> updateEvento(EventModel evento) async {
-    try {
-      final response = await http.put(
-        Uri.parse('$apiUrl/${evento.id_evento}'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(evento.toJson()),
-        );
-        return response.statusCode == 200;
-    } catch (_) {
-      return false;
-    }
-  }*/
-
   /// Desactiva (deshabilita) un evento haciendo una solicitud DELETE.
   ///
   Future<bool> desactivarEvento(int idEvento) async {
     final url = Uri.parse('$apiUrl/eventos/$idEvento');
+    final token = RemoteDataService.dbR.ultimoToken; // Asegúrate de que esté guardado
 
     try {
       final response = await http.delete(
         url,
         headers: {
           'Content-Type': 'application/json',
-          // Si necesitas token:
-          // 'Authorization': 'Bearer tu_token',
+          'Authorization': 'Bearer $token', // ← AQUI VA EL TOKEN
         },
       );
 
@@ -157,17 +135,6 @@ class RemoteDataService {
       return false;
     }
   }
-  /*Future<bool> deshabilitarEvento(int idEvento) async {
-    try {
-      final response = await http.delete(
-        Uri.parse('$apiUrl/$idEvento'),
-        headers: {'Content-Type': 'application/json'},
-      );
-      return response.statusCode == 200;
-    } catch (_) {
-      return false;
-    }
-  }*/
 
 
   /// Elimina un evento del servidor mediante HTTP DELETE.
@@ -190,7 +157,7 @@ class RemoteDataService {
   Future<bool> sendUsuario(UserModel usuario) async {
     try {
       final response = await http.post(
-        Uri.parse(apiUrlUsuarios),
+        Uri.parse('$apiUrlUsuarios/registrar'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(usuario.toJson()),
       );
@@ -199,6 +166,29 @@ class RemoteDataService {
       return false;
     }
   }
+
+  Future<UserModel?> sendUsuarioYRecibir(UserModel usuario) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$apiUrlUsuarios/registrar'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(usuario.toJson()),
+      );
+      print('📥 Respuesta del backend: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        print('✅ Usuario registrado: $data');
+        return UserModel.fromJson(data);
+      }
+    } catch (e) {
+      print("❌ Error al enviar usuario: $e");
+    }
+    
+    return null;
+  }
+
+
 
   // Obtener todos los Monitores desde el servidor
   Future<List<UserModel>> fetchUsuarios() async {
@@ -232,10 +222,14 @@ class RemoteDataService {
 
   // Actualizar un usuario existente
   Future<bool> updateUsuario(UserModel usuario) async {
+    final token = RemoteDataService.dbR.ultimoToken; // Asegúrate de que esté guardado
     try {
       final response = await http.put(
         Uri.parse('$apiUrlUsuarios/${usuario.id_usuario}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
         body: json.encode(usuario.toJson()),
       );
       return response.statusCode == 200;
@@ -259,13 +253,14 @@ class RemoteDataService {
   /// Deshabilita un entrenador dado su ID.
   Future<bool> deshabilitarEntrenador(int idUsuario) async {
     final url = Uri.parse('$apiUrlUsuarios/$idUsuario/deshabilitar');
+    final token = RemoteDataService.dbR.ultimoToken; // Asegúrate de que esté guardado
 
     try {
       final response = await http.patch(
         url,
         headers: {
           'Content-Type': 'application/json',
-          // 'Authorization': 'Bearer TU_TOKEN', // si se esta usando
+          'Authorization': 'Bearer $token', // si se esta usando
         },
       );
 
@@ -288,14 +283,15 @@ class RemoteDataService {
   
   /// Asigna un entrenador a un evento mediante una solicitud HTTP.
   Future<bool> asignarEntrenadorAEvento(int idUsuario, int idEvento) async {
-    final url = Uri.parse('http://<TU_BACKEND>/usuarios/$idUsuario/asignar-evento/$idEvento');
+    final url = Uri.parse('$apiUrlUsuarios/$idUsuario/asignar-evento/$idEvento');
+    final token = RemoteDataService.dbR.ultimoToken; // Asegúrate de que esté guardado
     try {
     final response = await http.post(
       url,
       headers: {
         'Content-Type': 'application/json',
         // Si estás usando JWT u otro token:
-        // 'Authorization': 'Bearer <token>',
+        'Authorization': 'Bearer $token',
       },
     );
 
@@ -314,15 +310,15 @@ class RemoteDataService {
 
 /// Modifica la asignación de un entrenador de un evento a otro.
 /// Retorna true si la operación fue exitosa (status 200).
-Future<bool> modificarAsignacionEntrenador({
-  required int idUsuario,
-  required int idEvento,
-  required int nuevoIdEvento,
-}) async {
+Future<bool> modificarAsignacionEntrenador({required int idUsuario, required int idEvento, required int nuevoIdEvento}) async {
+  final token = RemoteDataService.dbR.ultimoToken; // Asegúrate de que esté guardado
   try {
     final response = await http.patch(
       Uri.parse('$apiUrl/$idUsuario/modificar-asignacion/$idEvento/a/$nuevoIdEvento'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        },
     );
     return response.statusCode == 200;
   } catch (e) {
@@ -332,34 +328,35 @@ Future<bool> modificarAsignacionEntrenador({
 }
 
 //obtener las asignaciones de los eventos
-Future<List<EventoAsignacionModel>> fetchAsignacionesPorEvento() async {
-  final url = Uri.parse('http://<TU_BACKEND>/asignaciones');
-  
-  try {
-    final response = await http.get(url);
+  Future<List<EventoAsignacionModel>> fetchAsignacionesPorEvento() async {
+    final url = Uri.parse('$apiUrl/asignaciones');
+    try {
+      final response = await http.get(url, headers: {
+        'Content-Type': 'application/json',
+      });
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data
-          .map((json) => EventoAsignacionModel.fromJson(json))
-          .toList();
-    } else {
-      throw Exception('Error al obtener las asignaciones: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.map((e) => EventoAsignacionModel.fromJson(e)).toList();
+      } else {
+        throw Exception('Error al obtener las asignaciones: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
     }
-  } catch (e) {
-    throw Exception('Error de conexión: $e');
   }
-}
+
   
 Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
+  final token = RemoteDataService.dbR.ultimoToken; // Asegúrate de que esté guardado
   try {
     final response = await http.get(
-      Uri.parse('$apiUrl/usuarios/$idUsuario/eventos'),
+      Uri.parse('$apiUrl/monitor/$idUsuario/activos'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         // Si usas autenticación con token:
-        // 'Authorization': 'Bearer $token',
+        'Authorization': 'Bearer $token',
       },
     );
 
@@ -398,11 +395,15 @@ Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
   String? ultimoToken;
 
   Future<UserModel?> authUsuarioRemoto(String email, String password) async {
-    final url = Uri.parse('https://tu-backend.com/api/login');
+    final url = Uri.parse('http://10.0.2.2:8080/auth/login');
+
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
+      body: jsonEncode({
+        'email': email,
+        'contrasena': password,
+      }),
     );
 
     if (response.statusCode == 200) {
@@ -410,57 +411,35 @@ Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
       final token = data['token'];
       final decoded = json.decode(token);
 
-      // Guarda el token en una propiedad accesible
+      // Guarda el token para usarlo después
       ultimoToken = token;
 
       return UserModel(
         id_usuario: decoded['id_usuario'],
         nombre: decoded['nombre'],
-        email: email,
+        email: decoded['email'],
         contrasena: '',
         rol: decoded['rol'],
         estado_monitor: decoded['estado_monitor'],
       );
-    }
-
-    return null;
-  }
-
-
-  /*Future<UserModel?> authUsuarioRemoto(String email, String password) async {
-      final url = Uri.parse('https://tu-backend.com/api/login');
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final token = data['token'];
-        final decoded = json.decode(token);
-
-        // Guardar token y sesión
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('jwt_token', token);
-        await prefs.setInt('id_usuario', decoded['id_usuario']);
-        await prefs.setString('nombre', decoded['nombre']);
-        await prefs.setString('rol', decoded['rol']);
-        await prefs.setString('email', email);
-        await prefs.setString('estado_monitor', decoded['estado_monitor']);
-
-        return UserModel(
-          id_usuario: decoded['id_usuario'],
-          nombre: decoded['nombre'],
-          email: email,
-          contrasena: '', // no se guarda
-          rol: decoded['rol'],
-          estado_monitor: decoded['estado_monitor'],
-        );
+    } else {
+      // Manejar errores
+      String mensaje = 'Error de autenticación';
+      try {
+        final cuerpo = jsonDecode(response.body);
+        if (cuerpo is String) {
+          mensaje = cuerpo;
+        } else if (cuerpo is Map && cuerpo.containsKey('mensaje')) {
+          mensaje = cuerpo['mensaje'];
+        }
+      } catch (_) {
+        mensaje = response.body;
       }
 
-      return null;
-    } */
+      throw Exception(mensaje);
+    }
+  }
+
 
 
   Future<void> logOutRemoto() async {
@@ -483,6 +462,26 @@ Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
   /// -------------------------------------------------
   /// *MÉTODOS ASOCIADOS A LOS FORMULARIOS
   /// -------------------------------------------------
+  
+  Future<bool> enviarRespuestasFormulario(int idFormulario, int idEvento, List<AnswerModel> respuestas) async {
+    final body = {
+      'id_formulario': idFormulario,
+      'id_evento': idEvento,
+      'respuestas': respuestas.map((r) => r.toJson()).toList(),
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiUrl/formularios/responder'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      );
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (_) {
+      return false;
+    }
+  }
+
 
   Future<bool> sendFormularioRespondido(FormModel formulario, List<AnswerModel> respuestas) async {
     final body = {
@@ -503,6 +502,30 @@ Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
       return false;
     }
   }  
+
+
+  Future<FormularioDTOPeticion?> crearFormularioEnBackend(FormularioDTOPeticion form) async {
+    final token = RemoteDataService.dbR.ultimoToken;
+    print("🛡️ TOKEN: $token");
+
+    final response = await http.post(
+        Uri.parse('$apiUrl/formularios'),
+        headers: {
+          'Content-Type': 'application/json',
+          // Si usas autenticación JWT:
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(form.toJson()), // debes tener un método toJson() en tu modelo
+      );
+
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return FormularioDTOPeticion.fromJson(data); 
+      } else {
+        print('❌ Error al crear formulario: ${response.body}');
+        return null;
+      }
+  }
 
   Future<bool> sendEvidence(FormModel formulario) async {
     final evidencia = {
@@ -551,6 +574,9 @@ Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
         final ok = await sendUsuario(user);
         if (ok) {
           await LocalDataService.db.markUserSync(user.id_usuario!);
+          print("SINCRONIZACION EXITOSA");
+        }else{
+          print("NO SE PUDO SINCRONIZAR");
         }
       }
     }
@@ -561,6 +587,65 @@ Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
     await sincronizarDesdeServidor();
     await sincronizarHaciaServidor();
   }
+
+  Future<void> sincronizarFormulariosYPreguntasDesdeServidor() async {
+    final response = await http.get(Uri.parse('$apiUrl/formularios/preguntas'));
+
+    if (response.statusCode == 200) {
+      final formulariosJson = jsonDecode(response.body) as List;
+
+      print('📦 JSON recibido del backend:');
+      print(jsonEncode(formulariosJson));
+
+
+      for (var formJson in formulariosJson) {
+
+        // ✅ Validación necesaria
+        if (formJson['id_evento'] == null || formJson['id_usuario'] == null) {
+          print("⚠️ Formulario omitido: ${formJson['titulo']} → evento: ${formJson['evento_id']}, usuario: ${formJson['id_usuario']}");
+          continue;
+        }
+
+
+        final form = FormModel(
+          id_formulario: formJson['id_formulario'], // opcional si la tabla usa ID local
+          titulo: formJson['titulo'],
+          descripcion: formJson['descripcion'],
+          fecha_creacion: DateTime.parse(formJson['fecha_creacion']),
+          id_evento: formJson['id_evento'],
+          id_usuario: formJson['id_usuario'],
+          latitud: null,
+          longitud: null,
+          path_imagen: null,
+        );
+        print('📝 Insertando formulario: ${form.titulo} - evento: ${form.id_evento}, usuario: ${form.id_usuario}');
+        final idFormLocal = await LocalDataService.db.insertForm(form); // o formJson['id_formulario'] si lo usas directamente
+      
+
+        final preguntas = formJson['preguntas'] as List;
+        for (var pregJson in preguntas) {
+          final pregunta = QuestionModel(
+            id_pregunta: pregJson['id_pregunta'],
+            formulario_id: idFormLocal,
+            contenido: pregJson['contenido_pregunta'],
+            tipo: pregJson['tipo_pregunta'],
+            obligatoria: pregJson['obligatorio'] == 1, // ← aquí está la solución
+          );
+
+          print('📝 Insertando pregunta ID: ${pregunta.id_pregunta} - Formulario: ${pregunta.formulario_id}');
+          await LocalDataService.db.insertPregunta(pregunta);
+        }
+
+      }
+
+      print('✅ Sincronización completa de formularios y preguntas');
+    } else {
+      print('❌ Error al sincronizar formularios: ${response.body}');
+      throw Exception('Fallo la sincronización');
+    }
+  }
+
+
 
   /// -------------------------------------------------
   /// *MÉTODO ASOCIADOS A LA GENERACION DEL REPORTE

@@ -3,6 +3,7 @@ import 'package:basic_flutter/models/form_model.dart';
 import 'dart:async';
 import '../models/event_model.dart';
 import '../models/user_model.dart';
+import '../models/question_model.dart';
 import 'local_data_service.dart';
 
 /// Servicio local que gestiona operaciones CRUD con una base de datos SQLite.
@@ -27,6 +28,10 @@ class LocalService {
   //Guardar lista de eventos
   Future<void> guardarEventosLocalmente(List<EventModel> eventos) async {
     return await LocalDataService.db.insertEventList(eventos);
+  }
+
+  Future<void> guardarAsignacionesLocalmente(List<EventModel> eventos, int idUsuario) async {
+    return await LocalDataService.db.insertAsignacionesEventos(eventos, idUsuario);
   }
 
   //Obtener eventos activos
@@ -149,12 +154,21 @@ class LocalService {
   }
 
   /// -------------------------------------------------
-  /// *MÉTODOS ASOCIADOS A FORMULARIOS Y RESPUESTAS
+  /// *MÉTODOS ASOCIADOS A FORMULARIOS, PREGUNTAS Y RESPUESTAS
   /// -------------------------------------------------
   
+  
   //Guardar formulario
-  Future<void> guardarFormularioLocal(FormModel formulario) async{
-    await LocalDataService.db.insertForm(formulario);
+  Future<int> guardarFormularioLocal(FormModel formulario) async{
+    return await LocalDataService.db.insertForm(formulario);
+  }
+
+  Future<int?> obtenerFormularioId(int idUsuario, int idEvento) async {
+    return await LocalDataService.db.obtenerFormularioId(idUsuario, idEvento);
+  }
+
+  Future<List<QuestionModel>> obtenerPreguntasPorFormulario(int formularioId) async {
+    return await LocalDataService.db.obtenerPreguntasPorFormulario(formularioId);
   }
 
   //Guardar formulario

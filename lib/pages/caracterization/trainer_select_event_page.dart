@@ -25,13 +25,14 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
   @override
   void initState() {
     super.initState();
-    _sincronizarEventosConBackend();
     _cargarDatosSesion();
+    _sincronizarEventosConBackend();
   }
 
   Future<void> _cargarDatosSesion() async {
     final prefs = await SharedPreferences.getInstance();
     usuarioId = prefs.getInt('id_usuario') ?? -1;
+    print('👤 ID del usuario logueado: $usuarioId');
   }
 
 
@@ -42,16 +43,30 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
     if (conectado == false) {
       // Si no hay internet, solo carga local
       await _cargarEventosAsignadosLocales();
+      print("NO HAY INTERNET");
       return;
+    }else{
+      print("HAY INTERNET");
     }
 
     _cargando = true;
     try {
       // Paso 1: Obtener eventos actualizados desde el backend
       final eventosActualizados = await _eventRepo.obtenerEventosAsignadosRemotos(usuarioId);
+      print("🧾 Eventos recibidos del backend: ${eventosActualizados.length}");
+      for (var e in eventosActualizados) {
+        print("🟢 Evento → ID: ${e.id_evento}, nombre: ${e.nombre}");
+      }
 
       // Paso 2: Guardar en base de datos local
       await _eventRepo.agregarListaDeEventos(eventosActualizados);
+      await _eventRepo.agregarAsignaciones(eventosActualizados, usuarioId);
+      print("✅ Asignaciones agregadas para usuario $usuarioId");
+
+
+      final eventosLocales = await _eventRepo.obtenerEventosDelEntrenador(usuarioId);
+      print('🔍 Eventos guardados localmente: ${eventosLocales.length}');
+
     } catch (e) {
       // Mostrar mensaje si ya estás en pantalla
       if (context.mounted) {
@@ -61,7 +76,7 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
       }
     } finally {
       _cargando = false;
-
+    print("NO CARGO DEL BACK");
       // Paso 3: Siempre cargar lo local
       await _cargarEventosAsignadosLocales();
     }
@@ -69,6 +84,7 @@ class _TrainerSelectEventPageState extends State<TrainerSelectEventPage> {
 
   Future<void> _cargarEventosAsignadosLocales() async {
     final eventos = await _eventRepo.obtenerEventosDelEntrenador(usuarioId);
+    if (!mounted) return; // ✅ evita el error
     setState(() {
       eventosAsignados = eventos;
     });

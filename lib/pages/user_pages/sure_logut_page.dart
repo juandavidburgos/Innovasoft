@@ -39,7 +39,7 @@ class _ConfirmLogoutPage extends State<ConfirmLogoutPage> {
                   text: "Cancelar",
                   color: Color(0xFF1A3E58),
                   onPressed: (){
-                    Navigator.pushReplacementNamed(context, "/admin_home");
+                    Navigator.pop(context);
                   }
                 ),
                 // Botón Confirmar

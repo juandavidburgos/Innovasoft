@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/local_service.dart';
+import '../../services/local_data_service.dart';
+import '../../services/remote_data_service.dart';
 import '../widgets/action_button.dart';
 import '../user_pages/sucsess_reigster_page.dart';
 import '../../models/user_model.dart';
@@ -26,67 +28,85 @@ class _RegisterUserPage extends State<RegisterUserPage> {
   bool _obscureRepeatPassword = true;
   final _localService= LocalService();
 
-  void _register() async {
-    final isValid = _formKey.currentState?.validate();
-    if (isValid != null && isValid) {
-      _formKey.currentState?.save();
+void _register() async {
+  final isValid = _formKey.currentState?.validate();
+  if (isValid != null && isValid) {
+    _formKey.currentState?.save();
 
-      final nuevoUsuario = UserModel(
-        nombre: nombre,
-        email: email,
-        contrasena: contrasena,
-        rol: 'Monitor',
-        estado_monitor: 'activo',
-        sincronizado: false, // ⚠️ Muy importante
-      );
+    final nuevoUsuario = UserModel(
+      nombre: nombre,
+      email: email,
+      contrasena: contrasena,
+      rol: 'Monitor',
+      estado_monitor: 'activo',
+      sincronizado: false,
+    );
 
-      try {
-        // Guardar localmente (SQLite)
-        final usuarioId = await _localService.guardarUsuario(nuevoUsuario);
-
-        if (usuarioId == -1) {
-          // El correo ya está registrado
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('El correo ingresado ya está registrado.'),
-              backgroundColor: Colors.orange,
-            ),
-          );
-          return; // No continuar con el flujo
-        }
-
-        // Guardar sesión
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('id_usuario', usuarioId);
-        await prefs.setString('nombre', nuevoUsuario.nombre);
-        await prefs.setString('email', nuevoUsuario.email);
-        await prefs.setString('rol', nuevoUsuario.rol);
-        await prefs.setString('estado', nuevoUsuario.estado_monitor);
-
-        // Redirigir a pantalla de éxito
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const SuccessRegisterPage()),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al guardar: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-
-    } else {
+    try {
+      final yaExiste = await LocalDataService.db.existeCorreo(nuevoUsuario.email);
+      if (yaExiste) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Por favor completa todos los campos correctamente'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 3),
+            content: Text('El correo ingresado ya está registrado.'),
+            backgroundColor: Colors.orange,
           ),
         );
+        return;
       }
+
+      final tieneInternet = await LocalDataService.db.hayInternet();
+      UserModel usuarioParaGuardar = nuevoUsuario;
+      int usuarioId;
+
+      if (tieneInternet) {
+        // ✅ Enviar al backend y esperar el usuario con ID real
+        final usuarioRemoto = await RemoteDataService.dbR.sendUsuarioYRecibir(nuevoUsuario);
+        print('🔁 usuarioRemoto: $usuarioRemoto');
+        print('🆔 usuarioRemoto.id_usuario: ${usuarioRemoto?.id_usuario}');
+        if (usuarioRemoto != null && usuarioRemoto.id_usuario != null) {
+          usuarioParaGuardar = usuarioRemoto.copyWith(sincronizado: true);
+        }else {
+          print("❌ Error al registrar remotamente. Se guarda como no sincronizado.");
+        }
+      } else {
+        print("🔌 Sin conexión: guardando localmente como pendiente de sincronización.");
+      }
+
+      // ✅ Guardar en SQLite
+      usuarioId = await _localService.guardarUsuario(usuarioParaGuardar);
+
+      // ✅ Guardar en SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('id_usuario', usuarioParaGuardar.id_usuario!);
+      await prefs.setString('nombre', usuarioParaGuardar.nombre);
+      await prefs.setString('email', usuarioParaGuardar.email);
+      await prefs.setString('rol', usuarioParaGuardar.rol);
+      await prefs.setString('estado', usuarioParaGuardar.estado_monitor);
+
+      // ✅ Redirigir
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SuccessRegisterPage()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al guardar: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Por favor completa todos los campos correctamente'),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 3),
+      ),
+    );
   }
+}
+
 
 
   bool _isPasswordValid(String value) {

@@ -38,21 +38,13 @@ class _EditEventPageState extends State<EditEventPage> {
     _cargarMunicipios();
   }
 
-  /*Future<void> _cargarEventos() async {
-    //obtener local
-    //final eventos = await _repo.obtenerEventos();
-    //obtener remoto
-    final eventos = await _repo.obtenerEventosRemotos();
-    setState(() {
-      _eventos = eventos.where((e) => e.estado == 'activo').toList();
-    });
-  }*/
-
   Future<void> _cargarEventos() async {
     try {
       final eventos = await _repo.obtenerEventosRemotos();
       setState(() {
         _eventos = eventos.where((e) => e.estado == 'activo').toList();
+        print("Eventos cargados: ${_eventos.map((e) => e.nombre).toList()}");
+
       });
     } catch (e) {
       // Mostrar error al usuario (puede ser SnackBar, AlertDialog, etc.)

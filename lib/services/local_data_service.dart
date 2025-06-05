@@ -1,6 +1,7 @@
-import 'package:basic_flutter/models/answer_model.dart';
-import 'package:basic_flutter/models/form_model.dart';
-import 'package:basic_flutter/services/remote_data_service.dart';
+import '../models/answer_model.dart';
+import '../models/form_model.dart';
+import '../models/question_model.dart';
+import '../services/remote_data_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/event_model.dart'; 
@@ -58,8 +59,8 @@ class LocalDataService {
 
           // Crear tabla usuarios
           await db.execute('''
-            CREATE TABLE $tableUsuarios (
-            id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
+          CREATE TABLE $tableUsuarios (
+            id_usuario INTEGER PRIMARY KEY,
             nombre TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
             contrasena TEXT NOT NULL,
@@ -67,7 +68,8 @@ class LocalDataService {
             estado_monitor TEXT CHECK(estado_monitor IN ('activo', 'inactivo')) DEFAULT 'activo',
             sincronizado INTEGER NOT NULL DEFAULT 0
           );
-          ''');
+        ''');
+
 
           // Crear tabla asignaciones (relación muchos a muchos entre eventos y entrenadores)
           await db.execute('''
@@ -84,7 +86,7 @@ class LocalDataService {
           // Crear tabla formularios
           await db.execute('''
             CREATE TABLE $tableFormularios (
-              id_formulario INTEGER PRIMARY KEY AUTOINCREMENT,
+              id_formulario INTEGER PRIMARY KEY,
               titulo TEXT NOT NULL,
               descripcion TEXT,
               fecha_creacion TEXT NOT NULL,
@@ -104,8 +106,8 @@ class LocalDataService {
               id_pregunta INTEGER PRIMARY KEY AUTOINCREMENT,
               formulario_id INTEGER NOT NULL,
               contenido TEXT NOT NULL,
-              tipo TEXT CHECK(tipo IN ('Texto', 'Número', 'Opción', 'Fecha', 'Si/No')) NOT NULL,
-              es_obligatoria INTEGER CHECK(es_obligatoria IN (0, 1)) DEFAULT 1,
+              tipo TEXT CHECK(tipo IN ('Texto', 'Numero', 'Opcion', 'Fecha', 'Si_No')) NOT NULL,
+              obligatoria INTEGER CHECK(obligatoria IN (0, 1)) DEFAULT 1,
               FOREIGN KEY (formulario_id) REFERENCES formularios(id_formulario)
             );
           ''');
@@ -201,6 +203,25 @@ class LocalDataService {
           'estado': 'activo',
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+  print("📝 Insertando ${eventos.length} eventos en local");
+
+    await batch.commit(noResult: true);
+  }
+
+  Future<void> insertAsignacionesEventos(List<EventModel> eventos, int idUsuario) async {
+    final db = await database;
+    final batch = db.batch();
+
+    for (var evento in eventos) {
+      batch.insert(
+        'asignaciones', // Asegúrate de que esta sea la tabla correcta
+        {
+          'id_usuario': idUsuario,
+          'id_evento': evento.id_evento, // Este ID debe venir del backend
+        },
+        conflictAlgorithm: ConflictAlgorithm.ignore, // Evita duplicados
       );
     }
 
@@ -312,18 +333,17 @@ class LocalDataService {
   /// Retorna el ID del usuario insertado.
   Future<int> insertUser(UserModel user) async {
     final db = await database;
+
+    print('🧾 Insertando usuario: ${user.toMap()}');
+
     return await db.insert(
       tableUsuarios,
-      {
-        'nombre': user.nombre,
-        'email': user.email,
-        'contrasena': user.contrasena,
-        'rol': user.rol,
-        'estado_monitor':user.estado_monitor,
-      },
-      conflictAlgorithm: ConflictAlgorithm.abort,
+      user.toMap(), // ✅ usa el toMap ya construido correctamente
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
+
+
 
   /// Obtiene todos los usuarios desde la base de datos.
   /// 
@@ -726,40 +746,92 @@ class LocalDataService {
   }
 
   /// -----------------------------------------
+  /// *MÉTODOS ASOCIADOS A LAS PREGUNTAS
+  /// -----------------------------------------
+
+Future<int> insertPregunta(QuestionModel pregunta) async {
+  final db = await database;
+
+  return await db.insert(
+    'preguntas', // nombre de tu tabla de preguntas
+    {
+      'id_pregunta': pregunta.id_pregunta, // debe ser el ID real del backend
+      'formulario_id': pregunta.formulario_id,
+      'contenido': pregunta.contenido,
+      'tipo': pregunta.tipo,
+      'obligatoria': pregunta.obligatoria ? 1 : 0,
+    },
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
+}
+
+  Future<List<QuestionModel>> obtenerPreguntasPorFormulario(int idFormulario) async {
+    final db = await database;
+    final res = await db.query(
+      'preguntas',
+      where: 'formulario_id = ?',
+      whereArgs: [idFormulario],
+    );
+
+    print("📥 Preguntas encontradas en la BD para formulario $idFormulario: ${res.length}");
+    for (var r in res) {
+      print("📝 Pregunta -> ${r['id_pregunta']} | ${r['contenido']} | ${r['tipo']} | obligatoria: ${r['obligatoria']}");
+    }
+
+    return res.map((q) => QuestionModel.fromMap(q)).toList();
+  }
+
+
+
+
+  /// -----------------------------------------
   /// *MÉTODOS ASOCIADOS A LOS FORMULARIOS
   /// -----------------------------------------
 
-  //Insertar formulario
-  Future<void> insertForm(FormModel formulario) async {
+  //Insertar formulario LOCALMENTE
+
+  Future<int> insertForm(FormModel form) async {
     final db = await database;
-    await db.insert(
-      tableFormularios,
-      {
-        'id_formulario': formulario.id_formulario,
-        'titulo': formulario.titulo,
-        'descripcion': formulario.descripcion,
-        'fecha_creacion': formulario.fecha_creacion.toIso8601String(),
-        'id_evento': formulario.id_evento,
-        'id_usuario': formulario.id_usuario,
-        'latitud': formulario.latitud,
-        'longitud': formulario.longitud,
-        'path_imagen': formulario.path_imagen
-      },
+
+    // Usa insert + conflictAlgorithm para permitir insertar con ID
+    return await db.insert(
+      'formularios',
+      form.toMap(), // este ya contiene 'id_formulario' si está definido
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
+
+
+  Future<int?> obtenerFormularioId(int usuarioId, int eventoId) async {
+    final db = await database;
+    final res = await db.query(
+      'Formularios',
+      where: 'id_usuario = ? AND id_evento = ?',
+      whereArgs: [usuarioId, eventoId],
+      orderBy: 'id_usuario DESC', // 🔥 o 'id_formulario DESC'
+      limit: 1,
+    );
+
+    if (res.isNotEmpty) {
+      return res.first['id_formulario'] as int;
+    }
+    return null;
+  }
+
+
+
 
   Future<List<FormModel>> getForms() async {
     final db = await database;
     final result = await db.query(tableFormularios);
 
     return result.map((json) => FormModel(
-      id_formulario: json['idFormulario'] as int,
+      id_formulario: json['id_formulario'] as int,
       titulo: json['titulo'] as String,
       descripcion: json['descripcion'] as String,
-      fecha_creacion: DateTime.parse(json['fechaCreacion'] as String),
+      fecha_creacion: DateTime.parse(json['fecha_creacion'] as String),
       id_evento: json['id_evento'] as int,
-      id_usuario: json['usuarioId'] as int,
+      id_usuario: json['id_usuario'] as int,
       latitud: json['latitud'] as double?,
       longitud: json['longitud'] as double?,
       path_imagen: json['pathImagen'] as String?,
@@ -958,6 +1030,8 @@ class LocalDataService {
     }
   }
 
+
+
   Future<void> guardarEvidenciaEnCola(FormModel formulario) async {
     final db = await database;
 
@@ -989,6 +1063,20 @@ class LocalDataService {
       }
     }
   }
+
+  Future<bool> guardarEnColaPeticionesSoloRespuestas(int idFormulario, int idEvento, List<AnswerModel> respuestas) async {
+    final db = await database;
+
+    await db.insert('ColaRespuestas', {
+      'id_formulario': idFormulario,
+      'id_evento': idEvento,
+      'respuestas': jsonEncode(respuestas.map((r) => r.toJson()).toList()),
+      'timestamp': DateTime.now().toIso8601String(),
+    });
+
+    return true;
+  }
+
 
   Future<bool> hayFormulariosRegistrados() async {
     final db = await database;

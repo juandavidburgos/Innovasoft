@@ -35,39 +35,45 @@ class _LoginPageState extends State<LoginPage> {
   final authService = AuthService(); // Servicio de autenticación
 
   Future<void> _iniciarSesion() async {
-  if (!_formKey.currentState!.validate()) return;
-  _formKey.currentState!.save();
+    if (!_formKey.currentState!.validate()) return;
+    _formKey.currentState!.save();
 
-  try {
-    // 1. Intentar login local
-    final usuarioLocal = await authService.localLogin(email, password);
+    try {
+      // 1. Intentar login local
+      final usuarioLocal = await authService.localLogin(email, password);
 
-    if (usuarioLocal != null) {
-      await _guardarSesion(usuarioLocal);
-      _redirigirSegunRol(usuarioLocal.rol);
-      return;
-    }
-
-    // 2. Si está habilitado, intentar login remoto
-    if (AppConfig.usarBackend)  {
-      final usuarioRemoto = await authService.remoteLogin(email, password);
-      if (usuarioRemoto != null && usuarioRemoto.rol == 'Administrador') {
-        final token = RemoteDataService().ultimoToken;
-        await _guardarSesion(usuarioRemoto, token: token);
-        _redirigirSegunRol(usuarioRemoto.rol);
+      if (usuarioLocal != null) {
+        await _guardarSesion(usuarioLocal);
+        _redirigirSegunRol(usuarioLocal.rol);
         return;
       }
 
-      _mostrarError('Credenciales inválidas o usuario no autorizado.');
-      return;
-    }
+      // 2. Si está habilitado, intentar login remoto
+      if (AppConfig.usarBackend) {
+        try {
+          final usuarioRemoto = await authService.remoteLogin(email, password);
 
-    // 3. Si ninguna autenticación fue válida
-    _mostrarError('Credenciales inválidas o rol no permitido');
-  } catch (e) {
-    _mostrarError('Error de autenticación: Usuario o contraseña incorrectos!!!');
+          if (usuarioRemoto != null && usuarioRemoto.rol == 'Administrador') {
+            final token = RemoteDataService().ultimoToken;
+            await _guardarSesion(usuarioRemoto, token: token);
+            _redirigirSegunRol(usuarioRemoto.rol);
+            return;
+          }
+
+          _mostrarError('Usuario no autorizado o rol incorrecto.');
+          return;
+        } catch (e) {
+          _mostrarError(e.toString().replaceAll('Exception: ', ''));
+          return;
+        }
+      }
+
+      // 3. Si ninguna autenticación fue válida
+      _mostrarError('Credenciales inválidas o rol no permitido.');
+    } catch (e) {
+      _mostrarError('Error inesperado: ${e.toString()}');
+    }
   }
-}
 
 Future<void> _guardarSesion(UserModel usuario, {String? token}) async {
   final prefs = await SharedPreferences.getInstance();

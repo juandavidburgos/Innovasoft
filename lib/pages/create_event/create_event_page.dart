@@ -80,12 +80,14 @@ class _CreateEventPageState extends State<CreateEventPage> {
             _endDateTime = null;
           });
         } else {
+          print("No se guardo");
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const EventErrorPage()),
           );
         }
       } catch (e) {
+        print(e);
         // Esto capturaría errores imprevistos
         Navigator.pushReplacement(
           context,
@@ -95,42 +97,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
     }
   }
 
-  //guarda local
-  /*void _guardarEvento() async {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-
-      final nuevoEvento = EventModel(
-        nombre: _name,
-        ubicacion: _location!,
-        descripcion: _descripcion,
-        // Aquí se envían las fechas de inicio y fin
-        fecha_hora_inicio: _startDateTime!,
-        fecha_hora_fin: _endDateTime!,
-      );
-
-      try {
-        await _repo.agregarEvento(nuevoEvento);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const EventSuccessPage()),
-        );
-
-        _formKey.currentState!.reset();
-        _startDateTimeController.clear();
-        _endDateTimeController.clear();
-        setState(() {
-          _startDateTime = null;
-          _endDateTime = null;
-        });
-      } catch (e) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const EventErrorPage()),
-        );
-      }
-    }
-  }*/
 
   Future<DateTime?> _pickDateTime(BuildContext context, {required DateTime firstDate}) async {
     final date = await showDatePicker(

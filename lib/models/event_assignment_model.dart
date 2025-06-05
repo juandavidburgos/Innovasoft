@@ -23,11 +23,14 @@ class EventoAsignacionModel {
       fecha_hora_inicio: json['fecha_hora_inicio'],
       fecha_hora_fin: json['fecha_hora_fin'],
       ubicacion: json['ubicacion'],
-      monitoresAsignados: (json['monitores'] as List<dynamic>)
-          .map((e) => MonitorModel.fromJson(e))
-          .toList(),
+      monitoresAsignados: (json['monitoresAsignados'] as List<dynamic>?)
+              ?.map((e) => MonitorModel.fromJson(e as Map<String, dynamic>))
+              .toList() 
+          ?? [],
     );
   }
+
+
 }
 
 class MonitorModel {

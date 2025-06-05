@@ -43,29 +43,31 @@ class FormModel {
 
   /// Convierte un FormModel en un Map (para SQLite).
   Map<String, dynamic> toMap() => {
-        if (id_formulario != null) 'id_formulario': id_formulario,
-        'id_evento': id_evento,
-        'usuario_id': id_usuario,
-        'titulo': titulo,
-        'descripcion': descripcion,
-        'fecha_creacion': _formatter.format(fecha_creacion),
-        'latitud': latitud,
-        'longitud': longitud,
-        'path_imagen': path_imagen,
-      };
+    if (id_formulario != null) 'id_formulario': id_formulario,
+    'titulo': titulo,
+    'descripcion': descripcion,
+    'fecha_creacion': fecha_creacion.toIso8601String(),
+    'id_evento': id_evento,
+    'id_usuario': id_usuario,
+    'latitud': latitud,
+    'longitud': longitud,
+    'path_imagen': path_imagen,
+  };
+
 
   /// Convierte un JSON (Map) en un objeto FormModel.
   factory FormModel.fromJson(Map<String, dynamic> json) => FormModel(
-        id_formulario: json['id_formulario'],
-        id_evento: json['id_evento'],
-        id_usuario: json['usuario_id'],
-        titulo: json['titulo'],
-        descripcion: json['descripcion'],
-        fecha_creacion: DateTime.parse(json['fecha_creacion']),
-        latitud: (json['latitud'] != null) ? json['latitud'].toDouble() : null,
-        longitud: (json['longitud'] != null) ? json['longitud'].toDouble() : null,
-        path_imagen: json['path_imagen'],
-      );
+    id_formulario: json['id_formulario'],
+    id_evento: json['id_evento'],
+    id_usuario: json['id_usuario'], // ← aquí estaba el error
+    titulo: json['titulo'],
+    descripcion: json['descripcion'],
+    fecha_creacion: DateTime.parse(json['fecha_creacion']),
+    latitud: (json['latitud'] != null) ? json['latitud'].toDouble() : null,
+    longitud: (json['longitud'] != null) ? json['longitud'].toDouble() : null,
+    path_imagen: json['path_imagen'],
+  );
+
 
   /// Convierte un FormModel en JSON (para envío por HTTP).
   Map<String, dynamic> toJson() => {
@@ -79,4 +81,32 @@ class FormModel {
         'longitud': longitud,
         'path_imagen': path_imagen,
       };
+
+      FormModel copyWith({int? id_formulario}) {
+        return FormModel(
+          id_formulario: id_formulario ?? this.id_formulario,
+          id_evento: id_evento,
+          id_usuario: id_usuario,
+          titulo: titulo,
+          descripcion: descripcion,
+          fecha_creacion: fecha_creacion,
+          latitud: latitud,
+          longitud: longitud,
+          path_imagen: path_imagen,
+        );
+      }
+
+    /*Map<String, dynamic> toJsonBackend() => {
+      'titulo': titulo,
+      'descripcion': descripcion,
+      'fecha_creacion': fecha_creacion.toIso8601String(),
+      'objEvento': {
+        'id_evento': id_evento,
+      },
+      'usuario': {
+        'id_usuario': id_usuario,
+      },
+    };*/
+
+
 }

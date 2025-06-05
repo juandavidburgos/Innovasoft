@@ -1,9 +1,11 @@
+import 'package:basic_flutter/repositories/forms_repository.dart';
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
 import '../../repositories/user_repository.dart';
 import '../../repositories/event_repository.dart';
 import '../../repositories/assignment_repository.dart';
 import '../../models/event_model.dart';
+import '../../models/DTO/FormularioDTOPeticion.dart';
 import '../widgets/action_button.dart';
 import 'assignment_success_page.dart';
 import '../home/admin_trainer_home_page.dart';
@@ -21,6 +23,7 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
   final UserRepository _userRepo = UserRepository();
   final EventRepository _eventRepo = EventRepository();
   final AssignmentRepository _assignmentRepo = AssignmentRepository();
+  final FormsRepository _formsRepository = FormsRepository();
 
   List<UserModel> _monitores = [];
   List<EventModel> _eventos = [];
@@ -38,12 +41,6 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
     _cargarEventos();
   }
 
-  /*Future<void> _cargarMonitores() async {
-    final usuarios = await _userRepo.obtenerUsuariosRemotos();
-    setState(() {
-      _monitores = usuarios.where((u) => u.rol == 'Monitor').toList();
-    });
-  }*/
   Future<void> _cargarMonitores() async {
     try {
       final usuarios = await _userRepo.obtenerUsuariosRemotos();
@@ -67,12 +64,7 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
     }
   }
 
-  /*Future<void> _cargarEventos() async {
-    final eventos = await _eventRepo.obtenerEventosRemotos();
-    setState(() {
-      _eventos = eventos.where((e) => e.estado == 'activo').toList();
-    });
-  }*/
+
   Future<void> _cargarEventos() async {
     try {
       final eventos = await _eventRepo.obtenerEventosRemotos();
@@ -96,7 +88,7 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
     }
   }
 
-  Future<void> _asignarEntrenador() async {
+  /*Future<void> _asignarEntrenador() async {
     if (selectedEventId == null || selectedTrainerId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor selecciona un evento y un entrenador')),
@@ -174,7 +166,94 @@ class _TrainerAssignmentPageState extends State<TrainerAssignmentPage> {
         const SnackBar(content: Text('Error: el entrenador ya estaba asignado en la base de datos')),
       );
     }
+  }*/
+
+  Future<void> _asignarEntrenador() async {
+    if (selectedEventId == null || selectedTrainerId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor selecciona un evento y un entrenador')),
+      );
+      return;
+    }
+
+    final eventoId = int.parse(selectedEventId!);
+    final trainerId = int.parse(selectedTrainerId!);
+
+    if (_entrenadoresAsignados.contains(trainerId)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Este entrenador ya fue asignado a este evento')),
+      );
+      return;
+    }
+
+    final success = await _assignmentRepo.asignarEntrenadorAEventoRemoto(trainerId, eventoId);
+
+    if (success) {
+      /*// ✅ Crear el formulario automáticamente
+      final formulario = FormularioDTOPeticion(
+        titulo: 'Formulario evento $eventoId',
+        descripcion: 'Formulario de registro asignado automáticamente al entrenador $trainerId',
+        fecha_creacion: DateTime.now(),
+      );
+
+      final creado = await _formsRepository.crearFormularioEnBackend(formulario);
+
+      if (creado == null) {
+        print('⚠️ No se pudo crear el formulario automáticamente');
+      } else {
+        print('✅ Formulario creado con ID: ${creado.id_formulario}');
+      }*/
+
+      // 👇 Resto de la lógica sigue igual:
+      _entrenadoresAsignados.add(trainerId);
+
+      final nombreEntrenador = _monitores.firstWhere(
+        (trainer) => trainer.id_usuario == trainerId,
+        orElse: () => UserModel(id_usuario: 0, nombre: 'Desconocido', email: '', rol: '', estado_monitor: ''),
+      ).nombre;
+
+      _nombresEntrenadoresAsignados.add(nombreEntrenador);
+      selectedTrainerId = null;
+
+      final continuar = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Entrenador asignado'),
+          content: const Text('¿Deseas asignar otro entrenador?'),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('No')),
+            TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Sí')),
+          ],
+        ),
+      );
+
+      if (continuar == true) {
+        setState(() {});
+      } else {
+        final resumen = _nombresEntrenadoresAsignados.join('\n');
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Entrenadores Asignados'),
+            content: Text(resumen),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Aceptar')),
+            ],
+          ),
+        );
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AssignmentSuccessPage()),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: el entrenador ya estaba asignado en la base de datos')),
+      );
+    }
   }
+
 
   List<UserModel> _monitoresDisponibles() {
     return _monitores.where((m) => !_entrenadoresAsignados.contains(m.id_usuario)).toList();

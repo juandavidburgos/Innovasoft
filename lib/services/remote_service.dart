@@ -2,6 +2,7 @@ import '../models/event_model.dart';
 import '../models/user_model.dart';
 import '../models/event_assignment_model.dart';
 import '../models/form_model.dart';
+import '../models/DTO/FormularioDTOPeticion.dart';
 import '../models/answer_model.dart';
 import 'remote_data_service.dart';
 import 'dart:io';
@@ -112,9 +113,18 @@ class RemoteService {
     return await RemoteDataService.dbR.sendFormularioRespondido(formulario, respuestas);
   }
 
+  Future<FormularioDTOPeticion?> crearFormularioRemoto(FormularioDTOPeticion form) async {
+    return await RemoteDataService.dbR.crearFormularioEnBackend(form);
+  }
+
   Future<bool> enviarEvidencia(FormModel formulario) async {
     return await RemoteDataService.dbR.sendEvidence(formulario);
   }
+
+  Future<bool> enviarRespuestasFormulario(int idFormulario, int idEvento, List<AnswerModel> respuestas) async {
+    return await RemoteDataService.dbR.enviarRespuestasFormulario(idFormulario,  idEvento, respuestas);
+  }
+
 
   /// -------------------------------------------------
   /// *MÉTODOS DE AUTENTICACIÓN DE USUARIOS

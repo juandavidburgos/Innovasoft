@@ -3,14 +3,14 @@ class QuestionModel {
   final int formulario_id;
   final String contenido;
   final String tipo; // Ej: Texto, Número, Opción, Fecha, Si/No
-  final bool es_obligatoria;
+  final bool obligatoria;
 
   QuestionModel({
     this.id_pregunta,
     required this.formulario_id,
     required this.contenido,
     required this.tipo,
-    this.es_obligatoria = false,
+    this.obligatoria = false,
   });
 
   /// Convierte un Map (SQLite) a QuestionModel
@@ -19,7 +19,7 @@ class QuestionModel {
         formulario_id: map['formulario_id'],
         contenido: map['contenido'],
         tipo: map['tipo'],
-        es_obligatoria: map['es_obligatoria'] == 1,
+        obligatoria: (map['obligatoria'] ?? 1 )== 1,
       );
 
   /// Convierte un QuestionModel a Map (SQLite)
@@ -28,7 +28,7 @@ class QuestionModel {
         'formulario_id': formulario_id,
         'contenido': contenido,
         'tipo': tipo,
-        'es_obligatoria': es_obligatoria ? 1 : 0,
+        'obligatoria': obligatoria ? 1 : 0,
       };
 
   /// Convierte un JSON a QuestionModel
@@ -37,7 +37,7 @@ class QuestionModel {
         formulario_id: json['formulario_id'],
         contenido: json['contenido'],
         tipo: json['tipo'],
-        es_obligatoria: json['es_obligatoria'] ?? false,
+        obligatoria: json['obligatoria'] ?? false,
       );
 
   /// Convierte un QuestionModel a JSON
@@ -46,6 +46,6 @@ class QuestionModel {
         'formulario_id': formulario_id,
         'contenido': contenido,
         'tipo': tipo,
-        'es_obligatoria': es_obligatoria,
+        'obligatoria': obligatoria,
       };
 }

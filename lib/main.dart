@@ -22,7 +22,6 @@ import 'pages/edit_assign_trainer/edit_assignment_page.dart';
 import 'pages/disable_event/disable_event_page.dart';
 import 'pages/home/trainer_home_page.dart';
 import 'pages/caracterization/assistence_register_page.dart';
-import 'pages/caracterization/trainer_select_permanent_event_page.dart';
 import 'pages/caracterization/check_assistant_page.dart';
 import 'pages/report/report_page.dart';
 import 'models/event_model.dart';
@@ -31,13 +30,11 @@ void main() async{
   WidgetsFlutterBinding.ensureInitialized();
 
   //Inicializar la BD una sola vez
-  //await LocalDataService.db.deleteDB();
+  await LocalDataService.db.deleteDB();
 
   //Inicializar la BD una sola vez
   await LocalDataService.db.database;
 
-  // 👤 Crea el administrador temporal (si no existe)
-  await LocalDataService.db.crearAdminTemporal();
   // Inicializas tus servicios
   LocalDataService.db.iniciarEscuchaDeConexion(); 
 
@@ -52,6 +49,7 @@ Future<void> _verificarYSincronizar() async {
     await RemoteDataService.dbR.sincronizarHaciaServidor();
   }
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -96,7 +94,6 @@ class MyApp extends StatelessWidget {
             return AssistenceRegisterPage(evento: evento);
           },
         '/trainer_select_event': (context) => const TrainerSelectEventPage(),
-        '/trainer_select_permanent_event': (context) => const TrainerSelectPermanentEventPage(),
         '/final_register': (context) {
             final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
 
