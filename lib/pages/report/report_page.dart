@@ -111,7 +111,7 @@ class _GenerateReportePageState extends State<GenerateReportePage> {
       } else {
         baseDirectory = await getApplicationDocumentsDirectory();
         platformSpecificMessage = 'carpeta de Documentos';
-      
+
       }
 
       if (baseDirectory == null) {
@@ -124,7 +124,7 @@ class _GenerateReportePageState extends State<GenerateReportePage> {
       }
 
       final String fileName = 'Reporte_Evento_${_eventoSeleccionado!.id_evento!}.xlsx';
-      archivoFinal = File('${baseDirectory.path}/$fileName');
+      final archivoFinal = File('${baseDirectory.path}/$fileName');
 
       await downloadedFile.copy(archivoFinal.path);
 
