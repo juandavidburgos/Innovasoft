@@ -465,8 +465,8 @@ Future<List<EventModel>> getEventosAsignados(int idUsuario) async {
   
   Future<bool> enviarRespuestasFormulario(int idFormulario, int idEvento, List<AnswerModel> respuestas) async {
     final body = {
-      'id_formulario': idFormulario,
-      'id_evento': idEvento,
+      'idFormulario': idFormulario,
+      'idEvento': idEvento,
       'respuestas': respuestas.map((r) => r.toJson()).toList(),
     };
 

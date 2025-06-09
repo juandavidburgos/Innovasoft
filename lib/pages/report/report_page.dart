@@ -4,6 +4,7 @@ import 'package:open_file/open_file.dart';
 import '../../models/event_model.dart';
 import '../../repositories/forms_repository.dart';
 import '../../repositories/event_repository.dart';
+import 'package:path_provider/path_provider.dart';
 
 class GenerateReportePage extends StatefulWidget {
   const GenerateReportePage({super.key});
@@ -27,12 +28,14 @@ class _GenerateReportePageState extends State<GenerateReportePage> {
 
   Future<void> _cargarEventos() async {
     //obtener local
-    final eventos = await eventRepo.obtenerEventos();
+    print('Cargando eventos...');
+    //final eventos = await eventRepo.obtenerEventos();
     //obtener remoto
-    //final eventos = await _repo.obtenerEventosRemotos();
+    final eventos = await _repo.obtenerEventos();
     setState(() {
-      _eventos = eventos.where((e) => e.estado == 'activo').toList();
+      _eventos =  eventos;
     });
+    print('Eventos cargados: ${_eventos.length}');
   }
   /*Future<void> _cargarEventos() async {
     try {
@@ -61,12 +64,21 @@ class _GenerateReportePageState extends State<GenerateReportePage> {
 
     try {
       File? archivo = await _repo.descargarReporteExcel(_eventoSeleccionado!.id_evento!);
-
+      //revisar
       if (archivo != null && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Reporte descargado con éxito')),
         );
-        await OpenFile.open(archivo.path);
+        try{  
+          // Intentar abrir el archivo descargado
+          print('Abriendo archivo: ${archivo.path}');
+          //await OpenFile.open(archivo.path);
+          // Usar el paquete open_file para abrir el archivo
+         await _guardarYAbrirReporte(archivo);
+        }
+        catch(e){
+          print('Error al abrir el archivo: $e');
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error al descargar el reporte')),
@@ -80,6 +92,61 @@ class _GenerateReportePageState extends State<GenerateReportePage> {
       }
     } finally {
       setState(() => _descargando = false);
+    }
+  }
+  
+  /// Guarda el archivo descargado en una ubicación específica y lo abre.
+  /// Dependiendo de la plataforma, guarda el archivo en la carpeta de Descargas o en Documentos.
+  Future<void> _guardarYAbrirReporte(File downloadedFile) async {
+    String platformSpecificMessage = '';
+
+    try {
+      Directory? baseDirectory;
+      if (Platform.isAndroid) {
+        baseDirectory = await getDownloadsDirectory();
+        platformSpecificMessage = 'carpeta de Descargas';
+      } else if (Platform.isIOS) {
+        baseDirectory = await getApplicationDocumentsDirectory();
+        platformSpecificMessage = 'carpeta de Documentos de la app';
+      } else {
+        baseDirectory = await getApplicationDocumentsDirectory();
+        platformSpecificMessage = 'carpeta de Documentos';
+      }
+
+      if (baseDirectory == null) {
+        throw Exception('No se pudo acceder al directorio de almacenamiento del dispositivo.');
+      }
+      
+      // Asegúrate de que el directorio exista
+      if (!await baseDirectory.exists()) {
+        await baseDirectory.create(recursive: true);
+      }
+
+      final String fileName = 'Reporte_Evento_${_eventoSeleccionado!.id_evento!}.xlsx';
+      archivoFinal = File('${baseDirectory.path}/$fileName');
+
+      await downloadedFile.copy(archivoFinal.path);
+
+      if (!await archivoFinal.exists()) {
+        throw Exception('El archivo no se guardó correctamente en la ubicación final.');
+      }
+
+      if (context.mounted) {
+        print('Archivo guardado en: ${archivoFinal.path}');
+        try {
+          await OpenFile.open(archivoFinal.path);
+        } catch (e) {
+          print('Error al intentar abrir el archivo con OpenFile: $e');
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        print('Error en _guardarYAbrirReporte: $e');
+      }
+    } finally {
+      if (await downloadedFile.exists()) {
+        await downloadedFile.delete();
+      }
     }
   }
 

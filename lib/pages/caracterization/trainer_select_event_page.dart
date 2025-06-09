@@ -121,10 +121,9 @@ Widget _buildDropdownEventos() {
       child: Theme(
         data: Theme.of(context).copyWith(
           canvasColor: Colors.white,
-          cardTheme: CardTheme(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+          textTheme: Theme.of(context).textTheme.apply(
+            bodyColor: Colors.black,
+            displayColor: Colors.black,
           ),
         ),
         child: DropdownButtonFormField<EventModel>(
@@ -283,3 +282,4 @@ Widget _buildDropdownEventos() {
   }
 
 }
+
