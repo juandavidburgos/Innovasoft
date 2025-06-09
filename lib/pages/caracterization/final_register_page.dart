@@ -408,7 +408,7 @@ class _FinalRegisterPageState extends State<FinalRegisterPage> {
 
 
     final form = FormModel(
-      //id_formulario: widget.formulario_id,
+      id_formulario: widget.formulario_id,
       id_evento: widget.evento.id_evento,
       id_usuario: widget.usuario_id,
       titulo: 'Evidencia final',
