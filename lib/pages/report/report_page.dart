@@ -94,7 +94,7 @@ class _GenerateReportePageState extends State<GenerateReportePage> {
       setState(() => _descargando = false);
     }
   }
-  
+
   /// Guarda el archivo descargado en una ubicación específica y lo abre.
   /// Dependiendo de la plataforma, guarda el archivo en la carpeta de Descargas o en Documentos.
   Future<void> _guardarYAbrirReporte(File downloadedFile) async {
@@ -111,6 +111,7 @@ class _GenerateReportePageState extends State<GenerateReportePage> {
       } else {
         baseDirectory = await getApplicationDocumentsDirectory();
         platformSpecificMessage = 'carpeta de Documentos';
+      
       }
 
       if (baseDirectory == null) {
