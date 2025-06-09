@@ -1174,8 +1174,14 @@ Future<int> insertPregunta(QuestionModel pregunta) async {
   }
 
   Future<bool> hayInternet() async {
-    final result = await Connectivity().checkConnectivity();
-    return result != ConnectivityResult.none;
+    final List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
+
+    // Si el resultado es ConnectivityResult.none, significa que no hay conexión de red local.
+    if (connectivityResult.isEmpty || connectivityResult.contains(ConnectivityResult.none)) {
+      print('❌ No hay conexión a Internet');
+      return false;
+    }
+    return true;
   }
 
 }

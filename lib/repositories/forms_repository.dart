@@ -1,3 +1,5 @@
+import 'package:basic_flutter/models/event_model.dart';
+
 import '../models/form_model.dart';
 import '../models/DTO/FormularioDTOPeticion.dart';
 import '../models/answer_model.dart';
@@ -18,6 +20,11 @@ class FormsRepository {
     return await _remoteService.enviarRespuestasFormulario( idFormulario, idEvento, respuestas);
   }
 
+Future<List<EventModel>> obtenerEventos() {
+    return _remoteService.obtenerEventosRemotos().then((eventos) {
+      return eventos.where((e) => e.estado == 'activo').toList();
+    });
+  }
 
   Future<FormularioDTOPeticion?> crearFormularioEnBackend(FormularioDTOPeticion form) async {
     return await _remoteService.crearFormularioRemoto(form);

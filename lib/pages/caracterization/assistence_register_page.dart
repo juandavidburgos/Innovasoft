@@ -431,13 +431,13 @@ Widget build(BuildContext context) {
                 final contenido = p.contenido.toLowerCase();
                 List<String> opciones = ['Opción 1', 'Opción 2', 'Opción 3']; // default
 
-                if (contenido.contains('RANGOS DE EDAD')) {
+                if (contenido.contains('RANGOS DE EDAD'.toLowerCase())) {
                   opciones = ['1-6', '7-11', '12-17', '18-25', '26-35', '36-49', '+50'];
-                } else if (contenido.contains('GÉNERO')) {
+                } else if (contenido.contains('GÉNERO'.toLowerCase())) {
                   opciones = ['Masculino', 'Femenino', 'Prefiero no decirlo', 'Otro'];
-                } else if (contenido.contains('Estrato Socio-Economico?')) {
+                } else if (contenido.contains('Estrato Socio-Economico?'.toLowerCase())) {
                   opciones = ['0-1', '2-3', '4+'];
-                } else if (contenido.contains('URBANO O RURAL')) {
+                } else if (contenido.contains('URBANO O RURAL'.toLowerCase())) {
                   opciones = ['Urbano', 'Rural'];
                 }
 
